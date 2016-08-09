@@ -1,4 +1,4 @@
-# Gene_Prioritization_Pipelines
+# Gene_Prioritization_Pipeline
 Network based prioritization of genes-associated-phenotype
 
 * User submits a spreadsheet with samples as columns and genes as rows. 
