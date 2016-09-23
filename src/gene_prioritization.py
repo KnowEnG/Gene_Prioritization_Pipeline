@@ -16,7 +16,6 @@ def gene_prioritization_pcc(spreadsheet_df_full_path, drug_response_full_path):
     tl.run_gene_prioritization(spreadsheet_df_full_path, drug_response_full_path)
     return time.time() - t0
 
-
 def main():
     """
     This the main function to perform gene prioritization.
