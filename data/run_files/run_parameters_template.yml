@@ -1,5 +1,7 @@
 # yaml parameters template file with all options for Gene_Prioritization_Pipeline
 
+method: correlate
+
 use_parallel_processing: "0"
 
 gg_network_name_full_path: ./run_dir/input_data/keg_ST90_4col.edge
@@ -8,7 +10,7 @@ gg_network_name_full_path: ./run_dir/input_data/keg_ST90_4col.edge
 spreadsheet_name_full_path: ./run_dir/input_data/gene_expression.csv
 #	dataframe == matrix with row and column names in .tsv format.
 
-drug_response_name_full_path: ./run_dir/input_data/drug_response.csv
+drug_response_full_path: ./run_dir/input_data/drug_response.csv
 #	dataframe == matrix with row and column names in .tsv format.
 
 results_directory: ./
