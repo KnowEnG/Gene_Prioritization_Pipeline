@@ -1,6 +1,10 @@
 # yaml parameters template file with all options for Gene_Prioritization_Pipeline
 
-method: correlate
+method: bootstrap_net_correlate
+# correlate
+# net_correlate
+# bootstrap_correlate
+# bootstrap_net_correlate
 
 use_parallel_processing: "0"
 
@@ -13,7 +17,7 @@ spreadsheet_name_full_path: ./run_dir/input_data/gene_expression.csv
 drug_response_full_path: ./run_dir/input_data/drug_response.csv
 #	dataframe == matrix with row and column names in .tsv format.
 
-results_directory: ./
+results_directory: ./run_dir/results
 
 
 rwr_max_iterations: "100"

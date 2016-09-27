@@ -25,18 +25,6 @@ def bootstrap_net_correlate(run_parameters):
     from gene_prioritization_toolbox import run_bootstrap_net_correlate
     run_bootstrap_net_correlate(run_parameters)
 
-def gene_prioritization_pcc(spreadsheet_df_full_path, drug_response_full_path):
-    """Pearson correlation coefficient(PCC) gene prioritization
-
-    Args:
-        spreadsheet_df_full_path: spreadsheet_df path and file name.
-        drug_response_full_path: drug_response path and file name.
-    """
-    import gene_prioritization_toolbox as tl
-    t0 = time.time()
-    tl.run_gene_prioritization(spreadsheet_df_full_path, drug_response_full_path)
-    return time.time() - t0
-
 SELECT = {
     "correlate": correlation,
     "net_correlate": net_correlate,
@@ -51,7 +39,6 @@ def main():
     import sys
     from knpackage.toolbox import get_run_directory_and_file
     from knpackage.toolbox import get_run_parameters
-
     run_directory, run_file = get_run_directory_and_file(sys.argv)
     run_parameters = get_run_parameters(run_directory, run_file)
     SELECT[run_parameters["method"]](run_parameters)

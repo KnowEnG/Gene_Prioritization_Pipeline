@@ -23,7 +23,7 @@ def perform_pearson_correlation(spreadsheet, drug_response):
 
     return pc_array
 
-def run_gene_prioritization(spreadsheet_df_full_path, drug_response_full_path):
+def run_gene_prioritization(run_parameters):
     ''' wrapper: call sequence to perform gene prioritization
     Args:
         spreadsheet_df_full_path: spreadsheet_df path and file name.
@@ -32,12 +32,35 @@ def run_gene_prioritization(spreadsheet_df_full_path, drug_response_full_path):
         result_df: result dataframe of gene prioritization. Values are pearson
         correlation coefficient values in a descending order.
     '''
-    spreadsheet_df = kn.get_spreadsheet_df(spreadsheet_df_full_path)
-    drug_response = kn.get_spreadsheet_df(drug_response_full_path)
+    print('in run_gene_prioritization spreadsheet_name_full_path\n{}'.format(run_parameters["spreadsheet_name_full_path"]))
+    run_parameters['samples_file_name'] = run_parameters["spreadsheet_name_full_path"]
+    spreadsheet_df = kn.get_spreadsheet_df(run_parameters)
+
+    print('in run_gene_prioritization drug_response_full_path\n{}'.format(run_parameters["drug_response_full_path"]))
+    run_parameters['samples_file_name'] = run_parameters["drug_response_full_path"]
+    drug_response = kn.get_spreadsheet_df(run_parameters)
     pc_array = perform_pearson_correlation(spreadsheet_df.values, drug_response.values[0])
     result_df = pd.DataFrame(pc_array, index=spreadsheet_df.index.values,
                              columns=['PCC']).abs().sort_values("PCC", ascending=0)
-    file_name = kn.create_timestamped_filename("pcc_result", "df")
+    file_name = kn.create_timestamped_filename("pcc_result")
+    file_name = file_name + '.df'
     result_df.to_csv(file_name, header=True, index=True, sep='\t')
 
     return result_df
+
+def run_net_gene_prioritization(run_parameters):
+    print('run_net_gene_prioritization called')
+
+    return
+
+
+def run_bootstrap_correlate(run_parameters):
+    print('run_bootstrap_correlate called')
+
+    return
+
+
+def run_bootstrap_net_correlate(run_parameters):
+    print('run_bootstrap_net_correlate called')
+
+    return
