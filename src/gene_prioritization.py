@@ -11,8 +11,8 @@ def correlation(run_parameters):
 
 def net_correlation(run_parameters):
     """ gene prioritization """
-    from gene_prioritization_toolbox import run_net_gene_correlation
-    run_net_gene_correlation(run_parameters)
+    from gene_prioritization_toolbox import run_net_correlation
+    run_net_correlation(run_parameters)
 
 def bootstrap_correlation(run_parameters):
     """ gene prioritization """

@@ -32,10 +32,7 @@ def run_gene_correlation(run_parameters):
         result_df: result dataframe of gene prioritization. Values are pearson
         correlation coefficient values in a descending order.
     '''
-
-    #run_parameters['samples_file_name'] = run_parameters["spreadsheet_name_full_path"]
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
-    #run_parameters['samples_file_name'] = run_parameters["drug_response_full_path"]
     drug_response = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
     pc_array = perform_pearson_correlation(spreadsheet_df.values, drug_response.values[0])
     result_df = pd.DataFrame(pc_array, index=spreadsheet_df.index.values,
@@ -46,8 +43,8 @@ def run_gene_correlation(run_parameters):
 
     return result_df
 
-def run_net_gene_correlation(run_parameters):
-    print('run_net_gene_correlation called')
+def run_net_correlation(run_parameters):
+    print('run_net_correlation called')
 
     return
 
