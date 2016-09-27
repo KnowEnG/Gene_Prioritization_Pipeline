@@ -33,11 +33,10 @@ def run_gene_correlation(run_parameters):
         correlation coefficient values in a descending order.
     '''
 
-    run_parameters['samples_file_name'] = run_parameters["spreadsheet_name_full_path"]
-    spreadsheet_df = kn.get_spreadsheet_df(run_parameters)
-
-    run_parameters['samples_file_name'] = run_parameters["drug_response_full_path"]
-    drug_response = kn.get_spreadsheet_df(run_parameters)
+    #run_parameters['samples_file_name'] = run_parameters["spreadsheet_name_full_path"]
+    spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
+    #run_parameters['samples_file_name'] = run_parameters["drug_response_full_path"]
+    drug_response = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
     pc_array = perform_pearson_correlation(spreadsheet_df.values, drug_response.values[0])
     result_df = pd.DataFrame(pc_array, index=spreadsheet_df.index.values,
                              columns=['PCC']).abs().sort_values("PCC", ascending=0)
