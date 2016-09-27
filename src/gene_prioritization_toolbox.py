@@ -6,7 +6,6 @@ Created on Fri Sep 23 16:39:35 2016
 import numpy as np
 import pandas as pd
 from scipy.stats import pearsonr as pcc
-from sklearn.preprocessing import normalize
 import knpackage.toolbox as kn
 
 def perform_pearson_correlation(spreadsheet, drug_response):
