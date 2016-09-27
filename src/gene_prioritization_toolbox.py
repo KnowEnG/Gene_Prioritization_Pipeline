@@ -23,7 +23,7 @@ def perform_pearson_correlation(spreadsheet, drug_response):
 
     return pc_array
 
-def run_gene_prioritization(run_parameters):
+def run_gene_correlation(run_parameters):
     ''' wrapper: call sequence to perform gene prioritization
     Args:
         spreadsheet_df_full_path: spreadsheet_df path and file name.
@@ -32,11 +32,10 @@ def run_gene_prioritization(run_parameters):
         result_df: result dataframe of gene prioritization. Values are pearson
         correlation coefficient values in a descending order.
     '''
-    print('in run_gene_prioritization spreadsheet_name_full_path\n{}'.format(run_parameters["spreadsheet_name_full_path"]))
+
     run_parameters['samples_file_name'] = run_parameters["spreadsheet_name_full_path"]
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters)
 
-    print('in run_gene_prioritization drug_response_full_path\n{}'.format(run_parameters["drug_response_full_path"]))
     run_parameters['samples_file_name'] = run_parameters["drug_response_full_path"]
     drug_response = kn.get_spreadsheet_df(run_parameters)
     pc_array = perform_pearson_correlation(spreadsheet_df.values, drug_response.values[0])
@@ -48,19 +47,19 @@ def run_gene_prioritization(run_parameters):
 
     return result_df
 
-def run_net_gene_prioritization(run_parameters):
-    print('run_net_gene_prioritization called')
+def run_net_gene_correlation(run_parameters):
+    print('run_net_gene_correlation called')
 
     return
 
 
-def run_bootstrap_correlate(run_parameters):
-    print('run_bootstrap_correlate called')
+def run_bootstrap_correlation(run_parameters):
+    print('run_bootstrap_correlation called')
 
     return
 
 
-def run_bootstrap_net_correlate(run_parameters):
-    print('run_bootstrap_net_correlate called')
+def run_bootstrap_net_correlation(run_parameters):
+    print('run_bootstrap_net_correlation called')
 
     return

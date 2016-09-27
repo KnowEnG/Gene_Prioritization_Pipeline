@@ -3,33 +3,32 @@ Created on Fri Sep 23 16:39:35 2016
 @author: The Gene Prioritization dev team
 """
 
-import time
 
 def correlation(run_parameters):
     """ gene prioritization """
-    from gene_prioritization_toolbox import run_gene_prioritization
-    run_gene_prioritization(run_parameters)
+    from gene_prioritization_toolbox import run_gene_correlation
+    run_gene_correlation(run_parameters)
 
-def net_correlate(run_parameters):
+def net_correlation(run_parameters):
     """ gene prioritization """
-    from gene_prioritization_toolbox import run_net_gene_prioritization
-    run_net_gene_prioritization(run_parameters)
+    from gene_prioritization_toolbox import run_net_gene_correlation
+    run_net_gene_correlation(run_parameters)
 
-def bootstrap_correlate(run_parameters):
+def bootstrap_correlation(run_parameters):
     """ gene prioritization """
-    from gene_prioritization_toolbox import run_bootstrap_correlate
-    run_bootstrap_correlate(run_parameters)
+    from gene_prioritization_toolbox import run_bootstrap_correlation
+    run_bootstrap_correlation(run_parameters)
 
-def bootstrap_net_correlate(run_parameters):
+def bootstrap_net_correlation(run_parameters):
     """ gene prioritization """
-    from gene_prioritization_toolbox import run_bootstrap_net_correlate
-    run_bootstrap_net_correlate(run_parameters)
+    from gene_prioritization_toolbox import run_bootstrap_net_correlation
+    run_bootstrap_net_correlation(run_parameters)
 
 SELECT = {
-    "correlate": correlation,
-    "net_correlate": net_correlate,
-    "bootstrap_correlate": bootstrap_correlate,
-    "bootstrap_net_correlate": bootstrap_net_correlate}
+    "correlation": correlation,
+    "net_correlation": net_correlation,
+    "bootstrap_correlation": bootstrap_correlation,
+    "bootstrap_net_correlation": bootstrap_net_correlation}
 
 def main():
     """
