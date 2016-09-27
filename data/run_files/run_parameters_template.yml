@@ -1,10 +1,10 @@
 # yaml parameters template file with all options for Gene_Prioritization_Pipeline
 
-method: bootstrap_net_correlate
-# correlate
-# net_correlate
-# bootstrap_correlate
-# bootstrap_net_correlate
+method: bootstrap_net_correlation
+# correlation
+# net_correlation
+# bootstrap_correlation
+# bootstrap_net_correlation
 
 use_parallel_processing: "0"
 
