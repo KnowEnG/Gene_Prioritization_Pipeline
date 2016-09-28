@@ -24,10 +24,10 @@ run_net_correlation:
 	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file net_correlation_run_file.yml 
 
 run_bootstrap_correlation:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file correlation_run_file.yml 
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file bootstrap_correlation_run_file.yml 
 
-run_cc_bootstrap_net_correlation:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file correlation_run_file.yml 
+run_bootstrap_net_correlation:
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file bootstrap_net_correlation_run_file.yml 
 
 decompress_input_data:
 	$(GZIP_D) $(INPUT_DATA_DIR)/*

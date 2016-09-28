@@ -1,0 +1,44 @@
+# yaml parameters template file with all options for Gene_Prioritization_Pipeline
+
+method: bootstrap_correlation
+# correlation
+# net_correlation
+# bootstrap_correlation
+# bootstrap_net_correlation
+
+use_parallel_processing: "0"
+
+gg_network_name_full_path: ../data/networks/keg_ST90_4col.edge
+#	4 col edge file for building adjacency matrix in net nmf and rwr.
+
+spreadsheet_name_full_path: ../data/spreadsheets/gene_expression.csv
+#	dataframe == matrix with row and column names in .tsv format.
+
+drug_response_full_path: ../data/spreadsheets/drug_response.csv
+#	dataframe == matrix with row and column names in .tsv format.
+
+results_directory: ./run_dir/results
+
+
+rwr_max_iterations: "100"
+#	Random walk with restart; maximum number of iterations without convergence.
+
+rwr_convergence_tolerence: "0.0001"
+#	Finish rwr when the frobenius norm of the spreadsheet vector(s) is within tolerence of the previous one.
+
+rwr_restart_probability: "0.7"
+#	rwr_restart_probability = alhpa in Vn+1 = alpha * N * Vn + (1-alpha) * Vo
+
+
+
+rows_sampling_fraction: "0.8"
+#	Random sample of rows portion.
+
+cols_sampling_fraction: "0.8"
+#	Rancom sample of columns portion.
+
+number_of_bootstraps: "5"
+#	Number of random samplings to perform and incorporate into the consensus matrix.
+
+
+
