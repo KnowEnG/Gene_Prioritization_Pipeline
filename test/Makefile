@@ -29,6 +29,9 @@ run_bootstrap_correlation:
 run_bootstrap_net_correlation:
 	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file bootstrap_net_correlation_run_file.yml 
 
+run_small_data_test:
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file run_parameters_small_test.yml 
+
 decompress_input_data:
 	$(GZIP_D) $(INPUT_DATA_DIR)/*
  
