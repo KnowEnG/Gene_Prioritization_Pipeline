@@ -7,7 +7,7 @@ RUN_DIR = ./run_dir
 UNIT_TEST_TEMP_DIR = ./unit/tmp
 RESULTS_DIR = $(RUN_DIR)/results
 RUN_FILES = ../data/run_files
-SCRIPT = ../src/samples_clustering.py
+SCRIPT = ../src/gene_prioritization.py
 
 
 env_setup: create_run_dir copy_run_files
@@ -17,17 +17,17 @@ clean_dir_recursively:
 
 run_all_methods: run_nmf run_net_nmf run_cc_nmf run_cc_net_nmf
 
-run_nmf:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file nmf_run_file.yml 
+run_gene_correlation:
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file correlation_run_file.yml 
 
-run_net_nmf:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file net_nmf_run_file.yml
+run_net_correlation:
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file net_correlation_run_file.yml 
 
-run_cc_nmf:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file cc_nmf_run_file.yml 
+run_bootstrap_correlation:
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file correlation_run_file.yml 
 
-run_cc_net_nmf:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file cc_net_nmf_run_file.yml
+run_cc_bootstrap_net_correlation:
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file correlation_run_file.yml 
 
 decompress_input_data:
 	$(GZIP_D) $(INPUT_DATA_DIR)/*
