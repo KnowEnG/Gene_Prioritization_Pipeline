@@ -1,6 +1,6 @@
 # yaml parameters template file with all options for Gene_Prioritization_Pipeline
 
-method: net_correlation
+method: correlation
 # correlation
 # net_correlation
 # bootstrap_correlation
