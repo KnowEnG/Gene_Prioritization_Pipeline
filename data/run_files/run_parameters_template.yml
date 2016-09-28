@@ -8,13 +8,14 @@ method: correlation
 
 use_parallel_processing: "0"
 
-gg_network_name_full_path: ./run_dir/input_data/keg_ST90_4col.edge
+gg_network_name_full_path: ../data/networks/TST_Sept22_network.edge
+#gg_network_name_full_path: ../data/networks/input_data/keg_ST90_4col.edge
 #	4 col edge file for building adjacency matrix in net nmf and rwr.
 
-spreadsheet_name_full_path: ./run_dir/input_data/gene_expression.csv
+spreadsheet_name_full_path: ../data/spreadsheets/TST_Sept22_spreadsheet.df
 #	dataframe == matrix with row and column names in .tsv format.
 
-drug_response_full_path: ./run_dir/input_data/drug_response.csv
+drug_response_full_path: ../data/spreadsheets/TST_Sept22_drug_reaction.df
 #	dataframe == matrix with row and column names in .tsv format.
 
 results_directory: ./run_dir/results
@@ -31,7 +32,7 @@ rwr_restart_probability: "0.7"
 
 
 
-rows_sampling_fraction: "0.8"
+rows_sampling_fraction: "0"
 #	Random sample of rows portion.
 
 cols_sampling_fraction: "0.8"
