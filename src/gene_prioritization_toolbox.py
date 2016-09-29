@@ -126,7 +126,7 @@ def run_bootstrap_correlation(run_parameters):
     result_df = pd.DataFrame(borda_count, index=spreadsheet_df.index.values,
                              columns=['PCC']).sort_values("PCC", ascending=0)
 
-    target_file_base_name = "gene_drug_correlation"
+    target_file_base_name = "gene_drug_bootstrap_correlation"
     target_file_base_name = os.path.join(run_parameters["results_directory"], target_file_base_name)
     file_name = kn.create_timestamped_filename(target_file_base_name)
     file_name = file_name + '.df'
@@ -184,7 +184,7 @@ def run_bootstrap_net_correlation(run_parameters):
     result_df = pd.DataFrame(borda_count, index=spreadsheet_df.index.values,
                              columns=['PCC']).sort_values("PCC", ascending=0)
 
-    target_file_base_name = "gene_drug_network_correlation"
+    target_file_base_name = "gene_drug_network_bootstrap_correlation"
     target_file_base_name = os.path.join(run_parameters["results_directory"], target_file_base_name)
     file_name = kn.create_timestamped_filename(target_file_base_name)
     file_name = file_name + '.df'
