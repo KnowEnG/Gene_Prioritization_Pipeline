@@ -190,7 +190,7 @@ def run_bootstrap_net_correlation(run_parameters):
     return result_df
 
 
-def sum_vote_perm_to_borda_count(borda_count, vote_rank, vote_perm):
+def sum_vote_perm_to_borda_count(borda_count, vote_rank, vote_perm=None):
     """ incrementally update count by borda weighted vote in a subsample of the full borda size
 
     Args:
@@ -202,6 +202,9 @@ def sum_vote_perm_to_borda_count(borda_count, vote_rank, vote_perm):
         borda_count: input borda_count with borda weighted vote rankings added
     """
     rank_array = np.int_(sorted(np.arange(0, vote_rank.size) + 1, reverse=True))
-    borda_count[vote_perm] += rank_array[np.int_(vote_rank)]
+    if vote_perm is None:
+        borda_count += rank_array[np.int_(vote_rank)]
+    else:
+        borda_count[vote_perm] += rank_array[np.int_(vote_rank)]
 
     return borda_count
