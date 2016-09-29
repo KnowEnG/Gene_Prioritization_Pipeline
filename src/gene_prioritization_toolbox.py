@@ -190,7 +190,7 @@ def run_bootstrap_net_correlation(run_parameters):
     return result_df
 
 
-def sum_permutation_to_borda_count(borda_count, vote_rank, vote_perm):
+def sum_vote_perm_to_borda_count(borda_count, vote_rank, vote_perm):
     """ incrementally update count by borda weighted vote in a subsample of the full borda size
 
     Args:
