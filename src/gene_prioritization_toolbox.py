@@ -106,26 +106,24 @@ def run_bootstrap_correlation(run_parameters):
         result_df: result dataframe of gene prioritization. Values are pearson
         correlation coefficient values in descending order.
     """
-    print('run_bootstrap_correlation called -- under (cut & paste phase) construction')
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
     drug_response = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
     sample_smooth = spreadsheet_df.values
 
-    # developing here:
-    sample_random, sample_permutation = kn.sample_a_matrix(
-        sample_smooth, np.float64(run_parameters["rows_sampling_fraction"]),
-        np.float64(run_parameters["cols_sampling_fraction"]))
+    borda_count = np.int_(np.zeros(sample_smooth.shape[0]))
+    for bootstrap_number in range(0, int(run_parameters["number_of_bootstraps"])):
+        sample_random, sample_permutation = kn.sample_a_matrix(
+            sample_smooth, np.float64(run_parameters["rows_sampling_fraction"]),
+            np.float64(run_parameters["cols_sampling_fraction"]))
 
-    print('Not boot strapping here: sample_random.shape = {}'.format(sample_random.shape))
-    D = drug_response.values[0, None]
-    print('Not boot strapping here: D.shape = {}'.format(D.shape))
-    D = D[0, sample_permutation]
-    pc_array = perform_pearson_correlation(sample_random, D)
-    #pc_array = perform_pearson_correlation(sample_random, drug_response.values[0])
-    # to here
+        D = drug_response.values[0, None]
+        D = D[0, sample_permutation]
+        pc_array = perform_pearson_correlation(sample_random, D)
+        pc_array_idx = np.argsort(pc_array)[::-1]
+        borda_count = sum_vote_perm_to_borda_count(borda_count, pc_array_idx)
 
-
-    result_df = pd.DataFrame(pc_array, index=spreadsheet_df.index.values,
+    borda_count = borda_count / max(borda_count)
+    result_df = pd.DataFrame(borda_count, index=spreadsheet_df.index.values,
                              columns=['PCC']).sort_values("PCC", ascending=0)
 
     target_file_base_name = "gene_drug_correlation"
@@ -166,7 +164,6 @@ def run_bootstrap_net_correlation(run_parameters):
     network_mat = normalize(network_mat, norm="l1", axis=0)
     spreadsheet_df = kn.update_spreadsheet_df(spreadsheet_df, unique_gene_names)
     spreadsheet_mat = spreadsheet_df.as_matrix()
-    #sample_names = spreadsheet_df.columns
 
     sample_smooth, iterations = kn.smooth_matrix_with_rwr(
         spreadsheet_mat, network_mat, run_parameters)
