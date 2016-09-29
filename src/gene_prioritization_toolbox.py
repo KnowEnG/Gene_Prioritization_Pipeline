@@ -199,7 +199,7 @@ def sum_permutation_to_borda_count(borda_count, vote_rank, vote_perm):
         vote_perm: the sample permutation of the vote ranking
 
     Returns:
-        borda_count: input borda_count with the weighted votes added
+        borda_count: input borda_count with borda weighted vote rankings added
     """
     rank_array = np.int_(sorted(np.arange(0, vote_rank.size) + 1, reverse=True))
     borda_count[vote_perm] += rank_array[np.int_(vote_rank)]
