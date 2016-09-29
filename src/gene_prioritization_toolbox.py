@@ -6,6 +6,7 @@ import os
 import numpy as np
 import pandas as pd
 from scipy.stats import pearsonr as pcc
+from sklearn.preprocessing import normalize
 import knpackage.toolbox as kn
 
 def perform_pearson_correlation(spreadsheet, drug_response):
@@ -148,7 +149,6 @@ def run_bootstrap_net_correlation(run_parameters):
         result_df: result dataframe of gene prioritization. Values are pearson
         correlation coefficient values in descending order.
     """
-    print('run_bootstrap_net_correlation called  -- under (cut & paste phase) construction')
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
     drug_response = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
     network_df = kn.get_network_df(run_parameters['gg_network_name_full_path'])
@@ -163,23 +163,29 @@ def run_bootstrap_net_correlation(run_parameters):
     network_mat = kn.convert_network_df_to_sparse(
         network_df, len(unique_gene_names), len(unique_gene_names))
 
-    #network_mat = kn.normalize_sparse_mat_by_diagonal(network_mat)
+    network_mat = normalize(network_mat, norm="l1", axis=0)
     spreadsheet_df = kn.update_spreadsheet_df(spreadsheet_df, unique_gene_names)
     spreadsheet_mat = spreadsheet_df.as_matrix()
-    sample_names = spreadsheet_df.columns
+    #sample_names = spreadsheet_df.columns
 
     sample_smooth, iterations = kn.smooth_matrix_with_rwr(
         spreadsheet_mat, network_mat, run_parameters)
 
-    # EXPERIMENTAL Quantile norm -- DON'T TRY THIS AT HOME --  EXPERIMENTAL Quantile norm
-    sample_smooth = kn.get_quantile_norm_matrix(sample_smooth.T).T
-    #                                          all between comments may be removed safely
+    borda_count = np.int_(np.zeros(sample_smooth.shape[0]))
+    for bootstrap_number in range(0, int(run_parameters["number_of_bootstraps"])):
+        sample_random, sample_permutation = kn.sample_a_matrix(
+            sample_smooth, np.float64(run_parameters["rows_sampling_fraction"]),
+            np.float64(run_parameters["cols_sampling_fraction"]))
 
-    pc_array = perform_pearson_correlation(sample_smooth, drug_response.values[0])
-    result_df = pd.DataFrame(pc_array, index=spreadsheet_df.index.values,
+        D = drug_response.values[0, None]
+        D = D[0, sample_permutation]
+        pc_array = perform_pearson_correlation(sample_random, D)
+        pc_array_idx = np.argsort(pc_array)[::-1]
+        borda_count = sum_vote_perm_to_borda_count(borda_count, pc_array_idx)
+
+    borda_count = borda_count / max(borda_count)
+    result_df = pd.DataFrame(borda_count, index=spreadsheet_df.index.values,
                              columns=['PCC']).sort_values("PCC", ascending=0)
-
-    print('Not boot strapping here -- under (cut & paste phase) construction')
 
     target_file_base_name = "gene_drug_network_correlation"
     target_file_base_name = os.path.join(run_parameters["results_directory"], target_file_base_name)
