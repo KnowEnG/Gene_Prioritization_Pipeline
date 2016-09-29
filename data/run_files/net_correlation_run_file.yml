@@ -31,7 +31,7 @@ rwr_restart_probability: "0.7"
 
 
 
-rows_sampling_fraction: "0.8"
+rows_sampling_fraction: "1"
 #	Random sample of rows portion.
 
 cols_sampling_fraction: "0.8"

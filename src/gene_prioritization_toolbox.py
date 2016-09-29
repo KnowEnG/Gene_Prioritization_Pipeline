@@ -188,3 +188,20 @@ def run_bootstrap_net_correlation(run_parameters):
     result_df.to_csv(file_name, header=True, index=True, sep='\t')
 
     return result_df
+
+
+def sum_permutation_to_borda_count(borda_count, vote_rank, vote_perm):
+    """ incrementally update count by borda weighted vote in a subsample of the full borda size
+
+    Args:
+        vote_rank: (np.int_(vote_rank)) python rank array same size as borda_count (0 == first, 1 == second,...)
+        borda_count: (np.int_(borda_count) ) the current running total of Borda weighted votes
+        vote_perm: the sample permutation of the vote ranking
+
+    Returns:
+        borda_count: input borda_count with the weighted votes added
+    """
+    rank_array = np.int_(sorted(np.arange(0, vote_rank.size) + 1, reverse=True))
+    borda_count[vote_perm] += rank_array[np.int_(vote_rank)]
+
+    return borda_count
