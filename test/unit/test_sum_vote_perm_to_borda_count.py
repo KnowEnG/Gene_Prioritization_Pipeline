@@ -31,5 +31,12 @@ class TestSum_vote_perm_to_borda_count(TestCase):
         for n in range(0, borda_expected.size):
             self.assertEqual(borda_expected[n], borda_returned[n], msg='borda count unexpected')
 
+        borda_count = np.array([0,0,0,0])
+        vote_rank = np.array([0,3,1,2])
+        borda_expected = np.array([4,1,3,2])
+        borda_returned = gptbx.sum_vote_perm_to_borda_count(borda_count, vote_rank)
+        for n in range(0, borda_expected.size):
+            self.assertEqual(borda_expected[n], borda_returned[n], msg='borda count unexpected')
+
 if __name__ == '__main__':
     unittest.main()
