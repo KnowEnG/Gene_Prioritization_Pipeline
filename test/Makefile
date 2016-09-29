@@ -15,7 +15,7 @@ env_setup: create_run_dir copy_run_files
 clean_dir_recursively:
 	$(RMR) $(RUN_DIR)
 
-run_all_methods: run_nmf run_net_nmf run_cc_nmf run_cc_net_nmf
+run_all_methods: run_gene_correlation run_net_correlation run_bootstrap_correlation run_bootstrap_net_correlation
 
 run_gene_correlation:
 	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file correlation_run_file.yml 
