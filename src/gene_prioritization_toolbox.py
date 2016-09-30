@@ -37,7 +37,7 @@ def run_gene_correlation(run_parameters):
     drug_response = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
     pc_array = perform_pearson_correlation(spreadsheet_df.values, drug_response.values[0])
     result_df = pd.DataFrame(pc_array, index=spreadsheet_df.index.values,
-                             columns=['PCC']).sort_values("PCC", ascending=0)
+                             columns=['PCC']).abs().sort_values("PCC", ascending=0)
 
     target_file_base_name = "gene_drug_correlation"
     target_file_base_name = os.path.join(run_parameters["results_directory"], target_file_base_name)
@@ -84,7 +84,7 @@ def run_net_correlation(run_parameters):
 
     pc_array = perform_pearson_correlation(sample_smooth, drug_response.values[0])
     result_df = pd.DataFrame(pc_array, index=spreadsheet_df.index.values,
-                             columns=['PCC']).sort_values("PCC", ascending=0)
+                             columns=['PCC']).abs().sort_values("PCC", ascending=0)
 
     target_file_base_name = "gene_drug_network_correlation"
     target_file_base_name = os.path.join(run_parameters["results_directory"], target_file_base_name)
@@ -124,7 +124,7 @@ def run_bootstrap_correlation(run_parameters):
 
     borda_count = borda_count / max(borda_count)
     result_df = pd.DataFrame(borda_count, index=spreadsheet_df.index.values,
-                             columns=['PCC']).sort_values("PCC", ascending=0)
+                             columns=['PCC']).abs().sort_values("PCC", ascending=0)
 
     target_file_base_name = "gene_drug_bootstrap_correlation"
     target_file_base_name = os.path.join(run_parameters["results_directory"], target_file_base_name)
@@ -182,7 +182,7 @@ def run_bootstrap_net_correlation(run_parameters):
 
     borda_count = borda_count / max(borda_count)
     result_df = pd.DataFrame(borda_count, index=spreadsheet_df.index.values,
-                             columns=['PCC']).sort_values("PCC", ascending=0)
+                             columns=['PCC']).abs().sort_values("PCC", ascending=0)
 
     target_file_base_name = "gene_drug_network_bootstrap_correlation"
     target_file_base_name = os.path.join(run_parameters["results_directory"], target_file_base_name)
