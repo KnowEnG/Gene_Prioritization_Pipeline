@@ -6,8 +6,6 @@ Created on Fri Sep 23 16:39:35 2016
 
 def correlation(run_parameters):
     """ gene prioritization """
-    #from gene_prioritization_toolbox import run_gene_correlation
-    #run_gene_correlation(run_parameters)
     import gene_prioritization_benchmark_methods as gpbm
     result_df = gpbm.benchmark_test_run_gene_prioritization(run_parameters)
     print('Return dataframe shape {}'.format(result_df.shape))
