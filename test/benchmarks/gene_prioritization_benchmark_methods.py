@@ -16,7 +16,7 @@ def benchmark_test_run_gene_prioritization(run_parameters):
     Returns:
         result_df: dataframe of correlation coefficients for each gene with each drug
     """
-    
+
     start_time = 'hack_time_' + time.strftime("%a_%d_%b_%Y_%H_%M_%S", time.localtime())
     print('{}\n   using result test: {}\n'.format(start_time, run_parameters["benchmark_results_full_path"]))
 
