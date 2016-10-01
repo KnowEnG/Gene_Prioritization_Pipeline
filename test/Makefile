@@ -65,3 +65,5 @@ benchmarks_copy_files:
 run_gene_correlation_benchmark:
 	PYTHONPATH='../src/' python3 ./benchmarks/gene_prioritization_benchmarks.py -run_directory $(RUN_DIR) -run_file correlation_run_benchmarks.yml
 
+run_small_data_benchmark:
+	PYTHONPATH='../src/' python3 ./benchmarks/gene_prioritization_benchmarks.py -run_directory $(RUN_DIR) -run_file run_parameters_small_test.yml 
