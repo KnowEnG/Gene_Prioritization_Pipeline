@@ -1,6 +1,6 @@
 # yaml parameters template file with all options for Gene_Prioritization_Pipeline
 
-method: net_correlation
+method: correlation
 # correlation
 # net_correlation
 # bootstrap_correlation
@@ -17,6 +17,9 @@ spreadsheet_name_full_path: ../data/spreadsheets/TST_Sept22_spreadsheet.df
 
 drug_response_full_path: ../data/spreadsheets/TST_Sept22_drug_reaction.df
 #	dataframe == matrix with row and column names in .tsv format.
+
+benchmark_results_full_path: ../test/benchmarks/TST_Sept22_results.df
+# 	precomputed results
 
 results_directory: ./run_dir/results
 
