@@ -74,7 +74,7 @@ def run_net_correlation(run_parameters):
     network_mat = kn.convert_network_df_to_sparse(
         network_df, len(unique_gene_names), len(unique_gene_names))
 
-    #network_mat = kn.normalize_sparse_mat_by_diagonal(network_mat)
+    network_mat = normalize(network_mat, norm="l1", axis=0)
     spreadsheet_df = kn.update_spreadsheet_df(spreadsheet_df, unique_gene_names)
     spreadsheet_mat = spreadsheet_df.as_matrix()
     sample_names = spreadsheet_df.columns
