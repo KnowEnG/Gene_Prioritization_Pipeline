@@ -8,13 +8,16 @@ method: bootstrap_net_correlation
 
 use_parallel_processing: "0"
 
-gg_network_name_full_path: ../data/networks/keg_ST90_4col.edge
+gg_network_name_full_path: ../data/networks/keg_ST90_4col.edge 
+# g_network_name_full_path: ../data/networks/STRING_experimental.tsv.txt
 #	4 col edge file for building adjacency matrix in net nmf and rwr.
 
 spreadsheet_name_full_path: ../data/spreadsheets/gene_expression.csv
+# spreadsheet_name_full_path: ../data/spreadsheets/CCLE_Expression_ensembl_4_topotecan.txt
 #	dataframe == matrix with row and column names in .tsv format.
 
 drug_response_full_path: ../data/spreadsheets/drug_response.csv
+# drug_response_full_path: ../data/spreadsheets/CCLE_drug_topotecan.txt
 #	dataframe == matrix with row and column names in .tsv format.
 
 results_directory: ./run_dir/results
