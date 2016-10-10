@@ -7,7 +7,29 @@ import numpy as np
 import pandas as pd
 from scipy.stats import pearsonr as pcc
 from sklearn.preprocessing import normalize
+from sklearn.linear_model import LassoCV
 import knpackage.toolbox as kn
+
+
+def perform_lasso_cv_regression(spreadsheet, drug_response, normalize=True, max_iter=1e6):
+    """ perform lasso with cross validation
+
+    Args:
+        spreadsheet:        features x samples matrix
+        drug_response:      1 x samples array
+        normalize_lasso:    (default=true) normalize inputs before
+        max_iter:           (default 1000000)
+
+    Returns:
+        coef_list:          features coefficient list
+        lasso_predictor:
+    """
+    lasso_cv_obj = LassoCV(normalize=normalize, max_iter=max_iter)
+    lasso_cv_residual = lasso_cv_obj.fit(spreadsheet.T, drug_response[0])
+    coef_list = lasso_cv_residual.coef_.tolist()
+    lasso_predictor = lasso_cv_residual.predict(spreadsheet.T)
+
+    return coef_list, lasso_predictor
 
 def perform_pearson_correlation(spreadsheet, drug_response):
     """ Find pearson correlation coefficient(PCC) for each gene expression (spreadsheet row)
