@@ -15,14 +15,14 @@ def perform_lasso_cv_regression(spreadsheet, drug_response, normalize=True, max_
     """ perform lasso with cross validation
 
     Args:
-        spreadsheet:        features x samples matrix
-        drug_response:      1 x samples array
+        spreadsheet:        features x samples matrix (np.array)
+        drug_response:      1 x samples array (np.array)
         normalize_lasso:    (default=true) normalize inputs before
-        max_iter:           (default 1000000)
+        max_iter:           (default 1000000) integer limit for iterations to converge
 
     Returns:
         coef_list:          features coefficient list
-        lasso_predictor:
+        lasso_predictor:    lasso_obj.predict (np.array)
     """
     lasso_cv_obj = LassoCV(normalize=normalize, max_iter=max_iter)
     lasso_cv_residual = lasso_cv_obj.fit(spreadsheet.T, drug_response[0])
