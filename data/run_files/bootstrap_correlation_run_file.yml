@@ -8,13 +8,16 @@ method: bootstrap_correlation
 
 use_parallel_processing: "0"
 
-gg_network_name_full_path: ../data/networks/keg_ST90_4col.edge
+gg_network_name_full_path: ../data/Oct12_dataset/STRING_experimental.tsv
+#gg_network_name_full_path: ../data/networks/keg_ST90_4col.edge
 #	4 col edge file for building adjacency matrix in net nmf and rwr.
 
-spreadsheet_name_full_path: ../data/spreadsheets/gene_expression.csv
+spreadsheet_name_full_path: ../data/Oct12_dataset/for_17-AAG-GDSC_Expression_ensembl.txt
+# spreadsheet_name_full_path: ../data/spreadsheets/gene_expression.csv
 #	dataframe == matrix with row and column names in .tsv format.
 
-drug_response_full_path: ../data/spreadsheets/drug_response.csv
+drug_response_full_path: ../data/Oct12_dataset/drug_17-AAG_of_GDSC_drug_cpd_ic50_sorted.txt
+# drug_response_full_path: ../data/spreadsheets/drug_response.csv
 #	dataframe == matrix with row and column names in .tsv format.
 
 results_directory: ./run_dir/results
@@ -23,10 +26,10 @@ results_directory: ./run_dir/results
 rwr_max_iterations: "100"
 #	Random walk with restart; maximum number of iterations without convergence.
 
-rwr_convergence_tolerence: "0.0001"
+rwr_convergence_tolerence: "0.00000001"
 #	Finish rwr when the frobenius norm of the spreadsheet vector(s) is within tolerence of the previous one.
 
-rwr_restart_probability: "0.7"
+rwr_restart_probability: "0.5"
 #	rwr_restart_probability = alhpa in Vn+1 = alpha * N * Vn + (1-alpha) * Vo
 
 
@@ -37,7 +40,7 @@ rows_sampling_fraction: "1"
 cols_sampling_fraction: "0.8"
 #	Rancom sample of columns portion.
 
-number_of_bootstraps: "5"
+number_of_bootstraps: "1"
 #	Number of random samplings to perform and incorporate into the consensus matrix.
 
 
