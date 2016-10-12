@@ -274,28 +274,6 @@ def run_net_correlation(run_parameters):
         result_df: result dataframe of gene prioritization. Values are pearson
         correlation coefficient values in descending order.
     '''
-    result_df = perform_net_correlation(run_parameters)
-    target_file_base_name = "gene_drug_network_correlation"
-    target_file_base_name = os.path.join(run_parameters["results_directory"], target_file_base_name)
-    file_name = kn.create_timestamped_filename(target_file_base_name) + '.txt'
-    result_df.to_csv(file_name, header=True, index=True, sep='\t')
-
-    return
-
-
-def perform_net_correlation(run_parameters):
-    ''' perform gene prioritization with network smoothing and Pearson correlation
-
-    Args:
-        run_parameters: dict object with keys:
-                run_parameters["spreadsheet_name_full_path"]    (samples x genes spreadsheet)
-                run_parameters["drug_response_full_path"]       (one drug response spreadsheet)
-                run_parameters['gg_network_name_full_path']     (gene, gene, weight,...   network)
-
-    Returns:
-        result_df: result dataframe of gene prioritization. Values are pearson
-        correlation coefficient values in descending order.
-    '''
     spreadsheet_df, sample_smooth = get_smooth_spreadsheet_matrix(run_parameters)
     drug_response = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
 
@@ -303,7 +281,9 @@ def perform_net_correlation(run_parameters):
     result_df = pd.DataFrame(pc_array, index=spreadsheet_df.index.values,
                              columns=['PCC']).abs().sort_values("PCC", ascending=0)
 
-    return result_df
+    write_results_dataframe(result_df, run_parameters["results_directory"], "gene_drug_network_correlation")
+
+    return
 
 
 def run_bootstrap_correlation(run_parameters):
