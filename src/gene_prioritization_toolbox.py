@@ -298,27 +298,6 @@ def run_bootstrap_correlation(run_parameters):
         result_df: result dataframe of gene prioritization. Values are pearson
         correlation coefficient values in descending order.
     """
-    result_df = perform_bootstrap_correlation(run_parameters)
-    target_file_base_name = "gene_drug_bootstrap_correlation"
-    target_file_base_name = os.path.join(run_parameters["results_directory"], target_file_base_name)
-    file_name = kn.create_timestamped_filename(target_file_base_name) + '.txt'
-    result_df.to_csv(file_name, header=True, index=True, sep='\t')
-
-    return
-
-
-def perform_bootstrap_correlation(run_parameters):
-    """ perform gene prioritization using bootstrap sampling with Pearson correlation
-
-    Args:
-        run_parameters: dict object with keys:
-            run_parameters["spreadsheet_name_full_path"]    (samples x genes spreadsheet)
-            run_parameters["drug_response_full_path"]       (one drug response spreadsheet)
-
-    Returns:
-        result_df: result dataframe of gene prioritization. Values are pearson
-        correlation coefficient values in descending order.
-    """
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
     drug_response = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
     sample_smooth = spreadsheet_df.values
@@ -339,7 +318,9 @@ def perform_bootstrap_correlation(run_parameters):
     result_df = pd.DataFrame(borda_count, index=spreadsheet_df.index.values,
                              columns=['PCC']).abs().sort_values("PCC", ascending=0)
 
-    return result_df
+    write_results_dataframe(result_df, run_parameters["results_directory"], "gene_drug_bootstrap_correlation")
+
+    return
 
 
 def run_bootstrap_net_correlation(run_parameters):
