@@ -26,7 +26,7 @@ def perform_lasso_cv_regression(spreadsheet, drug_response, normalize=True, max_
     """
     lasso_cv_obj = LassoCV(normalize=normalize, max_iter=max_iter)
     lasso_cv_residual = lasso_cv_obj.fit(spreadsheet.T, drug_response[0])
-    coef_array = np.array(lasso_cv_residual.coef_.tolist())
+    coef_array = lasso_cv_residual.coef_
     lasso_predictor = lasso_cv_residual.predict(spreadsheet.T)
 
     return coef_array, lasso_predictor
