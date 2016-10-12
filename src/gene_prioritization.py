@@ -7,23 +7,29 @@ def correlation(run_parameters):
     """ gene prioritization """
     from gene_prioritization_toolbox import run_gene_correlation
     run_gene_correlation(run_parameters)
-    from gene_prioritization_toolbox import run_gene_correlation_lasso
-    run_gene_correlation_lasso(run_parameters)
+    #from gene_prioritization_toolbox import run_gene_correlation_lasso
+    #run_gene_correlation_lasso(run_parameters)
 
 def net_correlation(run_parameters):
     """ gene prioritization """
     from gene_prioritization_toolbox import run_net_correlation
     run_net_correlation(run_parameters)
+    #from gene_prioritization_toolbox import run_net_correlation_lasso
+    #run_net_correlation_lasso(run_parameters)
 
 def bootstrap_correlation(run_parameters):
     """ gene prioritization """
     from gene_prioritization_toolbox import run_bootstrap_correlation
     run_bootstrap_correlation(run_parameters)
+    #from gene_prioritization_toolbox import run_bootstrap_correlation_lasso
+    #run_bootstrap_correlation_lasso(run_parameters)
 
 def bootstrap_net_correlation(run_parameters):
     """ gene prioritization """
     from gene_prioritization_toolbox import run_bootstrap_net_correlation
     run_bootstrap_net_correlation(run_parameters)
+    #from gene_prioritization_toolbox import run_bootstrap_net_correlation_lasso
+    #run_bootstrap_net_correlation_lasso(run_parameters)
 
 SELECT = {
     "correlation": correlation,

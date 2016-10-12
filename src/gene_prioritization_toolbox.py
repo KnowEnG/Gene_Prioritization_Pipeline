@@ -63,6 +63,162 @@ def perform_gene_correlation_lasso(run_parameters):
                              columns=['lassoCV']).abs().sort_values("lassoCV", ascending=0)
     return result_df
 
+def run_net_correlation_lasso(run_parameters):
+    ''' pearson cc:  call sequence to perform gene prioritization with network smoothing
+
+    Args:
+        run_parameters: dict object with keys:
+                run_parameters["spreadsheet_name_full_path"]    (samples x genes spreadsheet)
+                run_parameters["drug_response_full_path"]       (one drug response spreadsheet)
+                run_parameters['gg_network_name_full_path']     (gene, gene, weight,...   network)
+
+    Returns:
+        result_df: result dataframe of gene prioritization. Values are pearson
+        correlation coefficient values in descending order.
+    '''
+    result_df = perform_net_correlation_lasso(run_parameters)
+    target_file_base_name = "gene_drug_network_lassoCV"
+    target_file_base_name = os.path.join(run_parameters["results_directory"], target_file_base_name)
+    file_name = kn.create_timestamped_filename(target_file_base_name) + '.txt'
+    result_df.to_csv(file_name, header=True, index=True, sep='\t')
+
+    return
+
+
+def perform_net_correlation_lasso(run_parameters):
+    ''' perform gene prioritization with network smoothing and Pearson correlation
+
+    Args:
+        run_parameters: dict object with keys:
+                run_parameters["spreadsheet_name_full_path"]    (samples x genes spreadsheet)
+                run_parameters["drug_response_full_path"]       (one drug response spreadsheet)
+                run_parameters['gg_network_name_full_path']     (gene, gene, weight,...   network)
+
+    Returns:
+        result_df: result dataframe of gene prioritization. Values are pearson
+        correlation coefficient values in descending order.
+    '''
+    spreadsheet_df, sample_smooth = get_smooth_spreadsheet_matrix(run_parameters)
+    drug_response = np.array(kn.get_spreadsheet_df(run_parameters["drug_response_full_path"]).values)
+    pc_array = perform_lasso_cv_regression(sample_smooth, drug_response)
+    result_df = pd.DataFrame(pc_array, index=spreadsheet_df.index.values,
+                             columns=['lassoCV']).abs().sort_values("lassoCV", ascending=0)
+
+    return result_df
+
+
+def run_bootstrap_correlation_lasso(run_parameters):
+    """ pearson cc: call sequence to perform gene prioritization using bootstrap sampling
+
+    Args:
+        run_parameters: dict object with keys:
+            run_parameters["spreadsheet_name_full_path"]    (samples x genes spreadsheet)
+            run_parameters["drug_response_full_path"]       (one drug response spreadsheet)
+
+    Returns:
+        result_df: result dataframe of gene prioritization. Values are pearson
+        correlation coefficient values in descending order.
+    """
+    result_df = perform_bootstrap_correlation_lasso(run_parameters)
+    target_file_base_name = "gene_drug_bootstrap_lassoCV"
+    target_file_base_name = os.path.join(run_parameters["results_directory"], target_file_base_name)
+    file_name = kn.create_timestamped_filename(target_file_base_name) + '.txt'
+    result_df.to_csv(file_name, header=True, index=True, sep='\t')
+
+    return
+
+
+def perform_bootstrap_correlation_lasso(run_parameters):
+    """ perform gene prioritization using bootstrap sampling with Pearson correlation
+
+    Args:
+        run_parameters: dict object with keys:
+            run_parameters["spreadsheet_name_full_path"]    (samples x genes spreadsheet)
+            run_parameters["drug_response_full_path"]       (one drug response spreadsheet)
+
+    Returns:
+        result_df: result dataframe of gene prioritization. Values are pearson
+        correlation coefficient values in descending order.
+    """
+    spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
+    drug_response = np.array(kn.get_spreadsheet_df(run_parameters["drug_response_full_path"]).values)
+    sample_smooth = spreadsheet_df.values
+
+    borda_count = np.int_(np.zeros(sample_smooth.shape[0]))
+    for bootstrap_number in range(0, int(run_parameters["number_of_bootstraps"])):
+        sample_random, sample_permutation = kn.sample_a_matrix(
+            sample_smooth, np.float64(run_parameters["rows_sampling_fraction"]),
+            np.float64(run_parameters["cols_sampling_fraction"]))
+
+        D = np.array([drug_response[0, sample_permutation]])
+        pc_array = perform_lasso_cv_regression(sample_random, D)
+        pc_array_idx = np.argsort(pc_array)[::-1]
+        borda_count = sum_vote_perm_to_borda_count(borda_count, pc_array_idx)
+
+    borda_count = borda_count / max(borda_count)
+    result_df = pd.DataFrame(borda_count, index=spreadsheet_df.index.values,
+                             columns=['lassoCV']).abs().sort_values("lassoCV", ascending=0)
+
+    return result_df
+
+
+def run_bootstrap_net_correlation_lasso(run_parameters):
+    """ pearson cc: call sequence to perform gene prioritization using bootstrap sampling and network smoothing
+
+    Args:
+        run_parameters: dict object with keys:
+            run_parameters["spreadsheet_name_full_path"]    (samples x genes spreadsheet)
+            run_parameters["drug_response_full_path"]       (one drug response spreadsheet)
+            run_parameters['gg_network_name_full_path']     (gene, gene, weight,...   network)
+
+    Returns:
+        result_df: result dataframe of gene prioritization. Values are pearson
+        correlation coefficient values in descending order.
+    """
+    result_df = perform_bootstrap_net_correlation_lasso(run_parameters)
+    target_file_base_name = "gene_drug_network_bootstrap_lassoCV"
+    target_file_base_name = os.path.join(run_parameters["results_directory"], target_file_base_name)
+    file_name = kn.create_timestamped_filename(target_file_base_name) + '.txt'
+    result_df.to_csv(file_name, header=True, index=True, sep='\t')
+
+    return
+
+
+def perform_bootstrap_net_correlation_lasso(run_parameters):
+    """ perform gene prioritization using bootstrap sampling and network smoothing before Pearson correlation
+    Args:
+        run_parameters: dict object with keys:
+            run_parameters["spreadsheet_name_full_path"]    (samples x genes spreadsheet)
+            run_parameters["drug_response_full_path"]       (one drug response spreadsheet)
+            run_parameters['gg_network_name_full_path']     (gene, gene, weight,...   network)
+
+    Returns:
+        result_df: result dataframe of gene prioritization. Values are pearson
+                    correlation coefficient values in descending order.
+    """
+    spreadsheet_df, sample_smooth = get_smooth_spreadsheet_matrix(run_parameters)
+    drug_response = np.array(kn.get_spreadsheet_df(run_parameters["drug_response_full_path"]).values)
+
+    borda_count = np.int_(np.zeros(sample_smooth.shape[0]))
+    for bootstrap_number in range(0, int(run_parameters["number_of_bootstraps"])):
+        sample_random, sample_permutation = kn.sample_a_matrix(
+            sample_smooth, np.float64(run_parameters["rows_sampling_fraction"]),
+            np.float64(run_parameters["cols_sampling_fraction"]))
+        print('bootstrap_number {}'.format(bootstrap_number))
+        D = np.array([drug_response[0, sample_permutation]])
+        pc_array = perform_lasso_cv_regression(sample_random, D)
+        pc_array_idx = np.argsort(pc_array)[::-1]
+        borda_count = sum_vote_perm_to_borda_count(borda_count, pc_array_idx)
+
+    borda_count = borda_count / max(borda_count)
+    result_df = pd.DataFrame(borda_count, index=spreadsheet_df.index.values,
+                             columns=['lassoCV']).abs().sort_values("lassoCV", ascending=0)
+
+    return result_df
+
+
+
+#                                                                                                    Pearson code below
 def perform_pearson_correlation(spreadsheet, drug_response):
     """ Find pearson correlation coefficient(PCC) for each gene expression (spreadsheet row)
             with the drug response.
@@ -94,31 +250,15 @@ def run_gene_correlation(run_parameters):
         result_df:  result - dataframe of gene prioritization. Values are pearson
                     correlation coefficient values in descending order.
     '''
-    result_df = perform_gene_correlation(run_parameters)
-    target_file_base_name = "gene_drug_correlation"
-    target_file_base_name = os.path.join(run_parameters["results_directory"], target_file_base_name)
-    file_name = kn.create_timestamped_filename(target_file_base_name) + '.txt'
-    result_df.to_csv(file_name, header=True, index=True, sep='\t')
-
-    return
-
-
-def perform_gene_correlation(run_parameters):
-    """ find the pearson correlation coefficient per gene
-
-    Args:
-        run_parameters: dict with keys:
-                        spreadsheet_name_full_path
-                        drug_response_full_path
-    Returns:
-        result_df: dataframe with genes and correlation columns
-    """
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
     drug_response = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
     pc_array = perform_pearson_correlation(spreadsheet_df.values, drug_response.values[0])
     result_df = pd.DataFrame(pc_array, index=spreadsheet_df.index.values,
                              columns=['PCC']).abs().sort_values("PCC", ascending=0)
-    return result_df
+
+    write_results_dataframe(result_df, run_parameters["results_directory"], "gene_drug_correlation")
+
+    return
 
 
 def run_net_correlation(run_parameters):
@@ -137,8 +277,7 @@ def run_net_correlation(run_parameters):
     result_df = perform_net_correlation(run_parameters)
     target_file_base_name = "gene_drug_network_correlation"
     target_file_base_name = os.path.join(run_parameters["results_directory"], target_file_base_name)
-    file_name = kn.create_timestamped_filename(target_file_base_name)
-    file_name = file_name + '.df'
+    file_name = kn.create_timestamped_filename(target_file_base_name) + '.txt'
     result_df.to_csv(file_name, header=True, index=True, sep='\t')
 
     return
@@ -182,8 +321,7 @@ def run_bootstrap_correlation(run_parameters):
     result_df = perform_bootstrap_correlation(run_parameters)
     target_file_base_name = "gene_drug_bootstrap_correlation"
     target_file_base_name = os.path.join(run_parameters["results_directory"], target_file_base_name)
-    file_name = kn.create_timestamped_filename(target_file_base_name)
-    file_name = file_name + '.df'
+    file_name = kn.create_timestamped_filename(target_file_base_name) + '.txt'
     result_df.to_csv(file_name, header=True, index=True, sep='\t')
 
     return
@@ -240,8 +378,7 @@ def run_bootstrap_net_correlation(run_parameters):
     result_df = perform_bootstrap_net_correlation(run_parameters)
     target_file_base_name = "gene_drug_network_bootstrap_correlation"
     target_file_base_name = os.path.join(run_parameters["results_directory"], target_file_base_name)
-    file_name = kn.create_timestamped_filename(target_file_base_name)
-    file_name = file_name + '.df'
+    file_name = kn.create_timestamped_filename(target_file_base_name) + '.txt'
     result_df.to_csv(file_name, header=True, index=True, sep='\t')
 
     return
@@ -332,3 +469,16 @@ def get_smooth_spreadsheet_matrix(run_parameters):
     sample_smooth, iterations = kn.smooth_matrix_with_rwr(spreadsheet_mat, network_mat, run_parameters)
 
     return spreadsheet_df, sample_smooth
+
+def write_results_dataframe(result_df, run_dir, write_file_name):
+    """
+    Args:
+        result_df:
+        run_dir:
+        write_file_name
+
+    """
+    target_file_base_name = os.path.join(run_dir, write_file_name)
+    file_name = kn.create_timestamped_filename(target_file_base_name) + '.txt'
+    result_df.to_csv(file_name, header=True, index=True, sep='\t')
+    return
