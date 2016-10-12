@@ -100,7 +100,7 @@ __***Follow steps 1-4 above then do the following:***__
  
 ### * Create run_paramters file  (YAML Format)
  ``` 
- example run_parameters are in ./Gene_Prioritization_Pipeline/data/run_files/run_parameters_template.yml
+Look for examples of run_parameters in ./Gene_Prioritization_Pipeline/data/run_files/run_parameters_template.yml
  ```
 ### * Modify run_paramters file  (YAML Format)
 ```
