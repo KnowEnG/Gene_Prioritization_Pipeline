@@ -272,7 +272,7 @@ def perform_pearson_correlation(spreadsheet, drug_response):
     return pc_array
 
 
-def run_gene_correlation(run_parameters):
+def run_correlation(run_parameters):
     ''' pearson cc:  call sequence to perform gene prioritization
 
     Args:
