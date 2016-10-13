@@ -136,7 +136,7 @@ def perform_bootstrap_correlation_lasso(run_parameters):
 
         pc_array = perform_lasso_cv_regression(sample_random, np.array([drug_response[0, sample_permutation]]))
 
-        borda_count = sum_vote_perm_to_borda_count(borda_count, pc_array)
+        borda_count = sum_vote_to_borda_count(borda_count, pc_array)
 
     borda_count = borda_count / max(borda_count)
     result_df = pd.DataFrame(borda_count, index=spreadsheet_df.index.values,
@@ -208,7 +208,7 @@ def perform_bootstrap_net_correlation_lasso(run_parameters):
 
         pc_array = perform_lasso_cv_regression(sample_random, np.array([drug_response[0, sample_permutation]]))
 
-        borda_count = sum_vote_perm_to_borda_count(borda_count, pc_array)
+        borda_count = sum_vote_to_borda_count(borda_count, pc_array)
 
     borda_count = borda_count / max(borda_count)
     result_df = pd.DataFrame(borda_count, index=spreadsheet_df.index.values,
@@ -288,7 +288,7 @@ def run_bootstrap_correlation(run_parameters):
         drug_response = drug_response[0, sample_permutation]
         pc_array = perform_pearson_correlation(sample_random, drug_response)
 
-        borda_count = sum_vote_perm_to_borda_count(borda_count, pc_array)
+        borda_count = sum_vote_to_borda_count(borda_count, pc_array)
 
     borda_count = borda_count / max(borda_count)
     result_df = pd.DataFrame(borda_count, index=spreadsheet_df.index.values,
@@ -384,7 +384,7 @@ def run_bootstrap_net_correlation(run_parameters):
         drug_response = drug_response.values[0, None]
         pc_array = perform_pearson_correlation(sample_random, drug_response[0, sample_permutation])
 
-        borda_count = sum_vote_perm_to_borda_count(borda_count, pc_array)
+        borda_count = sum_vote_to_borda_count(borda_count, pc_array)
 
     borda_count = borda_count / max(borda_count)
     result_df = pd.DataFrame(borda_count, index=spreadsheet_df.index.values,
@@ -394,7 +394,7 @@ def run_bootstrap_net_correlation(run_parameters):
 
     return
 
-def sum_vote_perm_to_borda_count(borda_count, corr_array):
+def sum_vote_to_borda_count(borda_count, corr_array):
     """ incrementally update count by borda weighted vote in a subsample of the full borda size
 
     Args:
@@ -404,7 +404,7 @@ def sum_vote_perm_to_borda_count(borda_count, corr_array):
     Returns:
         borda_count: input borda_count with borda weighted vote rankings added
     """
-    vote_rank = np.argsort(corr_array)[::-1]
+    vote_rank = np.argsort(corr_array)
     rank_array = np.int_(sorted(np.arange(0, vote_rank.size) + 1, reverse=True))
     borda_count[np.int_(vote_rank)] += rank_array
 
