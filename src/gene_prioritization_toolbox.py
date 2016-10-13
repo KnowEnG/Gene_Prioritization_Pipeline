@@ -168,8 +168,7 @@ def perform_bootstrap_correlation_lasso(run_parameters):
             sample_smooth, np.float64(run_parameters["rows_sampling_fraction"]),
             np.float64(run_parameters["cols_sampling_fraction"]))
 
-        D = np.array([drug_response[0, sample_permutation]])
-        pc_array = perform_lasso_cv_regression(sample_random, D)
+        pc_array = perform_lasso_cv_regression(sample_random, np.array([drug_response[0, sample_permutation]]))
 
         borda_count = sum_vote_perm_to_borda_count(borda_count, pc_array)
 
@@ -240,9 +239,8 @@ def perform_bootstrap_net_correlation_lasso(run_parameters):
         sample_random, sample_permutation = kn.sample_a_matrix(
             sample_smooth, np.float64(run_parameters["rows_sampling_fraction"]),
             np.float64(run_parameters["cols_sampling_fraction"]))
-        print('bootstrap_number {}'.format(bootstrap_number))
-        D = np.array([drug_response[0, sample_permutation]])
-        pc_array = perform_lasso_cv_regression(sample_random, D)
+
+        pc_array = perform_lasso_cv_regression(sample_random, np.array([drug_response[0, sample_permutation]]))
 
         borda_count = sum_vote_perm_to_borda_count(borda_count, pc_array)
 
@@ -417,9 +415,8 @@ def run_bootstrap_net_correlation(run_parameters):
             sample_smooth, np.float64(run_parameters["rows_sampling_fraction"]),
             np.float64(run_parameters["cols_sampling_fraction"]))
 
-        D = drug_response.values[0, None]
-        D = D[0, sample_permutation]
-        pc_array = perform_pearson_correlation(sample_random, D)
+        drug_response = drug_response.values[0, None]
+        pc_array = perform_pearson_correlation(sample_random, drug_response[0, sample_permutation])
 
         borda_count = sum_vote_perm_to_borda_count(borda_count, pc_array)
 
@@ -459,4 +456,5 @@ def write_results_dataframe(result_df, run_dir, write_file_name):
     target_file_base_name = os.path.join(run_dir, write_file_name)
     file_name = kn.create_timestamped_filename(target_file_base_name) + '.txt'
     result_df.to_csv(file_name, header=True, index=True, sep='\t')
+
     return
