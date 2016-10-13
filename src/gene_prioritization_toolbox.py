@@ -159,7 +159,7 @@ def perform_bootstrap_correlation_lasso(run_parameters):
         correlation coefficient values in descending order.
     """
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
-    drug_response_df = np.array(kn.get_spreadsheet_df(run_parameters["drug_response_full_path"]).values)
+    drug_response = np.array(kn.get_spreadsheet_df(run_parameters["drug_response_full_path"]).values)
     sample_smooth = spreadsheet_df.values
 
     borda_count = np.int_(np.zeros(sample_smooth.shape[0]))
@@ -168,9 +168,10 @@ def perform_bootstrap_correlation_lasso(run_parameters):
             sample_smooth, np.float64(run_parameters["rows_sampling_fraction"]),
             np.float64(run_parameters["cols_sampling_fraction"]))
 
-        drug_response = np.array([drug_response_df[0, sample_permutation]])
-        pc_array = perform_lasso_cv_regression(sample_random, drug_response)
-        borda_count = sum_vote_perm_to_borda_count(borda_count, pc_array)
+        D = np.array([drug_response[0, sample_permutation]])
+        pc_array = perform_lasso_cv_regression(sample_random, D)
+        pc_array_idx = np.argsort(pc_array)[::-1]
+        borda_count = sum_vote_perm_to_borda_count(borda_count, pc_array_idx)
 
     borda_count = borda_count / max(borda_count)
     result_df = pd.DataFrame(borda_count, index=spreadsheet_df.index.values,
@@ -213,10 +214,6 @@ def perform_bootstrap_net_correlation_lasso(run_parameters):
         result_df: result dataframe of gene prioritization. Values are pearson
                     correlation coefficient values in descending order.
     """
-<<<<<<< HEAD
-    spreadsheet_df, sample_smooth = get_smooth_spreadsheet_matrix(run_parameters)
-    drug_response_df = np.array(kn.get_spreadsheet_df(run_parameters["drug_response_full_path"]).values)
-=======
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
     network_df = kn.get_network_df(run_parameters['gg_network_name_full_path'])
     node_1_names, node_2_names = kn.extract_network_node_names(network_df)
@@ -237,17 +234,17 @@ def perform_bootstrap_net_correlation_lasso(run_parameters):
     sample_smooth, iterations = kn.smooth_matrix_with_rwr(spreadsheet_mat, network_mat, run_parameters)
 
     drug_response = np.array(kn.get_spreadsheet_df(run_parameters["drug_response_full_path"]).values)
->>>>>>> 7cc10e3814b6e4736d04912ca59e7c834a119bed
 
     borda_count = np.int_(np.zeros(sample_smooth.shape[0]))
     for bootstrap_number in range(0, int(run_parameters["number_of_bootstraps"])):
         sample_random, sample_permutation = kn.sample_a_matrix(
             sample_smooth, np.float64(run_parameters["rows_sampling_fraction"]),
             np.float64(run_parameters["cols_sampling_fraction"]))
-
-        drug_response = np.array([drug_response_df[0, sample_permutation]])
-        pc_array = perform_lasso_cv_regression(sample_random, drug_response)
-        borda_count = sum_vote_perm_to_borda_count(borda_count, pc_array)
+        print('bootstrap_number {}'.format(bootstrap_number))
+        D = np.array([drug_response[0, sample_permutation]])
+        pc_array = perform_lasso_cv_regression(sample_random, D)
+        pc_array_idx = np.argsort(pc_array)[::-1]
+        borda_count = sum_vote_perm_to_borda_count(borda_count, pc_array_idx)
 
     borda_count = borda_count / max(borda_count)
     result_df = pd.DataFrame(borda_count, index=spreadsheet_df.index.values,
@@ -326,12 +323,8 @@ def run_bootstrap_correlation(run_parameters):
         drug_response = drug_response_df.values[0, None]
         drug_response = drug_response[0, sample_permutation]
         pc_array = perform_pearson_correlation(sample_random, drug_response)
-<<<<<<< HEAD
-        borda_count = sum_vote_perm_to_borda_count(borda_count, pc_array)
-=======
         pc_array_idx = np.argsort(pc_array)[::-1]
         borda_count = sum_vote_perm_to_borda_count(borda_count, pc_array_idx)
->>>>>>> 7cc10e3814b6e4736d04912ca59e7c834a119bed
 
     borda_count = borda_count / max(borda_count)
     result_df = pd.DataFrame(borda_count, index=spreadsheet_df.index.values,
@@ -416,7 +409,7 @@ def run_bootstrap_net_correlation(run_parameters):
 
     sample_smooth, iterations = kn.smooth_matrix_with_rwr(spreadsheet_mat, network_mat, run_parameters)
 
-    drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
+    drug_response = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
 
     borda_count = np.int_(np.zeros(sample_smooth.shape[0]))
     for bootstrap_number in range(0, int(run_parameters["number_of_bootstraps"])):
@@ -424,10 +417,11 @@ def run_bootstrap_net_correlation(run_parameters):
             sample_smooth, np.float64(run_parameters["rows_sampling_fraction"]),
             np.float64(run_parameters["cols_sampling_fraction"]))
 
-        drug_response = drug_response_df.values[0, None]
-        drug_response = drug_response[0, sample_permutation]
-        pc_array = perform_pearson_correlation(sample_random, drug_response)
-        borda_count = sum_vote_perm_to_borda_count(borda_count, pc_array)
+        D = drug_response.values[0, None]
+        D = D[0, sample_permutation]
+        pc_array = perform_pearson_correlation(sample_random, D)
+        pc_array_idx = np.argsort(pc_array)[::-1]
+        borda_count = sum_vote_perm_to_borda_count(borda_count, pc_array_idx)
 
     borda_count = borda_count / max(borda_count)
     result_df = pd.DataFrame(borda_count, index=spreadsheet_df.index.values,
@@ -439,10 +433,11 @@ def run_bootstrap_net_correlation(run_parameters):
 
 def sum_vote_perm_to_borda_count(borda_count, corr_array):
     """ incrementally update count by borda weighted vote in a subsample of the full borda size
+
     Args:
         vote_rank: (np.int_(vote_rank)) python rank array same size as borda_count (0 == first, 1 == second,...)
         borda_count: (np.int_(borda_count) ) the current running total of Borda weighted votes
-        vote_perm: (None) or: the sample permutation of the vote ranking
+
     Returns:
         borda_count: input borda_count with borda weighted vote rankings added
     """
