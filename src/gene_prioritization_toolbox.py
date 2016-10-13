@@ -170,8 +170,8 @@ def perform_bootstrap_correlation_lasso(run_parameters):
 
         D = np.array([drug_response[0, sample_permutation]])
         pc_array = perform_lasso_cv_regression(sample_random, D)
-        pc_array_idx = np.argsort(pc_array)[::-1]
-        borda_count = sum_vote_perm_to_borda_count(borda_count, pc_array_idx)
+
+        borda_count = sum_vote_perm_to_borda_count(borda_count, pc_array)
 
     borda_count = borda_count / max(borda_count)
     result_df = pd.DataFrame(borda_count, index=spreadsheet_df.index.values,
@@ -243,8 +243,8 @@ def perform_bootstrap_net_correlation_lasso(run_parameters):
         print('bootstrap_number {}'.format(bootstrap_number))
         D = np.array([drug_response[0, sample_permutation]])
         pc_array = perform_lasso_cv_regression(sample_random, D)
-        pc_array_idx = np.argsort(pc_array)[::-1]
-        borda_count = sum_vote_perm_to_borda_count(borda_count, pc_array_idx)
+
+        borda_count = sum_vote_perm_to_borda_count(borda_count, pc_array)
 
     borda_count = borda_count / max(borda_count)
     result_df = pd.DataFrame(borda_count, index=spreadsheet_df.index.values,
@@ -323,8 +323,8 @@ def run_bootstrap_correlation(run_parameters):
         drug_response = drug_response_df.values[0, None]
         drug_response = drug_response[0, sample_permutation]
         pc_array = perform_pearson_correlation(sample_random, drug_response)
-        pc_array_idx = np.argsort(pc_array)[::-1]
-        borda_count = sum_vote_perm_to_borda_count(borda_count, pc_array_idx)
+
+        borda_count = sum_vote_perm_to_borda_count(borda_count, pc_array)
 
     borda_count = borda_count / max(borda_count)
     result_df = pd.DataFrame(borda_count, index=spreadsheet_df.index.values,
@@ -420,8 +420,8 @@ def run_bootstrap_net_correlation(run_parameters):
         D = drug_response.values[0, None]
         D = D[0, sample_permutation]
         pc_array = perform_pearson_correlation(sample_random, D)
-        pc_array_idx = np.argsort(pc_array)[::-1]
-        borda_count = sum_vote_perm_to_borda_count(borda_count, pc_array_idx)
+
+        borda_count = sum_vote_perm_to_borda_count(borda_count, pc_array)
 
     borda_count = borda_count / max(borda_count)
     result_df = pd.DataFrame(borda_count, index=spreadsheet_df.index.values,
