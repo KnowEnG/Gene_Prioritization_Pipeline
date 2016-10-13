@@ -28,7 +28,7 @@ def perform_lasso_cv_regression(spreadsheet, drug_response, normalize=True, max_
 
     return lasso_cv_residual.coef_
 
-def run_gene_correlation_lasso(run_parameters):
+def run_correlation_lasso(run_parameters):
     ''' pearson cc:  call sequence to perform gene prioritization
 
     Args:
@@ -38,30 +38,16 @@ def run_gene_correlation_lasso(run_parameters):
 
     Returns: (writes gene_drug_lasso.timestamp.df
     '''
-    result_df = perform_gene_correlation_lasso(run_parameters)
-    target_file_base_name = "gene_drug_lassoCV"
-    target_file_base_name = os.path.join(run_parameters["results_directory"], target_file_base_name)
-    file_name = kn.create_timestamped_filename(target_file_base_name) + '.txt'
-    result_df.to_csv(file_name, header=True, index=True, sep='\t')
-
-    return
-
-def perform_gene_correlation_lasso(run_parameters):
-    """ find the pearson correlation coefficient per gene
-
-    Args:
-        run_parameters: dict with keys:
-                        spreadsheet_name_full_path
-                        drug_response_full_path
-    Returns:
-        result_df: dataframe with (sorted) genes and correlation columns
-    """
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
     drug_response = np.array(kn.get_spreadsheet_df(run_parameters["drug_response_full_path"]).values)
     pc_array = perform_lasso_cv_regression(spreadsheet_df.values, drug_response)
     result_df = pd.DataFrame(pc_array, index=spreadsheet_df.index.values,
                              columns=['lassoCV']).abs().sort_values("lassoCV", ascending=0)
-    return result_df
+
+    write_results_dataframe(result_df, run_parameters["results_directory"], "gene_drug_lassoCV")
+
+    return
+
 
 def run_net_correlation_lasso(run_parameters):
     ''' pearson cc:  call sequence to perform gene prioritization with network smoothing
