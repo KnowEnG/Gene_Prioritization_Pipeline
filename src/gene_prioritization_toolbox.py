@@ -130,7 +130,7 @@ def perform_bootstrap_correlation_lasso(run_parameters):
 
     borda_count = np.int_(np.zeros(sample_smooth.shape[0]))
     for bootstrap_number in range(0, int(run_parameters["number_of_bootstraps"])):
-        sample_random, sample_permutation = kn.sample_a_matrix(
+        sample_random, sample_permutation = sample_a_matrix_pearson(
             sample_smooth, np.float64(run_parameters["rows_sampling_fraction"]),
             np.float64(run_parameters["cols_sampling_fraction"]))
 
@@ -202,7 +202,7 @@ def perform_bootstrap_net_correlation_lasso(run_parameters):
 
     borda_count = np.int_(np.zeros(sample_smooth.shape[0]))
     for bootstrap_number in range(0, int(run_parameters["number_of_bootstraps"])):
-        sample_random, sample_permutation = kn.sample_a_matrix(
+        sample_random, sample_permutation = sample_a_matrix_pearson(
             sample_smooth, np.float64(run_parameters["rows_sampling_fraction"]),
             np.float64(run_parameters["cols_sampling_fraction"]))
 
@@ -280,7 +280,7 @@ def run_bootstrap_correlation(run_parameters):
 
     borda_count = np.int_(np.zeros(sample_smooth.shape[0]))
     for bootstrap_number in range(0, int(run_parameters["number_of_bootstraps"])):
-        sample_random, sample_permutation = kn.sample_a_matrix(
+        sample_random, sample_permutation = sample_a_matrix_pearson(
             sample_smooth, np.float64(run_parameters["rows_sampling_fraction"]),
             np.float64(run_parameters["cols_sampling_fraction"]))
 
@@ -377,7 +377,7 @@ def run_bootstrap_net_correlation(run_parameters):
 
     borda_count = np.int_(np.zeros(sample_smooth.shape[0]))
     for bootstrap_number in range(0, int(run_parameters["number_of_bootstraps"])):
-        sample_random, sample_permutation = kn.sample_a_matrix(
+        sample_random, sample_permutation = sample_a_matrix_pearson(
             sample_smooth, np.float64(run_parameters["rows_sampling_fraction"]),
             np.float64(run_parameters["cols_sampling_fraction"]))
 
@@ -424,3 +424,27 @@ def write_results_dataframe(result_df, run_dir, write_file_name):
     result_df.to_csv(file_name, header=True, index=True, sep='\t')
 
     return
+
+def sample_a_matrix_pearson(spreadsheet_mat, rows_fraction, cols_fraction):
+    """ percent_sample x percent_sample random sample, from spreadsheet_mat.
+
+    Args:
+        spreadsheet_mat: gene x sample spread sheet as matrix.
+        percent_sample: decimal fraction (slang-percent) - [0 : 1].
+
+    Returns:
+        sample_random: A specified precentage sample of the spread sheet.
+        sample_permutation: the array that correponds to columns sample.
+    """
+    features_size = int(np.round(spreadsheet_mat.shape[0] * (1-rows_fraction)))
+    features_permutation = np.random.permutation(spreadsheet_mat.shape[0])
+    features_permutation = features_permutation[0:features_size].T
+
+    patients_size = int(np.round(spreadsheet_mat.shape[1] * cols_fraction))
+    sample_permutation = np.random.permutation(spreadsheet_mat.shape[1])
+    sample_permutation = sample_permutation[0:patients_size]
+
+    sample_random = spreadsheet_mat[:, sample_permutation]
+    sample_random[features_permutation[:, None], :] = 0
+
+    return sample_random, sample_permutation
