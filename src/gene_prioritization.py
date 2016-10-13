@@ -5,8 +5,8 @@ Created on Fri Sep 23 16:39:35 2016
 
 def correlation(run_parameters):
     """ gene prioritization """
-    from gene_prioritization_toolbox import run_gene_correlation
-    run_gene_correlation(run_parameters)
+    from gene_prioritization_toolbox import run_correlation
+    run_correlation(run_parameters)
 
 def net_correlation(run_parameters):
     """ gene prioritization """
