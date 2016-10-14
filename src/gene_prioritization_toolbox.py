@@ -276,7 +276,6 @@ def run_net_correlation(run_parameters):
         result_df: result dataframe of gene prioritization. Values are pearson
         correlation coefficient values in descending order.
     '''
-    print('\n\t\t\trun_net_correlation called')
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
     network_df = kn.get_network_df(run_parameters['gg_network_name_full_path'])
     node_1_names, node_2_names = kn.extract_network_node_names(network_df)
@@ -300,14 +299,12 @@ def run_net_correlation(run_parameters):
 
     pc_array = perform_pearson_correlation(sample_smooth, drug_response.values[0])
     pc_array = trim_to_top_Beta(pc_array, np.int_(run_parameters["top_beta_of_sort"]))
+    pc_array = perform_local_DRaWR(network_mat, pc_array, run_parameters)
 
-    result_df = pd.DataFrame(pc_array, index=spreadsheet_df.index.values, columns=['top_beta'])
+    result_df = pd.DataFrame(pc_array, index=spreadsheet_df.index.values,
+                             columns=['net_correlation']).abs().sort_values("net_correlation", ascending=0)
 
-    base_col = np.ones(result_df.shape[0], dtype=np.int)
-    new_result_df = kn.append_column_to_spreadsheet(result_df, base_col, 'base')
-    #                                network_sparse, new_spreadsheet_df, len_gene_names, run_parameters
-    final_result_df = perform_DRaWR(network_mat, new_result_df, 0, run_parameters)
-    write_results_dataframe(final_result_df, run_parameters["results_directory"], "gene_drug_correlation_final")
+    write_results_dataframe(result_df, run_parameters["results_directory"], "run_net_correlation")
 
     return
 
@@ -338,7 +335,6 @@ def run_bootstrap_net_correlation(run_parameters):
         result_df: result dataframe of gene prioritization. Values are pearson
         correlation coefficient values in descending order.
     """
-    print('\n\t\t\trun_bootstrap_net_correlation called')
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
     network_df = kn.get_network_df(run_parameters['gg_network_name_full_path'])
     node_1_names, node_2_names = kn.extract_network_node_names(network_df)
@@ -432,31 +428,6 @@ def sample_a_matrix_pearson(spreadsheet_mat, rows_fraction, cols_fraction):
 
     return sample_random, sample_permutation
 
-def perform_DRaWR(network_sparse, new_spreadsheet_df, len_gene_names, run_parameters):
-    """ calculate random walk with global network and user set gene sets  and write output. won't accept nan 's
-    Args:
-        network_sparse: sparse matrix of global network.
-        new_spreadsheet_df: dataframe of user gene sets.
-        len_gene_names: length of genes in the in the user spreadsheet.
-        run_parameters: parameters dictionary.
-    """
-    hetero_network = normalize(network_sparse, norm='l1', axis=0)
-    final_spreadsheet_matrix, step = kn.smooth_matrix_with_rwr(
-        normalize(new_spreadsheet_df, norm='l1', axis=0), hetero_network, run_parameters)
-
-    final_spreadsheet_df = pd.DataFrame(final_spreadsheet_matrix[len_gene_names:])
-    final_spreadsheet_df.index = new_spreadsheet_df.index.values[len_gene_names:]
-    final_spreadsheet_df.columns = new_spreadsheet_df.columns.values
-
-    final_spreadsheet_df.iloc[:, :-1] = final_spreadsheet_df.iloc[:, :-1].apply(
-        lambda x: (x - final_spreadsheet_df['base']).sort_values(ascending=0).index.values)
-
-    final_spreadsheet_df['base'] = \
-        final_spreadsheet_df['base'].sort_values(ascending=0).index.values
-
-    final_spreadsheet_df.index = range(final_spreadsheet_df.shape[0])
-
-    return final_spreadsheet_df
 
 def trim_to_top_Beta(corr_arr, Beta):
     """ Preserve corr_arr order: get the top Beta members of the correlation array and set the rest to zero"""
