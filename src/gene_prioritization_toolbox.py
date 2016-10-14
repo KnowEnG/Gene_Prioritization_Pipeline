@@ -357,19 +357,16 @@ def run_bootstrap_net_correlation(run_parameters):
     return
 
 def sum_vote_to_borda_count(borda_count, corr_array):
-    """ incrementally update count by borda weighted vote in a subsample of the full borda size
+    """ incrementally update borda count by borda weighted vote from correlation array
 
     Args:
-        vote_rank: (np.int_(vote_rank)) python rank array same size as borda_count (0 == first, 1 == second,...)
         borda_count: (np.int_(borda_count) ) the current running total of Borda weighted votes
+        corr_array:  correlation ranking largest value gets largest borda vote score
 
     Returns:
         borda_count: input borda_count with borda weighted vote rankings added
     """
-    vote_rank = np.argsort(corr_array)
-    rank_array = np.int_(sorted(np.arange(0, vote_rank.size) + 1))
-    borda_count[np.int_(vote_rank)] += rank_array
-
+    borda_count[np.argsort(corr_array)] += np.int_(sorted(np.arange(0, corr_array.size) + 1))
     return borda_count
 
 
