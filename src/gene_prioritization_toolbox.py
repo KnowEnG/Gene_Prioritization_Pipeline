@@ -250,11 +250,11 @@ def run_bootstrap_correlation(run_parameters):
         drug_response = drug_response[0, sample_permutation]
         pc_array = perform_pearson_correlation(sample_random, drug_response)
 
-        borda_count = sum_vote_to_borda_count(borda_count, pc_array)
+        borda_count = sum_vote_to_borda_count(borda_count, np.abs(pc_array))
 
     borda_count = borda_count / max(borda_count)
     result_df = pd.DataFrame(borda_count, index=spreadsheet_df.index.values,
-                             columns=['PCC']).abs().sort_values("PCC", ascending=0)
+                             columns=['PCC']).sort_values("PCC", ascending=0)
 
     write_results_dataframe(result_df, run_parameters["results_directory"], "gene_drug_bootstrap_correlation")
 
@@ -346,11 +346,11 @@ def run_bootstrap_net_correlation(run_parameters):
         drug_response = drug_response.values[0, None]
         pc_array = perform_pearson_correlation(sample_random, drug_response[0, sample_permutation])
 
-        borda_count = sum_vote_to_borda_count(borda_count, pc_array)
+        borda_count = sum_vote_to_borda_count(borda_count, np.abs(pc_array))
 
     borda_count = borda_count / max(borda_count)
     result_df = pd.DataFrame(borda_count, index=spreadsheet_df.index.values,
-                             columns=['PCC']).abs().sort_values("PCC", ascending=0)
+                             columns=['PCC']).sort_values("PCC", ascending=0)
 
     write_results_dataframe(result_df, run_parameters["results_directory"], "gene_drug_network_bootstrap_correlation")
 
@@ -367,7 +367,7 @@ def sum_vote_to_borda_count(borda_count, corr_array):
         borda_count: input borda_count with borda weighted vote rankings added
     """
     vote_rank = np.argsort(corr_array)
-    rank_array = np.int_(sorted(np.arange(0, vote_rank.size) + 1, reverse=True))
+    rank_array = np.int_(sorted(np.arange(0, vote_rank.size) + 1))
     borda_count[np.int_(vote_rank)] += rank_array
 
     return borda_count
