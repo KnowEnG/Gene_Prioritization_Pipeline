@@ -311,6 +311,20 @@ def run_net_correlation(run_parameters):
 
     return
 
+def perform_local_DRaWR(network_sparse, spreadsheet_mat, run_parameters):
+    """ calculate random walk with global network and user set gene sets  and write output. won't accept nan 's
+    Args:
+        network_sparse: sparse matrix of global network.
+        new_spreadsheet_df: dataframe of user gene sets.
+        len_gene_names: length of genes in the in the user spreadsheet.
+        run_parameters: parameters dictionary.
+    """
+    spreadsheet_mat = np.append(spreadsheet_mat.reshape(spreadsheet_mat.shape[0], -1), np.ones((spreadsheet_mat.shape[0], 1)), axis=1)
+    final_spreadsheet_matrix, step = kn.smooth_matrix_with_rwr(
+        normalize(spreadsheet_mat, norm='l1', axis=0), network_sparse, run_parameters)
+
+    return final_spreadsheet_matrix[:,0] - final_spreadsheet_matrix[:,1]
+
 def run_bootstrap_net_correlation(run_parameters):
     """ pearson cc: call sequence to perform gene prioritization using bootstrap sampling and network smoothing
 
@@ -324,6 +338,7 @@ def run_bootstrap_net_correlation(run_parameters):
         result_df: result dataframe of gene prioritization. Values are pearson
         correlation coefficient values in descending order.
     """
+    print('\n\t\t\trun_bootstrap_net_correlation called')
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
     network_df = kn.get_network_df(run_parameters['gg_network_name_full_path'])
     node_1_names, node_2_names = kn.extract_network_node_names(network_df)
@@ -353,12 +368,13 @@ def run_bootstrap_net_correlation(run_parameters):
 
         drug_response = drug_response.values[0, None]
         pc_array = perform_pearson_correlation(sample_random, drug_response[0, sample_permutation])
-
+        pc_array = trim_to_top_Beta(pc_array, np.int_(run_parameters["top_beta_of_sort"]))
+        pc_array = perform_local_DRaWR(network_mat, pc_array, run_parameters)
         borda_count = sum_vote_to_borda_count(borda_count, np.abs(pc_array))
 
     borda_count = borda_count / max(borda_count)
     result_df = pd.DataFrame(borda_count, index=spreadsheet_df.index.values,
-                             columns=['PCC']).sort_values("PCC", ascending=0)
+                             columns=['run_bootstrap_net_correlation']).sort_values("run_bootstrap_net_correlation", ascending=0)
 
     write_results_dataframe(result_df, run_parameters["results_directory"], "gene_drug_network_bootstrap_correlation")
 
@@ -439,8 +455,6 @@ def perform_DRaWR(network_sparse, new_spreadsheet_df, len_gene_names, run_parame
         final_spreadsheet_df['base'].sort_values(ascending=0).index.values
 
     final_spreadsheet_df.index = range(final_spreadsheet_df.shape[0])
-    file_name = kn.create_timestamped_filename("DRaWR_result", "df")
-    kn.save_df(final_spreadsheet_df, run_parameters['results_directory'], file_name)
 
     return final_spreadsheet_df
 

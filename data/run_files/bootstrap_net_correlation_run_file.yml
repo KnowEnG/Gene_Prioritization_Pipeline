@@ -23,6 +23,7 @@ drug_response_full_path: ../data/Oct12_dataset/drug_17-AAG_of_GDSC_drug_cpd_ic50
 
 results_directory: ./run_dir/results
 
+top_beta_of_sort: "100"
 
 rwr_max_iterations: "100"
 #	Random walk with restart; maximum number of iterations without convergence.
