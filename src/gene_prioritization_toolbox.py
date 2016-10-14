@@ -200,6 +200,14 @@ def perform_pearson_correlation(spreadsheet, drug_response):
     return pc_array
 
 
+def get_top_genes(result_df, percentage):
+    rank_index = result_df.index.values
+    rank_index = rank_index[:int(rank_index.shape[0]*percentage)]
+    result_df.loc[rank_index] = 1
+    result_df.loc[~result_df.index.isin(rank_index)] = 0
+    return result_df
+
+
 def run_correlation(run_parameters):
     ''' pearson cc:  call sequence to perform gene prioritization
 
@@ -218,8 +226,13 @@ def run_correlation(run_parameters):
     pc_array = perform_pearson_correlation(spreadsheet_df.values, drug_response.values[0])
     result_df = pd.DataFrame(pc_array, index=spreadsheet_df.index.values,
                              columns=['PCC']).abs().sort_values("PCC", ascending=0)
-
     write_results_dataframe(result_df, run_parameters["results_directory"], "gene_drug_correlation")
+
+    result_df = get_top_genes(result_df, run_parameters["top_beta_of_sort"])
+    base_col = np.ones(result_df.shape[0], dtype=np.int)
+    new_result_df = kn.append_column_to_spreadsheet(result_df, base_col, 'base')
+    final_result_df = perform_DRaWR(gene_gene_network_sparse, new_result_df, 0)
+    write_results_dataframe(final_result_df, run_parameters["results_directory"], "gene_drug_correlation_final")
 
     return
 
