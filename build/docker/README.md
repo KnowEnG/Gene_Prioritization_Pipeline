@@ -15,10 +15,10 @@
 
 * If you don't "cp" your data into the volume you mounted it will disappear when you exit docker.
 
-# Building The Samples Clustering Pipeline Docker Image
-The Dockefile in this directory contains all the commands, in order, needed to build the **Samples Clustering Pipeline** docker image.
+# Building The Gene Prioritization Pipeline Docker Image
+The Dockefile in this directory contains all the commands, in order, needed to build the **Gene Prioritization Pipeline** docker image.
 
-* Run the "make" command to build the **Samples Clustering Pipeline** docker image (output: docker image called "samples_clustering_pipeline" and a tag with today's date and time):
+* Run the "make" command to build the **Gene Prioritization Pipeline** docker image (output: docker image called "gene_prioritization_pipeline" and a tag with today's date and time):
 ```
     make build_docker_image
 ```
