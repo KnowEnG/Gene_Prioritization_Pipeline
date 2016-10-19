@@ -3,17 +3,21 @@
 ## Set up and run in a terminal (if you have docker installed):
 1 Change directory to the directory  where you want to run.
 
-2 docker run -v `pwd`:`pwd` -it knowengdev/gene_prioritization_pipeline:09_01_2016
+2 docker run -v \`pwd\`:/home/test/run_dir -it knowengdev/gene_prioritization_pipeline:10_19_2016
 
-3 make all
+3 cd test
 
-4 make run_cc_net_nmf
+3 make env_setup
+
+4 make changes in the (correlation) .yml file in the run_dir
+
+5 make correlation
 
 * The make options in Gene_Prioritization_Pipeline/README.md apply.
 
 * Check on docker.hub to get the latest image. 
 
-* If you don't "cp" your data into the volume you mounted it will disappear when you exit docker.
+* Your data will be in the directory where you ran the command in line 2 when you exit docker.
 
 # Building The Gene Prioritization Pipeline Docker Image
 The Dockefile in this directory contains all the commands, in order, needed to build the **Gene Prioritization Pipeline** docker image.
