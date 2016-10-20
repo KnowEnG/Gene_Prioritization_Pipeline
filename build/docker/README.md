@@ -1,6 +1,7 @@
 # Building The Gene Prioritization Pipeline Docker Image
 The Dockefile in this directory contains all the commands, in order, needed to build the **Gene Prioritization Pipeline** docker image.
 
+
 * Run the "make" command to build the **Gene Prioritization Pipeline** docker image (output: docker image called "gene_prioritization_pipeline" and a tag with today's date and time):
 ```
     make build_docker_image
@@ -16,9 +17,10 @@ The Dockefile in this directory contains all the commands, in order, needed to b
     make push_to_dockerhub
 ```
 
-## Running the docker image to set up an environment
+* * * 
+## How to run this docker image
+* * * 
 
-### Set up and run in a terminal (if you have docker installed):
 1 Change directory to the directory  where you want to run.
 
 2 docker run -v \`pwd\`:/home/test/run_dir -it knowengdev/gene_prioritization_pipeline:10_19_2016
