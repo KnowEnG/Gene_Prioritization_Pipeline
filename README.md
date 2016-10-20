@@ -1,4 +1,4 @@
-# Gene_Prioritization_Pipeline
+# KnowEnG's Gene Prioritization Pipeline
 Network based prioritization of genes-associated-phenotype
 
 * User submits a spreadsheet with samples as columns and genes as rows. 
