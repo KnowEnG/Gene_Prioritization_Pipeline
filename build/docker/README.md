@@ -21,22 +21,22 @@ The Dockefile in this directory contains all the commands, in order, needed to b
 ## How to run this docker image
 * * * 
 
-### * Run the following command with the specified docker image:
+### 1. Run the following command with the specified docker image:
 ```
 docker run -v \`pwd\`:/home/test/run_dir/ -it knowengdev/gene_prioritization_pipeline:10_19_2016 
 ```
 
-### * Change directory to the "test" directory
+### 2. Change directory to the "test" directory
 ```
 cd test
 ```
 
-### * Create the local directory "run_dir" and place all the run files in it
+### 3. Create the local directory "run_dir" and place all the run files in it
 ```
 make env_setup
 ```
 
-### * Run the Gene Prioritization Pipeline
+### 4. Run the Gene Prioritization Pipeline
 ```
 make correlation
 ```
