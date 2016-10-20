@@ -27,7 +27,7 @@ The Dockefile in this directory contains all the commands, in order, needed to b
 
 3 make env_setup
 
-4 make changes in the (correlation) .yml file in the run_dir
+4 Edit changes in the (correlation) .yml file in the run_dir created by env_setup.
 
 5 make correlation
 
