@@ -8,11 +8,11 @@ method: bootstrap_net_correlation
 
 use_parallel_processing: "0"
 
-gg_network_name_full_path: ../data/Oct12_dataset/STRING_experimental.tsv
+gg_network_name_full_path: ../data/networks/keg_ST90_4col.edge
 
-spreadsheet_name_full_path: ../data/Oct12_dataset/for_17-AAG-GDSC_Expression_ensembl.txt
+spreadsheet_name_full_path: ../data/spreadsheets/gene_expression.tsv
 
-drug_response_full_path: ../data/Oct12_dataset/drug_17-AAG_of_GDSC_drug_cpd_ic50_sorted.txt
+drug_response_full_path: ../data/spreadsheets/drug_response.tsv
 
 
 results_directory: ./run_dir/results
