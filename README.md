@@ -1,10 +1,7 @@
 # KnowEnG's Gene Prioritization Pipeline
-Network based prioritization of genes-associated-phenotype
+This is the Knowledge Engine for Genomics (KnowEnG), an NIH, BD2K Center of Excellence, Gene Prioritization Pipeline.
 
-* User submits a spreadsheet with samples as columns and genes as rows. 
-* User also submits a phenotype value for each sample.
-* System reports top genes associated with phenotype. (Feature selection).
-* Specific example: identification of drug response genes.
+This pipeline prioritizes (ranks by correlation) user supplied gene set data with drug response data.
 
 There are four prioritization methods that one can choose from:
 
