@@ -1,7 +1,7 @@
 # KnowEnG's Gene Prioritization Pipeline
 This is the Knowledge Engine for Genomics (KnowEnG), an NIH, BD2K Center of Excellence, Gene Prioritization Pipeline.
 
-This pipeline **ranks** the rows of a given spreadsheet, where spreadsheet's rows correspond to gene-labels and columns correspond to sample-labels.
+This pipeline **ranks** the rows of a given spreadsheet, where spreadsheet's rows correspond to gene-labels and columns correspond to sample-labels. The ranking is based on correlating gene expression (network smoothed) data against pheno-type data
 
 There are four prioritization methods that one can choose from:
 
