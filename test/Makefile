@@ -18,16 +18,16 @@ clean_dir_recursively:
 run_all_correlations: run_gene_correlation run_net_correlation run_bootstrap_correlation run_bootstrap_net_correlation
 
 run_gene_correlation:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file correlation_run_file.yml 
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file correlation.yml 
 
 run_net_correlation:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file net_correlation_run_file.yml 
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file net_correlation.yml 
 
 run_bootstrap_correlation:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file bootstrap_correlation_run_file.yml 
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file bootstrap_correlation.yml 
 
 run_bootstrap_net_correlation:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file bootstrap_net_correlation_run_file.yml 
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file bootstrap_net_correlation.yml 
 
 run_small_data_test:
 	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file run_parameters_small_test.yml 
