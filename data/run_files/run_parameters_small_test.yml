@@ -8,21 +8,14 @@ method: correlation
 
 use_parallel_processing: "0"
 
-gg_network_name_full_path: ../data/networks/TST_Sept22_network.edge
-#gg_network_name_full_path: ../data/networks/input_data/keg_ST90_4col.edge
-#	4 col edge file for building adjacency matrix in net nmf and rwr.
+gg_network_name_full_path: ../data/networks/test1_gene_gene.edge
+spreadsheet_name_full_path: ../data/spreadsheets/test1_gene_sample.tsv
+drug_response_full_path: ../data/spreadsheets/test1_response.tsv
 
-spreadsheet_name_full_path: ../data/spreadsheets/TST_Sept22_spreadsheet.df
-#	dataframe == matrix with row and column names in .tsv format.
-
-drug_response_full_path: ../data/spreadsheets/TST_Sept22_drug_reaction.df
-#	dataframe == matrix with row and column names in .tsv format.
-
-benchmark_results_full_path: ../test/benchmarks/TST_Sept22_results.df
+benchmark_results_full_path: ../data/verification/test1_results.txt
 # 	precomputed results
 
 results_directory: ./run_dir/results
-
 
 rwr_max_iterations: "100"
 #	Random walk with restart; maximum number of iterations without convergence.
