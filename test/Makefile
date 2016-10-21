@@ -56,16 +56,3 @@ unit_tests:
 unit_test_cleanup:
 	$(RMR) $(UNIT_TEST_TEMP_DIR)
 
-benchmarks_run: benchmarks_setup benchmarks_copy_files
-
-benchmarks_setup:
-	$(MKDIR_P) $(RESULTS_DIR)
-
-benchmarks_copy_files:
-	cp $(RUN_FILES)/*.yml $(RUN_DIR)
-
-run_gene_correlation_benchmark:
-	PYTHONPATH='../src/' python3 ./benchmarks/gene_prioritization_benchmarks.py -run_directory $(RUN_DIR) -run_file correlation_run_benchmarks.yml
-
-run_small_data_benchmark:
-	PYTHONPATH='../src/' python3 ./benchmarks/gene_prioritization_benchmarks.py -run_directory $(RUN_DIR) -run_file run_parameters_small_test.yml 
