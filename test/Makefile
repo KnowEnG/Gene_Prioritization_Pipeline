@@ -33,10 +33,10 @@ run_small_data_test:
 	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file run_parameters_small_test.yml 
 
 decompress_input_data:
-	$(GZIP_D) $(INPUT_DATA_DIR)/*
+	$(GZIP_D) $(INPUT_DATA_DIR)/networks/* $(INPUT_DATA_DIR)/spreadsheets/*
  
 compress_input_data:
-	$(GZIP) $(INPUT_DATA_DIR)/*
+	$(GZIP) $(INPUT_DATA_DIR)/networks/* $(INPUT_DATA_DIR)/spreadsheets/*
 
 create_input_data:
 	$(MKDIR_P) $(INPUT_DATA_DIR)	
