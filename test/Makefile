@@ -38,9 +38,6 @@ decompress_input_data:
 compress_input_data:
 	$(GZIP) $(INPUT_DATA_DIR)/networks/* $(INPUT_DATA_DIR)/spreadsheets/*
 
-create_input_data:
-	$(MKDIR_P) $(INPUT_DATA_DIR)	
-
 create_run_dir:
 	$(MKDIR_P) $(RESULTS_DIR) 
 
