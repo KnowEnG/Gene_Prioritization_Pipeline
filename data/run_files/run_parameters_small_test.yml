@@ -1,41 +1,21 @@
 # yaml parameters template file with all options for Gene_Prioritization_Pipeline
 
-method: correlation
+method: bootstrap_net_correlation
 # correlation
 # net_correlation
 # bootstrap_correlation
 # bootstrap_net_correlation
 
 use_parallel_processing: "0"
-
 gg_network_name_full_path: ../data/networks/test1_gene_gene.edge
 spreadsheet_name_full_path: ../data/spreadsheets/test1_gene_sample.tsv
 drug_response_full_path: ../data/spreadsheets/test1_response.tsv
-
 benchmark_results_full_path: ../data/verification/test1_results.txt
-# 	precomputed results
-
 results_directory: ./run_dir/results
-
 rwr_max_iterations: "100"
-#	Random walk with restart; maximum number of iterations without convergence.
-
-rwr_convergence_tolerence: "0.0001"
-#	Finish rwr when the frobenius norm of the spreadsheet vector(s) is within tolerence of the previous one.
-
-rwr_restart_probability: "0.7"
-#	rwr_restart_probability = alhpa in Vn+1 = alpha * N * Vn + (1-alpha) * Vo
-
-
-
+rwr_convergence_tolerence: "0.00000001"
+rwr_restart_probability: "0.5"
 rows_sampling_fraction: "1"
-#	Random sample of rows portion.
-
-cols_sampling_fraction: "0.8"
-#	Rancom sample of columns portion.
-
-number_of_bootstraps: "5"
-#	Number of random samplings to perform and incorporate into the consensus matrix.
-
-
-
+cols_sampling_fraction: "1"
+number_of_bootstraps: "1"
+top_beta_of_sort: "1"
