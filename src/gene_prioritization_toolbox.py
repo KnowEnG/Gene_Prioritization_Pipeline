@@ -300,7 +300,7 @@ def run_net_correlation(run_parameters):
     drug_response = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
 
     pc_array = perform_pearson_correlation(sample_smooth, drug_response.values[0])
-    pc_array = np.array(trim_to_top_Beta(pc_array, np.int_(run_parameters["top_beta_of_sort"])))
+    pc_array = np.array(trim_to_top_Beta(pc_array, float(run_parameters["top_beta_of_sort"])))
     pc_array = perform_local_DRaWR(network_mat, pc_array, run_parameters)
 
     result_df = pd.DataFrame(pc_array, index=spreadsheet_df.index.values,
@@ -369,7 +369,7 @@ def run_bootstrap_net_correlation(run_parameters):
 
         drug_response = drug_response.values[0, None]
         pc_array = perform_pearson_correlation(sample_random, drug_response[0, sample_permutation])
-        pc_array = trim_to_top_Beta(pc_array, np.int_(run_parameters["top_beta_of_sort"]))
+        pc_array = trim_to_top_Beta(pc_array, float(run_parameters["top_beta_of_sort"]))
         pc_array = perform_local_DRaWR(network_mat, pc_array, run_parameters)
         borda_count = sum_vote_to_borda_count(borda_count, np.abs(pc_array))
 
@@ -438,6 +438,8 @@ def sample_a_matrix_pearson(spreadsheet_mat, rows_fraction, cols_fraction):
 def trim_to_top_Beta(corr_arr, Beta):
     """ Preserve corr_arr order: get the top Beta members of the
     correlation array and set the rest to zero"""
+    Beta = min(corr_arr.size, np.round(corr_arr.size * Beta)) - 1
+    Beta = int(max(Beta, 1))
     corr_arr[corr_arr < sorted(corr_arr)[::-1][Beta]] = 0
     corr_arr[corr_arr != 0] = 1
 
