@@ -441,8 +441,15 @@ def sample_a_matrix_pearson(spreadsheet_mat, rows_fraction, cols_fraction):
 
 
 def trim_to_top_beta(corr_arr, Beta):
-    """ Preserve corr_arr order: get the top Beta members of the
-    correlation array and set the rest to zero"""
+    """ Preserve corr_arr order: set the top Beta members of the correlation array to one and set the rest to zero
+
+    Args:
+        corr_arr: an array of sortable values
+        Beta:     a fraction between 0 and 1 to designate the top percentage of corr_arr to select
+
+    Returns:
+        corr_arr: the correlation array as binary with ones int the top Beta percent
+    """
     Beta = min(corr_arr.size, np.round(corr_arr.size * Beta)) - 1
     Beta = int(max(Beta, 1))
     corr_arr[corr_arr < sorted(corr_arr)[::-1][Beta]] = 0
