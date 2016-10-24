@@ -60,8 +60,8 @@ def run_net_correlation_lasso(run_parameters):
                 run_parameters['gg_network_name_full_path']     (gene, gene, weight,...   network)
 
     Returns:
-        result_df: result dataframe of gene prioritization. Values are pearson
-        correlation coefficient values in descending order.
+        result_df: result of gene prioritization as a dataframe. Values are pearson
+                    correlation coefficient values in descending order.
     '''
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
     network_df = kn.get_network_df(run_parameters['gg_network_name_full_path'])
@@ -102,8 +102,8 @@ def run_bootstrap_correlation_lasso(run_parameters):
             run_parameters["drug_response_full_path"]       (one drug response spreadsheet)
 
     Returns:
-        result_df: result dataframe of gene prioritization. Values are pearson
-        correlation coefficient values in descending order.
+        result_df: result of gene prioritization as a dataframe. Values are pearson
+                    correlation coefficient values in descending order.
     """
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
     drug_response = np.array(kn.get_spreadsheet_df(run_parameters["drug_response_full_path"]).values)
@@ -130,18 +130,17 @@ def run_bootstrap_correlation_lasso(run_parameters):
 
 
 def run_bootstrap_net_correlation_lasso(run_parameters):
-    """ pearson cc: call sequence to perform gene prioritization
-    using bootstrap sampling and network smoothing
+    """ pearson cc: call sequence to perform gene prioritization using bootstrap sampling and network smoothing
 
     Args:
-        run_parameters: dict object with keys:
+        run_parameters: a dict object with keys:
             run_parameters["spreadsheet_name_full_path"]    (samples x genes spreadsheet)
             run_parameters["drug_response_full_path"]       (one drug response spreadsheet)
             run_parameters['gg_network_name_full_path']     (gene, gene, weight,...   network)
 
     Returns:
-        result_df: result dataframe of gene prioritization. Values are pearson
-        correlation coefficient values in descending order.
+        result_df: result of gene prioritization as a dataframe. Values are pearson
+                    correlation coefficient values in descending order.
     """
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
     network_df = kn.get_network_df(run_parameters['gg_network_name_full_path'])
@@ -188,11 +187,11 @@ def perform_pearson_correlation(spreadsheet, drug_response):
             with the drug response.
 
     Args:
-        spreadsheet: genes x samples gene expression data
-        drug_response: one drug response for each sample
+        spreadsheet:    genes x samples gene expression data
+        drug_response:  one drug response for each sample
 
     Returns:
-        pc_array: row-spreadsheet-features-ordered array of pearson correlation coefficients
+        pc_array:       row-spreadsheet-features-ordered array of pearson correlation coefficients
     """
     pc_array = np.zeros(spreadsheet.shape[0])
     for row in range(0, spreadsheet.shape[0]):
@@ -208,7 +207,7 @@ def run_correlation(run_parameters):
     ''' pearson cc:  call sequence to perform gene prioritization
 
     Args:
-        run_parameters: dict object with keys:
+        run_parameters: a dict object with keys:
                 run_parameters["spreadsheet_name_full_path"]
                 run_parameters["drug_response_full_path"]
 
@@ -278,8 +277,8 @@ def run_net_correlation(run_parameters):
                 run_parameters['gg_network_name_full_path']     (gene, gene, weight,...   network)
 
     Returns:
-        result_df: result dataframe of gene prioritization. Values are pearson
-        correlation coefficient values in descending order.
+        result_df:  result of gene prioritization as a dataframe. Values are pearson
+                    correlation coefficient values in descending order.
     '''
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
     network_df = kn.get_network_df(run_parameters['gg_network_name_full_path'])
@@ -315,13 +314,13 @@ def run_net_correlation(run_parameters):
     return
 
 def perform_local_DRaWR(network_sparse, spreadsheet_mat, run_parameters):
-    """ calculate random walk with global network and user set gene sets
-    and write output. won't accept nan 's
+    """ Calculate random walk with global network and user set gene sets and write output. Won't accept type nan
+
     Args:
-        network_sparse: sparse matrix of global network.
+        network_sparse:     sparse matrix of global network.
         new_spreadsheet_df: dataframe of user gene sets.
-        len_gene_names: length of genes in the in the user spreadsheet.
-        run_parameters: parameters dictionary.
+        len_gene_names:     length of genes in the in the user spreadsheet.
+        run_parameters:     parameters dictionary.
     """
     spreadsheet_mat = np.append(spreadsheet_mat.reshape(spreadsheet_mat.shape[0], -1),
                                 np.ones((spreadsheet_mat.shape[0], 1)), axis=1)
@@ -331,8 +330,7 @@ def perform_local_DRaWR(network_sparse, spreadsheet_mat, run_parameters):
     return final_spreadsheet_matrix[:, 0] - final_spreadsheet_matrix[:, 1]
 
 def run_bootstrap_net_correlation(run_parameters):
-    """ pearson cc: call sequence to perform gene prioritization
-    using bootstrap sampling and network smoothing
+    """ pearson cc: call sequence to perform gene prioritization using bootstrap sampling and network smoothing
 
     Args:
         run_parameters: dict object with keys:
@@ -341,8 +339,8 @@ def run_bootstrap_net_correlation(run_parameters):
             run_parameters['gg_network_name_full_path']     (gene, gene, weight,...   network)
 
     Returns:
-        result_df: result dataframe of gene prioritization. Values are pearson
-        correlation coefficient values in descending order.
+        result_df:  result of gene prioritization as a dataframe. Values are pearson
+                    correlation coefficient values in descending order.
     """
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
     network_df = kn.get_network_df(run_parameters['gg_network_name_full_path'])
@@ -402,12 +400,12 @@ def sum_vote_to_borda_count(borda_count, corr_array):
 
 
 def write_results_dataframe(result_df, run_dir, write_file_name):
-    """
-    Args:
-        result_df:
-        run_dir:
-        write_file_name
+    """ Writes a dataframe with a header and row names to a tab separated text file
 
+    Args:
+        result_df:          a dataframe with row and column names
+        run_dir:            the directory to write in
+        write_file_name:    the file name to join with the directory
     """
     target_file_base_name = os.path.join(run_dir, write_file_name)
     file_name = kn.create_timestamped_filename(target_file_base_name) + '.txt'
