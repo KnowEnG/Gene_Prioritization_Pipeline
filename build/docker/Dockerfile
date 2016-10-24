@@ -11,4 +11,3 @@ RUN git clone https://username:password@github.com/KnowEnG-Research/Gene_Priorit
 
 # Set up working directory
 WORKDIR ${SRC_LOC}
- 
