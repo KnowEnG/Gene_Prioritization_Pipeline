@@ -219,7 +219,8 @@ def run_correlation(run_parameters):
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
     drug_response = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
 
-    pc_array = perform_pearson_correlation(zscore(spreadsheet_df.as_matrix(), axis=1, ddof=0), drug_response.values[0])
+    sample_zscore = zscore(spreadsheet_df.as_matrix(), axis=1, ddof=0)
+    pc_array = perform_pearson_correlation(sample_zscore, drug_response.values[0])
 
     result_df = pd.DataFrame(pc_array, index=spreadsheet_df.index.values,
                              columns=['PCC']).abs().sort_values("PCC", ascending=0)
@@ -243,12 +244,12 @@ def run_bootstrap_correlation(run_parameters):
     """
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
     drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
-    sample_smooth = zscore(spreadsheet_df.as_matrix(), axis=1, ddof=0)
+    sample_zscore = zscore(spreadsheet_df.as_matrix(), axis=1, ddof=0)
 
-    borda_count = np.int_(np.zeros(sample_smooth.shape[0]))
+    borda_count = np.int_(np.zeros(sample_zscore.shape[0]))
     for bootstrap_number in range(0, int(run_parameters["number_of_bootstraps"])):
         sample_random, sample_permutation = sample_a_matrix_pearson(
-            sample_smooth, np.float64(run_parameters["rows_sampling_fraction"]),
+            sample_zscore, np.float64(run_parameters["rows_sampling_fraction"]),
             np.float64(run_parameters["cols_sampling_fraction"]))
 
         drug_response = drug_response_df.values[0, None]
@@ -296,8 +297,8 @@ def run_net_correlation(run_parameters):
     network_mat = normalize(network_mat_sparse, norm="l1", axis=0)
     spreadsheet_df = kn.update_spreadsheet_df(spreadsheet_df, unique_gene_names)
 
-    sample_smooth, iterations = kn.smooth_matrix_with_rwr(
-        zscore(spreadsheet_df.as_matrix(), axis=1, ddof=0), network_mat, run_parameters)
+    sample_zscore = zscore(spreadsheet_df.as_matrix(), axis=1, ddof=0)
+    sample_smooth, iterations = kn.smooth_matrix_with_rwr(sample_zscore, network_mat, run_parameters)
     sample_smooth = zscore(sample_smooth, axis=1, ddof=0)
 
     drug_response = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
@@ -359,8 +360,8 @@ def run_bootstrap_net_correlation(run_parameters):
     network_mat = normalize(network_mat_sparse, norm="l1", axis=0)
     spreadsheet_df = kn.update_spreadsheet_df(spreadsheet_df, unique_gene_names)
 
-    sample_smooth, iterations = kn.smooth_matrix_with_rwr(
-        zscore(spreadsheet_df.as_matrix(), axis=1, ddof=0), network_mat, run_parameters)
+    sample_zscore = zscore(spreadsheet_df.as_matrix(), axis=1, ddof=0)
+    sample_smooth, iterations = kn.smooth_matrix_with_rwr(sample_zscore, network_mat, run_parameters)
     sample_smooth = zscore(sample_smooth, axis=1, ddof=0)
 
     drug_response = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
