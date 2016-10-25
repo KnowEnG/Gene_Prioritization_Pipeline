@@ -24,7 +24,7 @@ drug_response_full_path:     ../data/spreadsheets/test1_response.tsv
 results_directory:            ./run_dir/results
 
 # --------------------------------------------------------------------
-# -maximum number of iterations without convergence                  -
+# - maximum number of iterations without convergence                  -
 # --------------------------------------------------------------------
 rwr_max_iterations:         100
 
