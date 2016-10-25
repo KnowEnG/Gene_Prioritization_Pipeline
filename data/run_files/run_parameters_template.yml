@@ -36,25 +36,25 @@ rwr_convergence_tolerence:  1.0e-4
 # --------------------------------------------------------------------
 # - rwr_restart_probability:   Vn+1 = alpha*N*Vn + (1-alpha)*Vo      -
 # --------------------------------------------------------------------
-rwr_restart_probability: 0.7 # same as alpha in the previous line
+rwr_restart_probability:    0.5 # same as alpha in the previous line
 
 # --------------------------------------------------------------------
 # - Fraction of rows selected at random                              -
 # --------------------------------------------------------------------
-rows_sampling_fraction: 1.0 # 1.0 means 100% of rows 
+rows_sampling_fraction:     1.0 # 1.0 means 100% of rows 
 
 # --------------------------------------------------------------------
 # - Fraction of columns selected at random                           -
 # --------------------------------------------------------------------
-cols_sampling_fraction: 0.8 # 0.8 means 80% of columns    
+cols_sampling_fraction:     0.8 # 0.8 means 80% of columns    
 
 # --------------------------------------------------------------------
 # - Number of random samplings                                       -
 # --------------------------------------------------------------------
-number_of_bootstraps: 5
+number_of_bootstraps:       5
 
 # --------------------------------------------------------------------
 # - fraction to retain after first random walk smoothing             -
 # --------------------------------------------------------------------
-top_beta_of_sort: 1.0
+top_beta_of_sort:           1.0       # top 100% of genes (all genese)
 
