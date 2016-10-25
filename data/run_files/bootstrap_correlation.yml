@@ -1,19 +1,20 @@
 # yaml parameters template file with all options for Gene_Prioritization_Pipeline
 
+# correlation,  net_correlation, bootstrap_correlation, bootstrap_net_correlation
 method: bootstrap_correlation
-# correlation,  net_correlation,  bootstrap_correlation,  bootstrap_net_correlation
 
 gg_network_name_full_path: ../data/networks/keg_ST90_4col.edge
 spreadsheet_name_full_path: ../data/spreadsheets/gene_expression.tsv
 drug_response_full_path: ../data/spreadsheets/drug_response.tsv
 results_directory: ./run_dir/results
-rwr_max_iterations: "100"
-rwr_convergence_tolerence: "0.00000001"
-rwr_restart_probability: "0.5"
-rows_sampling_fraction: "1"
-cols_sampling_fraction: "1"
-number_of_bootstraps: "1"
-top_beta_of_sort: "0.2"
+
+rwr_max_iterations: 100
+rwr_convergence_tolerence: 0.00000001
+rwr_restart_probability: 0.5
+rows_sampling_fraction: 1.0
+cols_sampling_fraction: 1.0
+number_of_bootstraps: 1
+top_beta_of_sort: 0.2
 
 
 
