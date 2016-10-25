@@ -1,38 +1,60 @@
-# yaml parameters template file with all options for Gene_Prioritization_Pipeline
+# ------------------------------------------------------------------------------------------------------
+#	- Analysis Method: correlation, net_correlation, bootstrap_correlation, or bootstrap_net_correlation -                                                   -
+# ------------------------------------------------------------------------------------------------------
+method: bootstrap_net_correlation   
 
-# correlation, net_correlation, bootstrap_correlation, bootstrap_net_correlation
-method: bootstrap_net_correlation
+# --------------------------------------------------------------------
+#	- 4 col edge file for building adjacency matrix in net nmf and rwr -
+# --------------------------------------------------------------------
+gg_network_name_full_path:   ../data/networks/test1_gene_gene.edge
 
-#	4 col edge file for building adjacency matrix in net nmf and rwr.
-gg_network_name_full_path: ../data/networks/test1_gene_gene.edge
+# --------------------------------------------------------------------
+#	- dataframe == matrix with row and column names in .tsv format     -
+# --------------------------------------------------------------------
+spreadsheet_name_full_path:  ../data/spreadsheets/test1_gene_sample.tsv
 
-#	dataframe == matrix with row and column names in .tsv format.
-spreadsheet_name_full_path: ../data/spreadsheets/test1_gene_sample.tsv
+# --------------------------------------------------------------------
+#	- dataframe == matrix with row and column names in .tsv format     -
+# --------------------------------------------------------------------
+drug_response_full_path:     ../data/spreadsheets/test1_response.tsv
 
-#	dataframe == matrix with row and column names in .tsv format.
-drug_response_full_path: ../data/spreadsheets/test1_response.tsv
+# --------------------------------------------------------------------
+# - 	directory where the result files will be written               -
+# --------------------------------------------------------------------
+results_directory:            ./run_dir/results
 
-# 	directory where the result files will be written
-results_directory: ./run_dir/results
+# --------------------------------------------------------------------
+#	- maximum number of iterations without convergence                 -
+# --------------------------------------------------------------------
+rwr_max_iterations:         100
 
-#	Random walk with restart; maximum number of iterations without convergence.
-rwr_max_iterations: 100
+# --------------------------------------------------------------------
+# - convergence tolerance using	frobenius norm                       -
+# --------------------------------------------------------------------
+rwr_convergence_tolerence:  1.0e-4
 
-#	Finish rwr when the frobenius norm of the spreadsheet vector(s) is within tolerence of the previous one.
-rwr_convergence_tolerence: 0.0001
+# --------------------------------------------------------------------
+#	rwr_restart_probability is alpha: Vn+1 = alpha*N*Vn + (1-alpha)*Vo -
+# --------------------------------------------------------------------
+rwr_restart_probability: 0.7 # same as alpha in the previous line
 
-#	rwr_restart_probability = alhpa in Vn+1 = alpha * N * Vn + (1-alpha) * Vo
-rwr_restart_probability: 0.7
+# --------------------------------------------------------------------
+#	Fraction of rows selected at random                                -
+# --------------------------------------------------------------------
+rows_sampling_fraction: 1.0 # 1.0 means 100% of rows 
 
-#	Random sample of rows portion.
-rows_sampling_fraction: 1.0
+# --------------------------------------------------------------------
+#	Fraction of columns selected at random                            -
+# --------------------------------------------------------------------
+cols_sampling_fraction: 0.8 # 0.8 means 80% of columns    
 
-#	Rancom sample of columns portion.
-cols_sampling_fraction: 0.8
-
-#	Number of random samplings to perform and incorporate into the consensus matrix.
+# --------------------------------------------------------------------
+#	Number of random samplings                                         -
+# --------------------------------------------------------------------
 number_of_bootstraps: 5
 
+# --------------------------------------------------------------------
 #	fraction to retain after first random walk smoothing.
+# --------------------------------------------------------------------
 top_beta_of_sort: 1.0
 
