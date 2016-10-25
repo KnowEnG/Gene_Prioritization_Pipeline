@@ -1,8 +1,9 @@
 
-method: bootstrap_correlation        # this is one of the four available methods
+method: bootstrap_correlation        # Available methods:           correlation,           net_correlation, 
+                                     #                    bootstrap_correlation, bootstrap_net_correlation
 
-spreadsheet_name_full_path: ../data/spreadsheets/gene_expression.tsv
 gg_network_name_full_path:  ../data/networks/keg_ST90_4col.edge
+spreadsheet_name_full_path: ../data/spreadsheets/gene_expression.tsv
 drug_response_full_path:    ../data/spreadsheets/drug_response.tsv
 
 results_directory:           ./run_dir/results
@@ -17,6 +18,3 @@ cols_sampling_fraction:     1.0       # 1.0 means 100% of columns (i.e., no samp
 number_of_bootstraps:       1
 
 top_beta_of_sort:           0.2       # top 20% of smoothed genes Expression data
-
-
-
