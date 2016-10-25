@@ -9,14 +9,14 @@ drug_response_full_path:    ../data/spreadsheets/drug_response.tsv
 
 results_directory:           ./run_dir/results
 
-rwr_max_iterations:         100
-rwr_convergence_tolerence:  1.0e-8
-rwr_restart_probability:    0.5       # Vn+1 = alpha * N * Vn + (1-alpha) * Vo
+number_of_bootstraps:       1
 
 rows_sampling_fraction:     1.0       # 1.0 means 100% of rows    (i.e., no sampling)
 cols_sampling_fraction:     1.0       # 1.0 means 100% of columns (i.e., no sampling) 
 
-number_of_bootstraps:       1
+rwr_max_iterations:         100
+rwr_convergence_tolerence:  1.0e-8
+rwr_restart_probability:    0.5       # Vn+1 = alpha * N * Vn + (1-alpha) * Vo
 
 top_beta_of_sort:           0.2       # top 20% of smoothed genes Expression data
 
