@@ -1,6 +1,7 @@
-
-method: correlation                  # Available methods:           correlation,           net_correlation, 
-                                     #                    bootstrap_correlation, bootstrap_net_correlation
+# ------------------------------------------------------------------------------------------------------
+# - Analysis Method: correlation, net_correlation, bootstrap_correlation, or bootstrap_net_correlation -                                           -
+# ------------------------------------------------------------------------------------------------------
+method: correlation
 
 
 spreadsheet_name_full_path: ../data/spreadsheets/gene_expression.tsv
