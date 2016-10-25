@@ -1,7 +1,7 @@
-
-method: bootstrap_correlation        # Available methods:           correlation,           net_correlation, 
-                                     #                    bootstrap_correlation, bootstrap_net_correlation
-
+# ------------------------------------------------------------------------------------------------------
+# - Analysis Method: correlation, net_correlation, bootstrap_correlation, or bootstrap_net_correlation -                                           -
+# ------------------------------------------------------------------------------------------------------
+method: bootstrap_correlation        
 
 spreadsheet_name_full_path: ../data/spreadsheets/gene_expression.tsv
 drug_response_full_path:    ../data/spreadsheets/drug_response.tsv
