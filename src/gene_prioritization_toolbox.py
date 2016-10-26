@@ -18,17 +18,15 @@ def run_correlation(run_parameters):
     Args:
         run_parameters: parameter set dictionary.
     '''
-    spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
     drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
+    spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
 
     sample_zscore = zscore(spreadsheet_df.as_matrix(), axis=1, ddof=0)
     pc_array = get_correlation(sample_zscore, drug_response_df.values[0], run_parameters)
 
     result_df = pd.DataFrame(pc_array, index=spreadsheet_df.index.values,
                              columns=['PCC']).abs().sort_values("PCC", ascending=0)
-    # __________________-__-__________________-__-______________==____________-__-______  ____________-__-______
-    print('\n\t\trun_correlation result_df\n{}'.format(result_df))
-    # __________________-__-__________________-__-______________==____________-__-______  ____________-__-______
+
     write_results_dataframe(result_df, run_parameters["results_directory"], "gene_drug_correlation")
     return
 
@@ -39,9 +37,9 @@ def run_bootstrap_correlation(run_parameters):
     Args:
         run_parameters: parameter set dictionary.
     """
-    print('\n\t\trun_bootstrap_correlation called\n')
-    spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
     drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
+    spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
+
     sample_zscore = zscore(spreadsheet_df.as_matrix(), axis=1, ddof=0)
 
     borda_count = np.int_(np.zeros(sample_zscore.shape[0]))
@@ -59,9 +57,6 @@ def run_bootstrap_correlation(run_parameters):
     borda_count = borda_count / max(borda_count)
     result_df = pd.DataFrame(borda_count, index=spreadsheet_df.index.values,
                              columns=['PCC']).sort_values("PCC", ascending=0)
-    # __________________-__-__________________-__-______________==____________-__-______  ____________-__-______
-    print('\n\t\trun_bootstrap_correlation result_df\n{}'.format(result_df))
-    # __________________-__-__________________-__-______________==____________-__-______  ____________-__-______
     write_results_dataframe(result_df, run_parameters["results_directory"], "gene_drug_bootstrap_correlation")
     return
 
@@ -95,26 +90,11 @@ def run_net_correlation(run_parameters):
     sample_smooth = zscore(sample_smooth, axis=1, ddof=0)
     pc_array = get_correlation(sample_smooth, drug_response_df.values[0], run_parameters)
 
-    # __________________-__-__________________-__-______________==____________-__-______  ____________-__-______
-    print('pc_array before trim:\n{}'.format(pd.DataFrame(pc_array, index=spreadsheet_df.index.values,
-                             columns=['net_correlation']).abs().sort_values("net_correlation", ascending=0)))
-    # __________________-__-__________________-__-______________==____________-__-______  ____________-__-______
-
     pc_array = trim_to_top_beta(pc_array, run_parameters["top_beta_of_sort"])
-
-    # __________________-__-__________________-__-______________==____________-__-______  ____________-__-______
-    print('pc_array After trim:\n{}'.format(pd.DataFrame(pc_array, index=spreadsheet_df.index.values,
-                             columns=['net_correlation']).sort_values("net_correlation", ascending=0)))
-    # __________________-__-__________________-__-______________==____________-__-______  ____________-__-______
     pc_array = kn.smooth_matrix_with_rwr(pc_array, network_mat, run_parameters)[0]
 
     result_df = pd.DataFrame(pc_array, index=spreadsheet_df.index.values,
                              columns=['net_correlation']).abs().sort_values("net_correlation", ascending=0)
-
-    # __________________-__-__________________-__-______________==____________-__-______  ____________-__-______
-    print('\n\t After RWR run_net_correlation result_df\n{}'.format(result_df))
-    # __________________-__-__________________-__-______________==____________-__-______  ____________-__-______
-
     write_results_dataframe(result_df, run_parameters["results_directory"], "run_net_correlation")
     return
 
@@ -148,18 +128,12 @@ def run_bootstrap_net_correlation(run_parameters):
 
     borda_count = np.zeros(sample_smooth.shape[0])
     for bootstrap_number in range(0, run_parameters["number_of_bootstraps"]):
-        print('bootstrap_number: {}'.format(bootstrap_number))
         sample_random, sample_permutation = sample_a_matrix_pearson(
             sample_smooth, run_parameters["rows_sampling_fraction"],
             run_parameters["cols_sampling_fraction"])
 
         drug_response = drug_response_df.values[0, None]
         pc_array = get_correlation(sample_random, drug_response[0, sample_permutation], run_parameters)
-        # __________________-__-__________________-__-______________==____________-__-______  ____________-__-______
-        print('pc_array before trim:\n{}'.format(pd.DataFrame(pc_array, index=spreadsheet_df.index.values,
-                                                columns=['net_correlation']).abs().sort_values("net_correlation",
-                                                                                                    ascending=0)))
-        # __________________-__-__________________-__-______________==____________-__-______  ____________-__-______
         pc_array = trim_to_top_beta(pc_array, run_parameters["top_beta_of_sort"])
         pc_array = kn.smooth_matrix_with_rwr(pc_array, network_mat, run_parameters)[0]
         borda_count = sum_vote_to_borda_count(borda_count, np.abs(pc_array))
@@ -168,10 +142,6 @@ def run_bootstrap_net_correlation(run_parameters):
     result_df = pd.DataFrame(borda_count, index=spreadsheet_df.index.values,
                              columns=['run_bootstrap_net_correlation']).sort_values("run_bootstrap_net_correlation",
                                                                                     ascending=0)
-    # __________________-__-__________________-__-______________==____________-__-______  ____________-__-______
-    print('\n\t After RWR run_net_correlation result_df\n{}'.format(result_df))
-    # __________________-__-__________________-__-______________==____________-__-______  ____________-__-______
-
     write_results_dataframe(result_df, run_parameters["results_directory"], "gene_drug_network_bootstrap_correlation")
     return
 
