@@ -65,7 +65,7 @@ make env_setup
 
 | **Command**                        | **Option**                                        | 
 |:---------------------------------- |:------------------------------------------------- | 
-| make run_gene_correlation          | correlation                                       |
+| make run_correlation          | correlation                                       |
 | make run_net_correlation           | bootstrap sampling correlation                    |
 | make run_bootstrap_correlation     | correlation with network regularization           |
 | make run_bootstrap_net_correlation | bootstrap correlation with network regularization |
