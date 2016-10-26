@@ -1,13 +1,16 @@
 # ------------------------------------------------------------------------------------------------------
-# - Analysis Method: correlation, net_correlation, bootstrap_correlation, or bootstrap_net_correlation -                                           -
+# - Analysis Method: correlation, net_correlation, bootstrap_correlation, or bootstrap_net_correlation -                    
 # ------------------------------------------------------------------------------------------------------
-method: bootstrap_net_correlation
+method: correlation
+
+# pearson, lasso
+correlation_method: pearson
 
 gg_network_name_full_path:  ../data/networks/test1_gene_gene.edge
 spreadsheet_name_full_path: ../data/spreadsheets/test1_gene_sample.tsv
 drug_response_full_path:    ../data/spreadsheets/test1_response.tsv
 
-results_directory:           ./run_dir/results
+results_directory:          ./run_dir/results
 
 number_of_bootstraps:       1
 

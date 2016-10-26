@@ -30,7 +30,7 @@ run_bootstrap_net_correlation:
 	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file bootstrap_net_correlation.yml 
 
 run_small_data_test:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file run_parameters_small_test.yml 
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file small_test_bootstrap_net_correlation.yml 
 
 decompress_input_data:
 	$(GZIP_D) $(INPUT_DATA_DIR)/networks/* $(INPUT_DATA_DIR)/spreadsheets/*

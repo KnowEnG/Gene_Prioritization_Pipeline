@@ -1,246 +1,45 @@
 """
-Created on Fri Sep 23 16:39:35 2016
-@author: The Gene Prioritization dev team
+@author: The KnowEnG dev team
 """
 import os
 import numpy as np
 import pandas as pd
+
 from scipy.stats import pearsonr as pcc
 from scipy.stats.mstats import zscore
 from sklearn.preprocessing import normalize
 from sklearn.linear_model import LassoCV
+
 import knpackage.toolbox as kn
 
-
-def perform_lasso_cv_regression(spreadsheet, drug_response, normalize=True, max_iter=1e6):
-    """ perform lasso with cross validation
-
-    Args:
-        spreadsheet:        features x samples matrix (np.array)
-        drug_response:      1 x samples array (np.array)
-        normalize_lasso:    (default=true) normalize inputs before
-        max_iter:           (default 1e6) integer limit for iterations to converge
-
-    Returns:
-        lassoCV.coef_:      features coefficient array == drug correlation with gene
-    """
-    lasso_cv_obj = LassoCV(normalize=normalize, max_iter=max_iter)
-    lasso_cv_residual = lasso_cv_obj.fit(spreadsheet.T, drug_response[0])
-
-    return lasso_cv_residual.coef_
-
-def run_correlation_lasso(run_parameters):
-    ''' pearson cc:  call sequence to perform gene prioritization
-
-    Args:
-        run_parameters: dict object with keys:
-                run_parameters["spreadsheet_name_full_path"]
-                run_parameters["drug_response_full_path"]
-
-    Returns: (writes gene_drug_lasso.timestamp.df
-    '''
-    spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
-    drug_response = np.array(kn.get_spreadsheet_df(run_parameters["drug_response_full_path"]).values)
-    pc_array = perform_lasso_cv_regression(spreadsheet_df.values, drug_response)
-    result_df = pd.DataFrame(pc_array, index=spreadsheet_df.index.values,
-                             columns=['lassoCV']).abs().sort_values("lassoCV", ascending=0)
-
-    write_results_dataframe(result_df, run_parameters["results_directory"], "gene_drug_lassoCV")
-
-    return
-
-
-def run_net_correlation_lasso(run_parameters):
-    ''' pearson cc:  call sequence to perform gene prioritization with network smoothing
-
-    Args:
-        run_parameters: dict object with keys:
-                run_parameters["spreadsheet_name_full_path"]    (samples x genes spreadsheet)
-                run_parameters["drug_response_full_path"]       (one drug response spreadsheet)
-                run_parameters['gg_network_name_full_path']     (gene, gene, weight,...   network)
-
-    Returns:
-        result_df: result of gene prioritization as a dataframe. Values are pearson
-                    correlation coefficient values in descending order.
-    '''
-    spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
-    network_df = kn.get_network_df(run_parameters['gg_network_name_full_path'])
-    node_1_names, node_2_names = kn.extract_network_node_names(network_df)
-    unique_gene_names = kn.find_unique_node_names(node_1_names, node_2_names)
-    genes_lookup_table = kn.create_node_names_dict(unique_gene_names)
-
-    network_df = kn.map_node_names_to_index(network_df, genes_lookup_table, 'node_1')
-    network_df = kn.map_node_names_to_index(network_df, genes_lookup_table, 'node_2')
-
-    network_df = kn.symmetrize_df(network_df)
-    network_mat_sparse = kn.convert_network_df_to_sparse(
-        network_df, len(unique_gene_names), len(unique_gene_names))
-
-    network_mat = normalize(network_mat_sparse, norm="l1", axis=0)
-    spreadsheet_df = kn.update_spreadsheet_df(spreadsheet_df, unique_gene_names)
-    spreadsheet_mat = spreadsheet_df.as_matrix()
-
-    sample_smooth, iterations = kn.smooth_matrix_with_rwr(spreadsheet_mat, network_mat, run_parameters)
-
-    drug_response = np.array(kn.get_spreadsheet_df(run_parameters["drug_response_full_path"]).values)
-    pc_array = perform_lasso_cv_regression(sample_smooth, drug_response)
-    result_df = pd.DataFrame(pc_array, index=spreadsheet_df.index.values,
-                             columns=['lassoCV']).abs().sort_values("lassoCV", ascending=0)
-
-    write_results_dataframe(result_df, run_parameters["results_directory"],
-                            "gene_drug_network_lassoCV")
-
-    return
-
-
-def run_bootstrap_correlation_lasso(run_parameters):
-    """ pearson cc: call sequence to perform gene prioritization using bootstrap sampling
-
-    Args:
-        run_parameters: dict object with keys:
-            run_parameters["spreadsheet_name_full_path"]    (samples x genes spreadsheet)
-            run_parameters["drug_response_full_path"]       (one drug response spreadsheet)
-
-    Returns:
-        result_df: result of gene prioritization as a dataframe. Values are pearson
-                    correlation coefficient values in descending order.
-    """
-    spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
-    drug_response = np.array(kn.get_spreadsheet_df(run_parameters["drug_response_full_path"]).values)
-    sample_smooth = spreadsheet_df.values
-
-    borda_count = np.int_(np.zeros(sample_smooth.shape[0]))
-    for bootstrap_number in range(0, run_parameters["number_of_bootstraps"]):
-        sample_random, sample_permutation = sample_a_matrix_pearson(
-            sample_smooth, run_parameters["rows_sampling_fraction"],
-            run_parameters["cols_sampling_fraction"])
-
-        pc_array = perform_lasso_cv_regression(sample_random, np.array([drug_response[0, sample_permutation]]))
-
-        borda_count = sum_vote_to_borda_count(borda_count, pc_array)
-
-    borda_count = borda_count / max(borda_count)
-    result_df = pd.DataFrame(borda_count, index=spreadsheet_df.index.values,
-                             columns=['lassoCV']).abs().sort_values("lassoCV", ascending=0)
-
-    write_results_dataframe(result_df, run_parameters["results_directory"],
-                            "gene_drug_bootstrap_lassoCV")
-
-    return
-
-
-def run_bootstrap_net_correlation_lasso(run_parameters):
-    """ pearson cc: call sequence to perform gene prioritization using bootstrap sampling and network smoothing
-
-    Args:
-        run_parameters: a dict object with keys:
-            run_parameters["spreadsheet_name_full_path"]    (samples x genes spreadsheet)
-            run_parameters["drug_response_full_path"]       (one drug response spreadsheet)
-            run_parameters['gg_network_name_full_path']     (gene, gene, weight,...   network)
-
-    Returns:
-        result_df: result of gene prioritization as a dataframe. Values are pearson
-                    correlation coefficient values in descending order.
-    """
-    spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
-    network_df = kn.get_network_df(run_parameters['gg_network_name_full_path'])
-    node_1_names, node_2_names = kn.extract_network_node_names(network_df)
-    unique_gene_names = kn.find_unique_node_names(node_1_names, node_2_names)
-    genes_lookup_table = kn.create_node_names_dict(unique_gene_names)
-
-    network_df = kn.map_node_names_to_index(network_df, genes_lookup_table, 'node_1')
-    network_df = kn.map_node_names_to_index(network_df, genes_lookup_table, 'node_2')
-
-    network_df = kn.symmetrize_df(network_df)
-    network_mat_sparse = kn.convert_network_df_to_sparse(
-        network_df, len(unique_gene_names), len(unique_gene_names))
-
-    network_mat = normalize(network_mat_sparse, norm="l1", axis=0)
-    spreadsheet_df = kn.update_spreadsheet_df(spreadsheet_df, unique_gene_names)
-    spreadsheet_mat = spreadsheet_df.as_matrix()
-
-    sample_smooth, iterations = kn.smooth_matrix_with_rwr(spreadsheet_mat, network_mat, run_parameters)
-
-    drug_response = np.array(kn.get_spreadsheet_df(run_parameters["drug_response_full_path"]).values)
-
-    borda_count = np.int_(np.zeros(sample_smooth.shape[0]))
-    for bootstrap_number in range(0, run_parameters["number_of_bootstraps"]):
-        sample_random, sample_permutation = sample_a_matrix_pearson(
-            sample_smooth, run_parameters["rows_sampling_fraction"],
-            run_parameters["cols_sampling_fraction"])
-
-        pc_array = perform_lasso_cv_regression(sample_random, np.array([drug_response[0, sample_permutation]]))
-
-        borda_count = sum_vote_to_borda_count(borda_count, pc_array)
-
-    borda_count = borda_count / max(borda_count)
-    result_df = pd.DataFrame(borda_count, index=spreadsheet_df.index.values,
-                             columns=['lassoCV']).abs().sort_values("lassoCV", ascending=0)
-
-    write_results_dataframe(result_df, run_parameters["results_directory"],
-                            "gene_drug_network_bootstrap_lassoCV")
-
-    return
-
-def perform_pearson_correlation(spreadsheet, drug_response):
-    """ Find pearson correlation coefficient(PCC) for each gene expression (spreadsheet row)
-            with the drug response.
-
-    Args:
-        spreadsheet:    genes x samples gene expression data
-        drug_response:  one drug response for each sample
-
-    Returns:
-        pc_array:       row-spreadsheet-features-ordered array of pearson correlation coefficients
-    """
-    pc_array = np.zeros(spreadsheet.shape[0])
-    for row in range(0, spreadsheet.shape[0]):
-        pcc_value = pcc(spreadsheet[row, :], drug_response)[0]
-        pc_array[row] = pcc_value
-
-    pc_array[~(np.isfinite(pc_array))] = 0
-
-    return pc_array
-
-
 def run_correlation(run_parameters):
-    ''' pearson cc:  call sequence to perform gene prioritization
+    ''' perform gene prioritization
 
     Args:
-        run_parameters: a dict object with keys:
-                run_parameters["spreadsheet_name_full_path"]
-                run_parameters["drug_response_full_path"]
-
-    Returns:
-        result_df:  result - dataframe of gene prioritization. Values are pearson
-                    correlation coefficient values in descending order.
+        run_parameters: parameter set dictionary.
     '''
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
     drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
 
     sample_zscore = zscore(spreadsheet_df.as_matrix(), axis=1, ddof=0)
-    pc_array = perform_pearson_correlation(sample_zscore, drug_response_df.values[0])
+    pc_array = get_correlation(sample_zscore, drug_response_df.values[0], run_parameters)
 
     result_df = pd.DataFrame(pc_array, index=spreadsheet_df.index.values,
                              columns=['PCC']).abs().sort_values("PCC", ascending=0)
+    # __________________-__-__________________-__-______________==____________-__-______  ____________-__-______
+    print('\n\t\trun_correlation result_df\n{}'.format(result_df))
+    # __________________-__-__________________-__-______________==____________-__-______  ____________-__-______
     write_results_dataframe(result_df, run_parameters["results_directory"], "gene_drug_correlation")
-
-
     return
 
 
 def run_bootstrap_correlation(run_parameters):
-    """ pearson cc: call sequence to perform gene prioritization using bootstrap sampling
+    """ perform gene prioritization using bootstrap sampling
 
     Args:
-        run_parameters: dict object with keys:
-            run_parameters["spreadsheet_name_full_path"]    (samples x genes spreadsheet)
-            run_parameters["drug_response_full_path"]       (one drug response spreadsheet)
-
-    Returns:
-        result_df: result dataframe of gene prioritization. Values are pearson
-        correlation coefficient values in descending order.
+        run_parameters: parameter set dictionary.
     """
+    print('\n\t\trun_bootstrap_correlation called\n')
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
     drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
     sample_zscore = zscore(spreadsheet_df.as_matrix(), axis=1, ddof=0)
@@ -253,34 +52,29 @@ def run_bootstrap_correlation(run_parameters):
 
         drug_response = drug_response_df.values[0, None]
         drug_response = drug_response[0, sample_permutation]
-        pc_array = perform_pearson_correlation(sample_random, drug_response)
+        pc_array = get_correlation(sample_random, drug_response, run_parameters)
 
         borda_count = sum_vote_to_borda_count(borda_count, np.abs(pc_array))
 
     borda_count = borda_count / max(borda_count)
     result_df = pd.DataFrame(borda_count, index=spreadsheet_df.index.values,
                              columns=['PCC']).sort_values("PCC", ascending=0)
-
-    write_results_dataframe(result_df, run_parameters["results_directory"],
-                            "gene_drug_bootstrap_correlation")
-
+    # __________________-__-__________________-__-______________==____________-__-______  ____________-__-______
+    print('\n\t\trun_bootstrap_correlation result_df\n{}'.format(result_df))
+    # __________________-__-__________________-__-______________==____________-__-______  ____________-__-______
+    write_results_dataframe(result_df, run_parameters["results_directory"], "gene_drug_bootstrap_correlation")
     return
 
 
 def run_net_correlation(run_parameters):
-    ''' pearson cc:  call sequence to perform gene prioritization with network smoothing
+    ''' perform gene prioritization with network smoothing
 
     Args:
-        run_parameters: dict object with keys:
-                run_parameters["spreadsheet_name_full_path"]    (samples x genes spreadsheet)
-                run_parameters["drug_response_full_path"]       (one drug response spreadsheet)
-                run_parameters['gg_network_name_full_path']     (gene, gene, weight,...   network)
-
-    Returns:
-        result_df:  result of gene prioritization as a dataframe. Values are pearson
-                    correlation coefficient values in descending order.
+        run_parameters: parameter set dictionary.
     '''
+    drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
+
     network_df = kn.get_network_df(run_parameters['gg_network_name_full_path'])
     node_1_names, node_2_names = kn.extract_network_node_names(network_df)
     unique_gene_names = kn.find_unique_node_names(node_1_names, node_2_names)
@@ -293,56 +87,47 @@ def run_net_correlation(run_parameters):
     network_mat_sparse = kn.convert_network_df_to_sparse(
         network_df, len(unique_gene_names), len(unique_gene_names))
 
-    network_mat = normalize(network_mat_sparse, norm="l1", axis=0)
+    network_mat = normalize(network_mat_sparse, norm="l1", axis=1)
     spreadsheet_df = kn.update_spreadsheet_df(spreadsheet_df, unique_gene_names)
 
-    sample_zscore = zscore(spreadsheet_df.as_matrix(), axis=1, ddof=0)
-    sample_smooth, iterations = kn.smooth_matrix_with_rwr(sample_zscore, network_mat, run_parameters)
+    sample_smooth, iterations = kn.smooth_matrix_with_rwr(spreadsheet_df.as_matrix(), network_mat, run_parameters)
+
     sample_smooth = zscore(sample_smooth, axis=1, ddof=0)
+    pc_array = get_correlation(sample_smooth, drug_response_df.values[0], run_parameters)
 
-    drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
+    # __________________-__-__________________-__-______________==____________-__-______  ____________-__-______
+    print('pc_array before trim:\n{}'.format(pd.DataFrame(pc_array, index=spreadsheet_df.index.values,
+                             columns=['net_correlation']).abs().sort_values("net_correlation", ascending=0)))
+    # __________________-__-__________________-__-______________==____________-__-______  ____________-__-______
 
-    pc_array = perform_pearson_correlation(sample_smooth, drug_response_df.values[0])
-    pc_array = np.array(trim_to_top_beta(pc_array, run_parameters["top_beta_of_sort"]))
-    pc_array = perform_local_DRaWR(network_mat, pc_array, run_parameters)
+    pc_array = trim_to_top_beta(pc_array, run_parameters["top_beta_of_sort"])
+
+    # __________________-__-__________________-__-______________==____________-__-______  ____________-__-______
+    print('pc_array After trim:\n{}'.format(pd.DataFrame(pc_array, index=spreadsheet_df.index.values,
+                             columns=['net_correlation']).sort_values("net_correlation", ascending=0)))
+    # __________________-__-__________________-__-______________==____________-__-______  ____________-__-______
+    pc_array = kn.smooth_matrix_with_rwr(pc_array, network_mat, run_parameters)[0]
 
     result_df = pd.DataFrame(pc_array, index=spreadsheet_df.index.values,
                              columns=['net_correlation']).abs().sort_values("net_correlation", ascending=0)
 
-    write_results_dataframe(result_df, run_parameters["results_directory"], "run_net_correlation")
+    # __________________-__-__________________-__-______________==____________-__-______  ____________-__-______
+    print('\n\t After RWR run_net_correlation result_df\n{}'.format(result_df))
+    # __________________-__-__________________-__-______________==____________-__-______  ____________-__-______
 
+    write_results_dataframe(result_df, run_parameters["results_directory"], "run_net_correlation")
     return
 
-def perform_local_DRaWR(network_sparse, spreadsheet_mat, run_parameters):
-    """ Calculate random walk with global network and user set gene sets and write output. Won't accept type nan
-
-    Args:
-        network_sparse:     sparse matrix of global network.
-        new_spreadsheet_df: dataframe of user gene sets.
-        len_gene_names:     length of genes in the in the user spreadsheet.
-        run_parameters:     parameters dictionary.
-    """
-    spreadsheet_mat = np.append(spreadsheet_mat.reshape(spreadsheet_mat.shape[0], -1),
-                                np.ones((spreadsheet_mat.shape[0], 1)), axis=1)
-    final_spreadsheet_matrix, step = kn.smooth_matrix_with_rwr(
-        normalize(spreadsheet_mat, norm='l1', axis=0), network_sparse, run_parameters)
-
-    return final_spreadsheet_matrix[:, 0] - final_spreadsheet_matrix[:, 1]
 
 def run_bootstrap_net_correlation(run_parameters):
-    """ pearson cc: call sequence to perform gene prioritization using bootstrap sampling and network smoothing
+    """ perform gene prioritization using bootstrap sampling and network smoothing
 
     Args:
-        run_parameters: dict object with keys:
-            run_parameters["spreadsheet_name_full_path"]    (samples x genes spreadsheet)
-            run_parameters["drug_response_full_path"]       (one drug response spreadsheet)
-            run_parameters['gg_network_name_full_path']     (gene, gene, weight,...   network)
-
-    Returns:
-        result_df:  result of gene prioritization as a dataframe. Values are pearson
-                    correlation coefficient values in descending order.
+        run_parameters: parameter set dictionary.
     """
+    drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
+
     network_df = kn.get_network_df(run_parameters['gg_network_name_full_path'])
     node_1_names, node_2_names = kn.extract_network_node_names(network_df)
     unique_gene_names = kn.find_unique_node_names(node_1_names, node_2_names)
@@ -355,35 +140,68 @@ def run_bootstrap_net_correlation(run_parameters):
     network_mat_sparse = kn.convert_network_df_to_sparse(
         network_df, len(unique_gene_names), len(unique_gene_names))
 
-    network_mat = normalize(network_mat_sparse, norm="l1", axis=0)
+    network_mat = normalize(network_mat_sparse, norm="l1", axis=1)
     spreadsheet_df = kn.update_spreadsheet_df(spreadsheet_df, unique_gene_names)
 
-    sample_zscore = zscore(spreadsheet_df.as_matrix(), axis=1, ddof=0)
-    sample_smooth, iterations = kn.smooth_matrix_with_rwr(sample_zscore, network_mat, run_parameters)
+    sample_smooth, iterations = kn.smooth_matrix_with_rwr(spreadsheet_df.as_matrix(), network_mat, run_parameters)
     sample_smooth = zscore(sample_smooth, axis=1, ddof=0)
 
-    drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
-
-    borda_count = np.int_(np.zeros(sample_smooth.shape[0]))
+    borda_count = np.zeros(sample_smooth.shape[0])
     for bootstrap_number in range(0, run_parameters["number_of_bootstraps"]):
+        print('bootstrap_number: {}'.format(bootstrap_number))
         sample_random, sample_permutation = sample_a_matrix_pearson(
             sample_smooth, run_parameters["rows_sampling_fraction"],
             run_parameters["cols_sampling_fraction"])
 
         drug_response = drug_response_df.values[0, None]
-        pc_array = perform_pearson_correlation(sample_random, drug_response[0, sample_permutation])
+        pc_array = get_correlation(sample_random, drug_response[0, sample_permutation], run_parameters)
+        # __________________-__-__________________-__-______________==____________-__-______  ____________-__-______
+        print('pc_array before trim:\n{}'.format(pd.DataFrame(pc_array, index=spreadsheet_df.index.values,
+                                                columns=['net_correlation']).abs().sort_values("net_correlation",
+                                                                                                    ascending=0)))
+        # __________________-__-__________________-__-______________==____________-__-______  ____________-__-______
         pc_array = trim_to_top_beta(pc_array, run_parameters["top_beta_of_sort"])
-        pc_array = perform_local_DRaWR(network_mat, pc_array, run_parameters)
+        pc_array = kn.smooth_matrix_with_rwr(pc_array, network_mat, run_parameters)[0]
         borda_count = sum_vote_to_borda_count(borda_count, np.abs(pc_array))
 
     borda_count = borda_count / max(borda_count)
     result_df = pd.DataFrame(borda_count, index=spreadsheet_df.index.values,
-                             columns=['run_bootstrap_net_correlation']).sort_values("run_bootstrap_net_correlation", ascending=0)
+                             columns=['run_bootstrap_net_correlation']).sort_values("run_bootstrap_net_correlation",
+                                                                                    ascending=0)
+    # __________________-__-__________________-__-______________==____________-__-______  ____________-__-______
+    print('\n\t After RWR run_net_correlation result_df\n{}'.format(result_df))
+    # __________________-__-__________________-__-______________==____________-__-______  ____________-__-______
 
-    write_results_dataframe(result_df, run_parameters["results_directory"],
-                            "gene_drug_network_bootstrap_correlation")
-
+    write_results_dataframe(result_df, run_parameters["results_directory"], "gene_drug_network_bootstrap_correlation")
     return
+
+
+def get_correlation(spreadsheet, drug_response, run_parameters, normalize=True, max_iter=1e6):
+    """
+    Args:
+        spreadsheet:
+        drug_response:
+        run_parameters:
+        normalize:
+        max_iter:
+    Returns:
+        correlation_array
+    """
+    correlation_array = np.zeros(spreadsheet.shape[0])
+    if 'correlation_method' in run_parameters:
+        if run_parameters['correlation_method'] == 'pearson':
+            for row in range(0, spreadsheet.shape[0]):
+                correlation_array[row] = pcc(spreadsheet[row, :], drug_response)[0]
+            correlation_array[~(np.isfinite(correlation_array))] = 0
+            return correlation_array
+
+        if run_parameters['correlation_method'] == 'lasso':
+            lasso_cv_obj = LassoCV(normalize=normalize, max_iter=max_iter)
+            lasso_cv_residual = lasso_cv_obj.fit(spreadsheet.T, drug_response[0])
+            correlation_array = lasso_cv_residual.coef_
+
+    return correlation_array
+
 
 def sum_vote_to_borda_count(borda_count, corr_array):
     """ incrementally update borda count by borda weighted vote from correlation array
@@ -449,8 +267,7 @@ def trim_to_top_beta(corr_arr, Beta):
         corr_arr: the correlation array as binary with ones int the top Beta percent
     """
     Beta = min(corr_arr.size, np.round(corr_arr.size * Beta)) - 1
-    Beta = int(max(Beta, 1))
-    corr_arr[corr_arr < sorted(corr_arr)[::-1][Beta]] = 0
-    corr_arr[corr_arr != 0] = 1
+    Beta = int(max(Beta, 0))
+    corr_arr[np.abs(corr_arr) < sorted(np.abs(corr_arr))[::-1][Beta]] = 0
 
     return corr_arr
