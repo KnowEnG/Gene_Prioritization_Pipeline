@@ -1,11 +1,11 @@
 # ------------------------------------------------------------------------------------------------------
 # - Analysis Method: correlation, net_correlation, bootstrap_correlation, or bootstrap_net_correlation -                                           -
 # ------------------------------------------------------------------------------------------------------
-method: bootstrap_net_correlation   
+method: bootstrap_net_correlation
 
-gg_network_name_full_path:  ../data/networks/keg_ST90_4col.edge
-spreadsheet_name_full_path: ../data/spreadsheets/gene_expression.tsv
-drug_response_full_path:    ../data/spreadsheets/drug_response.tsv
+gg_network_name_full_path:  ../data/networks/test1_gene_gene.edge
+spreadsheet_name_full_path: ../data/spreadsheets/test1_gene_sample.tsv
+drug_response_full_path:    ../data/spreadsheets/test1_response.tsv
 
 results_directory:           ./run_dir/results
 
@@ -18,5 +18,5 @@ rwr_max_iterations:         100
 rwr_convergence_tolerence:  1.0e-8
 rwr_restart_probability:    0.5       # Vn+1 = alpha * N * Vn + (1-alpha) * Vo
 
-top_beta_of_sort:           0.2       # top 20% of smoothed genes Expression data
+top_beta_of_sort:           1.0       # top 100% of smoothed genes Expression data (i.e., all)
 
