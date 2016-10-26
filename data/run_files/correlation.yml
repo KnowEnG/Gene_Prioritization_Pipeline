@@ -3,6 +3,9 @@
 # ------------------------------------------------------------------------------------------------------
 method: correlation
 
+# pearson, lasso
+correlation_method: pearson
+
 spreadsheet_name_full_path: ../data/spreadsheets/gene_expression.tsv
 drug_response_full_path:    ../data/spreadsheets/drug_response.tsv
 

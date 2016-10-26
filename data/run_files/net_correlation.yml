@@ -3,6 +3,9 @@
 # ------------------------------------------------------------------------------------------------------
 method: net_correlation
 
+# pearson, lasso
+correlation_method: pearson
+
 gg_network_name_full_path:  ../data/networks/keg_ST90_4col.edge
 spreadsheet_name_full_path: ../data/spreadsheets/gene_expression.tsv
 drug_response_full_path:    ../data/spreadsheets/drug_response.tsv
