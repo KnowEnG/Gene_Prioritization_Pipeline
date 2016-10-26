@@ -105,6 +105,7 @@ def run_bootstrap_net_correlation(run_parameters):
     Args:
         run_parameters: parameter set dictionary.
     """
+    print('\n\t\trun_bootstrap_net_correlation in progress')
     drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
 
@@ -166,6 +167,8 @@ def get_correlation(spreadsheet, drug_response, run_parameters, normalize=True, 
             return correlation_array
 
         if run_parameters['correlation_method'] == 'lasso':
+            drug_response = np.array([drug_response])
+            drug_response[ ~(np.isfinite(drug_response)) ] = 0
             lasso_cv_obj = LassoCV(normalize=normalize, max_iter=max_iter)
             lasso_cv_residual = lasso_cv_obj.fit(spreadsheet.T, drug_response[0])
             correlation_array = lasso_cv_residual.coef_
