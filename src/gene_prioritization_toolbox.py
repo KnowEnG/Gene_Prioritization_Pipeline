@@ -13,7 +13,7 @@ from sklearn.linear_model import LassoCV
 import knpackage.toolbox as kn
 
 def run_correlation(run_parameters):
-    ''' perform gene prioritization 
+    ''' perform gene prioritization
 
     Args:
         run_parameters: parameter set dictionary.
