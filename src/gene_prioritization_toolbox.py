@@ -90,7 +90,7 @@ def run_net_correlation(run_parameters):
 
     result_df = pd.DataFrame(pc_array, index=spreadsheet_df.index.values,
                              columns=['net_correlation']).abs().sort_values("net_correlation", ascending=0)
-    write_results_dataframe(result_df, run_parameters["results_directory"], "run_net_correlation")
+    write_results_dataframe(result_df, run_parameters["results_directory"], "gene_drug_net_correlation")
     return
 
 
