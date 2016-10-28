@@ -7,7 +7,7 @@ ENV SRC_LOC /home
 RUN pip3 install -I knpackage 
 
 # Clone from github
-RUN git clone https://dlanier:git_KnowEnG+2can@github.com/KnowEnG-Research/Gene_Prioritization_Pipeline.git ${SRC_LOC} 
+RUN git clone https://username:password@github.com/KnowEnG-Research/Gene_Prioritization_Pipeline.git ${SRC_LOC} 
 
 # Set up working directory
 WORKDIR ${SRC_LOC}
