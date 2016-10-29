@@ -1,16 +1,17 @@
 # ----------------------------------------------------------------
 # Variables setup Section                                        -
 # ----------------------------------------------------------------
-MKDIR_P = 		mkdir -p
+SCRIPT = 		../src/gene_prioritization.py
+RUN_DIR = 		./run_dir
+RUN_FILES = 		../data/run_files
+RESULTS_DIR = 		$(RUN_DIR)/results
+INPUT_DATA_DIR = 	../data
+UNIT_TEST_TEMP_DIR = 	./unit/tmp
+
 RMR = 			rm -rf
 GZIP = 			gzip
 GZIP_D = 		gzip -d
-INPUT_DATA_DIR = 	../data
-RUN_DIR = 		./run_dir
-UNIT_TEST_TEMP_DIR = 	./unit/tmp
-RESULTS_DIR = 		$(RUN_DIR)/results
-RUN_FILES = 		../data/run_files
-SCRIPT = 		../src/gene_prioritization.py
+MKDIR_P = 		mkdir -p
 
 # ----------------------------------------------------------------
 # Benchmarks setup Section                                       -
