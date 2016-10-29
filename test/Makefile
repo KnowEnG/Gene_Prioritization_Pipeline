@@ -31,7 +31,7 @@ copy_run_files:
 	cp $(RUN_FILES)/*.yml $(RUN_DIR) 
 
 # ----------------------------------------------------------------
-# Large Benchmarks Section                                       -
+# Large Benchmarks RUN Section                                   -
 # ----------------------------------------------------------------
 run_correlation:
 	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file correlation.yml 
@@ -48,13 +48,13 @@ run_bootstrap_net_correlation:
 run_all_correlations: run_correlation run_net_correlation run_bootstrap_correlation run_bootstrap_net_correlation
 
 # ----------------------------------------------------------------
-# Small Benchmarks Section                                       -
+# Small Benchmarks RUN Section                                   -
 # ----------------------------------------------------------------
 run_small_data_test:
 	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file small_test_bootstrap_net_correlation.yml 
 
 # ----------------------------------------------------------------
-# - UNIT TESTS SECTION                                           -
+# - UNIT TESTS RUN SECTION                                       -
 # ----------------------------------------------------------------
 unit_test_setup:
 	$(MKDIR_P) $(UNIT_TEST_TEMP_DIR)
