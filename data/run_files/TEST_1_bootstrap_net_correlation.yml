@@ -6,9 +6,9 @@ method: bootstrap_net_correlation
 # pearson, lasso
 correlation_method: pearson
 
-gg_network_name_full_path:  ../data/networks/test1_gene_gene.edge
-spreadsheet_name_full_path: ../data/spreadsheets/test1_gene_sample.tsv
-drug_response_full_path:    ../data/spreadsheets/test1_response.tsv
+gg_network_name_full_path:  ../data/networks/TEST_1_gene_gene.edge
+spreadsheet_name_full_path: ../data/spreadsheets/TEST_1_gene_sample.tsv
+drug_response_full_path:    ../data/spreadsheets/TEST_1_response.tsv
 
 results_directory:          ./run_dir/results
 
