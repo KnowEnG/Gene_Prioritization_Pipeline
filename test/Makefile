@@ -51,7 +51,7 @@ run_all_correlations: run_correlation run_net_correlation run_bootstrap_correlat
 # Small Benchmarks RUN Section                                   -
 # ----------------------------------------------------------------
 run_small_data_test:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file small_test_bootstrap_net_correlation.yml 
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file TEST_1_bootstrap_net_correlation.yml 
 
 # ----------------------------------------------------------------
 # - UNIT TESTS RUN SECTION                                       -
