@@ -181,6 +181,11 @@ def sum_vote_to_borda_count(borda_count, corr_array):
         borda_count: input borda_count with borda weighted vote rankings added
     """
     borda_count[np.argsort(corr_array)] += np.int_(sorted(np.arange(0, corr_array.size) + 1))
+    uniq_vals, val_counts = np.unique(corr_array, return_counts=True)
+    if uniq_vals.size < corr_array.size:
+        for k in range(0, uniq_vals.size):
+            if val_counts[k] > 1:
+                borda_count[corr_array == uniq_vals[k]] = sum(borda_count[corr_array == uniq_vals[k]]) / val_counts[k]
     return borda_count
 
 
