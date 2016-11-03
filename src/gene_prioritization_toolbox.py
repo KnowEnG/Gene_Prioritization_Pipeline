@@ -66,6 +66,7 @@ def run_net_correlation(run_parameters):
     '''
     drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
+    spreadsheet_genes_as_input = spreadsheet_df.index.values
 
     network_df = kn.get_network_df(run_parameters['gg_network_name_full_path'])
 
@@ -95,20 +96,14 @@ def run_net_correlation(run_parameters):
     baseline_array = np.ones(network_mat.shape[0]) / network_mat.shape[0]
     baseline_array = kn.smooth_matrix_with_rwr(baseline_array, network_mat, run_parameters)[0]
 
-
-
-    baseline_array_df = pd.DataFrame(baseline_array, index=spreadsheet_df.index.values, columns=['net_correlation'])
-    print('baseline_array:\n{}'.format(baseline_array_df))
-
-
     pc_array = pc_array - baseline_array
-    pc_array_df = pd.DataFrame(pc_array, index=spreadsheet_df.index.values, columns=['net_correlation'])
-    print('final array:\n{}'.format(pc_array_df))
-
-
 
     result_df = pd.DataFrame(pc_array, index=spreadsheet_df.index.values,
-                             columns=['net_correlation']).abs().sort_values("net_correlation", ascending=0)
+                             columns=['net_correlation']).sort_values("net_correlation", ascending=0)
+
+    result_df = result_df.loc[result_df.index.isin(spreadsheet_genes_as_input)]
+
+    result_df[result_df < 0] = 0.0
 
     write_results_dataframe(result_df, run_parameters["results_directory"], "gene_drug_net_correlation")
     return
