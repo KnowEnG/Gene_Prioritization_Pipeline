@@ -87,8 +87,11 @@ def run_net_correlation(run_parameters):
     spreadsheet_df = kn.update_spreadsheet_df(spreadsheet_df, unique_gene_names)
 
     sample_smooth, iterations = kn.smooth_matrix_with_rwr(spreadsheet_df.as_matrix(), network_mat.T, run_parameters)
+    pc_array = get_correlation(sample_smooth, drug_response_df.values[0], run_parameters)
 
-    pc_array = np.abs(get_correlation(sample_smooth, drug_response_df.values[0], run_parameters))
+
+    pc_array[~np.in1d(spreadsheet_df.index, spreadsheet_genes_as_input)] = 0.0
+
     pc_array = trim_to_top_beta(pc_array, run_parameters["top_beta_of_sort"])
     pc_array = pc_array / sum(pc_array)
     pc_array = kn.smooth_matrix_with_rwr(pc_array, network_mat, run_parameters)[0]
@@ -98,12 +101,12 @@ def run_net_correlation(run_parameters):
 
     pc_array = pc_array - baseline_array
 
+    pc_array[~np.in1d(spreadsheet_df.index, spreadsheet_genes_as_input)] = -1
+
     result_df = pd.DataFrame(pc_array, index=spreadsheet_df.index.values,
                              columns=['net_correlation']).sort_values("net_correlation", ascending=0)
 
     result_df = result_df.loc[result_df.index.isin(spreadsheet_genes_as_input)]
-
-    result_df[result_df < 0] = 0.0
 
     write_results_dataframe(result_df, run_parameters["results_directory"], "gene_drug_net_correlation")
     return
