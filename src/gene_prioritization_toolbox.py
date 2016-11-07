@@ -120,10 +120,14 @@ def run_bootstrap_net_correlation(run_parameters):
     """
     drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
+    spreadsheet_genes_as_input = spreadsheet_df.index.values
 
     network_df = kn.get_network_df(run_parameters['gg_network_name_full_path'])
     node_1_names, node_2_names = kn.extract_network_node_names(network_df)
     unique_gene_names = kn.find_unique_node_names(node_1_names, node_2_names)
+
+    unique_gene_names = sorted(unique_gene_names)
+
     genes_lookup_table = kn.create_node_names_dict(unique_gene_names)
 
     network_df = kn.map_node_names_to_index(network_df, genes_lookup_table, 'node_1')
@@ -133,10 +137,13 @@ def run_bootstrap_net_correlation(run_parameters):
     network_mat_sparse = kn.convert_network_df_to_sparse(
         network_df, len(unique_gene_names), len(unique_gene_names))
 
-    network_mat = normalize(network_mat_sparse, norm="l1", axis=1)
+    network_mat = normalize(network_mat_sparse, norm="l1", axis=0)
     spreadsheet_df = kn.update_spreadsheet_df(spreadsheet_df, unique_gene_names)
 
-    sample_smooth, iterations = kn.smooth_matrix_with_rwr(spreadsheet_df.as_matrix(), network_mat, run_parameters)
+    sample_smooth, iterations = kn.smooth_matrix_with_rwr(spreadsheet_df.as_matrix(), network_mat.T, run_parameters)
+
+    baseline_array = np.ones(network_mat.shape[0]) / network_mat.shape[0]
+    baseline_array = kn.smooth_matrix_with_rwr(baseline_array, network_mat, run_parameters)[0]
 
     borda_count = np.zeros(sample_smooth.shape[0])
     for bootstrap_number in range(0, run_parameters["number_of_bootstraps"]):
@@ -146,14 +153,18 @@ def run_bootstrap_net_correlation(run_parameters):
 
         drug_response = drug_response_df.values[0, None]
         pc_array = get_correlation(sample_random, drug_response[0, sample_permutation], run_parameters)
+        pc_array[~np.in1d(spreadsheet_df.index, spreadsheet_genes_as_input)] = 0.0
         pc_array = trim_to_top_beta(pc_array, run_parameters["top_beta_of_sort"])
         pc_array = kn.smooth_matrix_with_rwr(pc_array, network_mat, run_parameters)[0]
-        borda_count = sum_vote_to_borda_count(borda_count, np.abs(pc_array))
+        pc_array = pc_array - baseline_array
+        borda_count = sum_vote_to_borda_count(borda_count, pc_array)
 
     borda_count = borda_count / max(borda_count)
     result_df = pd.DataFrame(borda_count, index=spreadsheet_df.index.values,
                              columns=['run_bootstrap_net_correlation']).sort_values("run_bootstrap_net_correlation",
                                                                                     ascending=0)
+    result_df = result_df.loc[result_df.index.isin(spreadsheet_genes_as_input)]
+
     write_results_dataframe(result_df, run_parameters["results_directory"], "gene_drug_network_bootstrap_correlation")
     return
 
