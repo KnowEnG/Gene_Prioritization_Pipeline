@@ -65,8 +65,9 @@ def run_net_correlation(run_parameters):
         run_parameters: parameter set dictionary.
     '''
     drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
+    drug_name = drug_response_df.index.values
+
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
-    spreadsheet_genes_as_input = spreadsheet_df.index.values
     spreadsheet_df = zscore_dataframe(spreadsheet_df)
 
     network_df = kn.get_network_df(run_parameters['gg_network_name_full_path'])
@@ -89,19 +90,20 @@ def run_net_correlation(run_parameters):
 
     diffussion_df = pd.DataFrame(diffussion_matrix, index=unique_gene_names, columns=unique_gene_names)
     d_genes = sorted(list(set(spreadsheet_df.index.values) & set(diffussion_df.index.values)))
+
     diffussion_df = diffussion_df[d_genes]
-    diffussion_df = diffussion_df.loc[d_genes]                                  #   D0 --- > D1
-    diffussion_matrix = normalize(diffussion_df.as_matrix(), norm='l1', axis=0) #   normalize D1
+    diffussion_df = diffussion_df.loc[d_genes]
+    diffussion_matrix = normalize(diffussion_df.as_matrix(), norm='l1', axis=0)
 
     spreadsheet_df = spreadsheet_df.loc[diffussion_df.index.values]
-    sample_smooth = np.dot(diffussion_matrix.T, spreadsheet_df.as_matrix())                 #  D^t * E1  --> E2
+    sample_smooth = np.dot(diffussion_matrix.T, spreadsheet_df.as_matrix())
 
     pc_array = get_correlation(sample_smooth, drug_response_df.values[0], run_parameters)
 
     pc_array = np.abs(trim_to_top_beta(pc_array, run_parameters["top_beta_of_sort"]))
     pc_array = pc_array / sum(pc_array)
 
-    pc_array_df = pd.DataFrame(np.zeros((1,len(unique_gene_names))), index=['C3p5'], columns=unique_gene_names)
+    pc_array_df = pd.DataFrame(np.zeros((1,len(unique_gene_names))), index=[drug_name], columns=unique_gene_names)
     pc_array_df[spreadsheet_df.index.values] = pc_array
 
     pc_array = kn.smooth_matrix_with_rwr(pc_array_df.values[0], network_mat, run_parameters)[0]
@@ -109,15 +111,9 @@ def run_net_correlation(run_parameters):
     baseline_array = np.ones(network_mat.shape[0]) / network_mat.shape[0]
     baseline_array = kn.smooth_matrix_with_rwr(baseline_array, network_mat, run_parameters)[0]
 
-    #pc_array = pc_array - baseline_array
-
     pc_array_df[pc_array_df.columns.values] = pc_array - baseline_array
 
-    result_df = pc_array_df[spreadsheet_df.index.values].sort_values('C3p5', axis=1, ascending=False)
-
-    #result_df = pd.DataFrame(pc_array, index=spreadsheet_df.index.values,
-                             #columns=['net_correlation']).sort_values("net_correlation", ascending=0)
-    #result_df = result_df.loc[result_df.index.isin(spreadsheet_genes_as_input)]
+    result_df = pc_array_df[spreadsheet_df.index.values].sort_values(drug_name, axis=1, ascending=False)
 
     write_results_dataframe(result_df, run_parameters["results_directory"], "gene_drug_net_correlation")
     return
