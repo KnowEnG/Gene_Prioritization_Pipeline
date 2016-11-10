@@ -64,9 +64,10 @@ def run_net_correlation(run_parameters):
     Args:
         run_parameters: parameter set dictionary.
     '''
+
     drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
     drug_name = drug_response_df.index.values
-
+    print('\n\t\trun_net_correlation drug={} {}'.format(drug_name[0], drug_response_df.shape))  # <><><><><><><><><><><>
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
     spreadsheet_df = zscore_dataframe(spreadsheet_df)
 
@@ -99,7 +100,8 @@ def run_net_correlation(run_parameters):
     sample_smooth = np.dot(diffussion_matrix.T, spreadsheet_df.as_matrix())
 
     pc_array = get_correlation(sample_smooth, drug_response_df.values[0], run_parameters)
-
+    n_dupes = pc_array.size - (np.unique(pc_array)).size          # <><><><><><><><><><><><><><><><><><><><><><><><><><>
+    print('\t\tpc_array initial: {} duplicates'.format(n_dupes))  # <><><><><><><><><><><><><><><><><><><><><><><><><><>
     pc_array = np.abs(trim_to_top_beta(pc_array, run_parameters["top_beta_of_sort"]))
     pc_array = pc_array / sum(pc_array)
 
@@ -112,8 +114,9 @@ def run_net_correlation(run_parameters):
     baseline_array = kn.smooth_matrix_with_rwr(baseline_array, network_mat, run_parameters)[0]
 
     pc_array_df[pc_array_df.columns.values] = pc_array - baseline_array
-
-    result_df = pc_array_df[spreadsheet_df.index.values].sort_values(drug_name, axis=1, ascending=False)
+    n_dupes = pc_array.size - (np.unique(pc_array)).size        # <><><><><><><><><><><><><><><><><><><><><><><><><><><>
+    print('\t\tpc_array final: {} duplicates'.format(n_dupes))  # <><><><><><><><><><><><><><><><><><><><><><><><><><><>
+    result_df = pc_array_df[spreadsheet_df.index.values].sort_values(drug_name[0], axis=1, ascending=False)
 
     write_results_dataframe(result_df, run_parameters["results_directory"], "gene_drug_net_correlation")
     return
