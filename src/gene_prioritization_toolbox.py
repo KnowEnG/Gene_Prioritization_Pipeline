@@ -29,7 +29,7 @@ def run_correlation(run_parameters):
     write_results_dataframe(result_df, run_parameters["results_directory"], "gene_drug_correlation")
 
     generate_correlation_output(pc_array, drug_response_df.index.values, spreadsheet_df.index, run_parameters)
-    
+
     return
 
 def generate_correlation_output(pc_array, drug_name, gene_name_list, run_parameters):
@@ -48,7 +48,10 @@ def generate_correlation_output(pc_array, drug_name, gene_name_list, run_paramet
     df_header = ['Response', 'Gene ENSEMBL ID', 'quantitative sorting score', 'visualization score', 'baseline score']
     result_df = pd.DataFrame(output_val, columns=df_header).sort_values("visualization score", ascending=0)
     result_df.index = range(result_df.shape[0])
-    write_results_dataframe(result_df, run_parameters["results_directory"], "correlation_final_result")
+    target_file_base_name = os.path.join(run_parameters["results_directory"], "gene_drug_bootstrap_correlation")
+    file_name = kn.create_timestamped_filename(target_file_base_name) + '.df'
+    result_df.to_csv(file_name, header=True, index=False, sep='\t')
+
     return 
 
 def run_bootstrap_correlation(run_parameters):
