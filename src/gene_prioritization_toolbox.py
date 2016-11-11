@@ -42,14 +42,15 @@ def generate_correlation_output(pc_array, drug_name, gene_name_list, run_paramet
         run_parameters:
     """
     drug_name_list = np.repeat(drug_name, len(gene_name_list))
+    pc_array_base_0 = pc_array - min(pc_array)
     output_val = np.column_stack(
-        (drug_name_list, gene_name_list, np.abs(pc_array), np.abs(pc_array), pc_array))
+        (drug_name_list, gene_name_list, pc_array_base_0, pc_array_base_0, pc_array))
 
     df_header = ['Response', 'Gene ENSEMBL ID', 'quantitative sorting score', 'visualization score', 'baseline score']
     result_df = pd.DataFrame(output_val, columns=df_header).sort_values("visualization score", ascending=0)
     result_df.index = range(result_df.shape[0])
     target_file_base_name = os.path.join(run_parameters["results_directory"], "correlation_final_result")
-    file_name = kn.create_timestamped_filename(target_file_base_name) + '.df'
+    file_name = kn.create_timestamped_filename(target_file_base_name) + '.tsv'
     result_df.to_csv(file_name, header=True, index=False, sep='\t')
 
     return 
@@ -89,6 +90,7 @@ def run_net_correlation(run_parameters):
         run_parameters: parameter set dictionary.
     """
     drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
+    drug_name = drug_response_df.index.values[0]
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
     spreadsheet_df = zscore_dataframe(spreadsheet_df)
     spreadsheet_genes_as_input = spreadsheet_df.index.values
@@ -123,11 +125,13 @@ def run_net_correlation(run_parameters):
     pc_array = kn.smooth_matrix_with_rwr(pc_array, network_mat, run_parameters)[0]
 
     pc_array = pc_array - baseline_array
+    generate_correlation_output(pc_array, drug_name, spreadsheet_df.index.values, run_parameters)
+
     result_df = pd.DataFrame(pc_array, index=spreadsheet_df.index.values,
                              columns=['run_net_correlation']).sort_values("run_net_correlation",
                                                                                     ascending=0)
     result_df = result_df.loc[result_df.index.isin(spreadsheet_genes_as_input)]
-
+    print('\n\t\trun_net_correlation finishing up\n')
     write_results_dataframe(result_df, run_parameters["results_directory"], "gene_drug_network_correlation")
     return
 
