@@ -56,6 +56,9 @@ run_small_data_test:
 run_debug_data_test:
 	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file TEST_1_debug.yml 
 
+run_multi_drug_small:
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file TEST_1_multi_drug_debug.yml 
+
 # ----------------------------------------------------------------
 # - UNIT TESTS RUN SECTION                                       -
 # ----------------------------------------------------------------
