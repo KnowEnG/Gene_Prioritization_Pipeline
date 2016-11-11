@@ -23,10 +23,9 @@ def run_correlation(run_parameters):
 
     pc_array = get_correlation(spreadsheet_df.as_matrix(), drug_response_df.values[0], run_parameters)
 
-    result_df = pd.DataFrame(pc_array, index=spreadsheet_df.index.values,
-                             columns=['PCC']).abs().sort_values("PCC", ascending=0)
-
-    write_results_dataframe(result_df, run_parameters["results_directory"], "gene_drug_correlation")
+    #result_df = pd.DataFrame(pc_array, index=spreadsheet_df.index.values,
+                             #columns=['PCC']).abs().sort_values("PCC", ascending=0)
+    #write_results_dataframe(result_df, run_parameters["results_directory"], "gene_drug_correlation")
 
     generate_correlation_output(pc_array, drug_response_df.index.values, spreadsheet_df.index, run_parameters)
 
@@ -77,9 +76,10 @@ def run_bootstrap_correlation(run_parameters):
         borda_count = sum_vote_to_borda_count(borda_count, np.abs(pc_array))
 
     borda_count = borda_count / max(borda_count)
-    result_df = pd.DataFrame(borda_count, index=spreadsheet_df.index.values,
-                             columns=['PCC']).sort_values("PCC", ascending=0)
-    write_results_dataframe(result_df, run_parameters["results_directory"], "gene_drug_bootstrap_correlation")
+    #result_df = pd.DataFrame(borda_count, index=spreadsheet_df.index.values,
+                             #columns=['PCC']).sort_values("PCC", ascending=0)
+    #write_results_dataframe(result_df, run_parameters["results_directory"], "gene_drug_bootstrap_correlation")
+    generate_correlation_output(borda_count, drug_response_df.index.values, spreadsheet_df.index, run_parameters)
     return
 
 
@@ -90,7 +90,7 @@ def run_net_correlation(run_parameters):
         run_parameters: parameter set dictionary.
     """
     drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
-    drug_name = drug_response_df.index.values[0]
+    #drug_name = drug_response_df.index.values[0]
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
     spreadsheet_df = zscore_dataframe(spreadsheet_df)
     spreadsheet_genes_as_input = spreadsheet_df.index.values
@@ -127,21 +127,13 @@ def run_net_correlation(run_parameters):
 
     pc_array = pc_array - baseline_array
 
-    result_df = pd.DataFrame(pc_array, index=spreadsheet_df.index.values,
-                             columns=['run_net_correlation']).sort_values("run_net_correlation",
-                                                                                    ascending=0)
-    result_df = result_df.loc[result_df.index.isin(spreadsheet_genes_as_input)]
-
-    write_results_dataframe(result_df, run_parameters["results_directory"], drug_name + '_' + "gene_drug_network_correlation")
-
     generate_net_correlation_output(
-        pearson_array, pc_array, drug_response_df.index.values[0], \
+        pearson_array, pc_array, drug_response_df.index.values[0],
         spreadsheet_df.index, spreadsheet_genes_as_input, run_parameters)
 
     return
 
-def generate_net_correlation_output(pearson_array, pc_array, drug_name, \
-    gene_name_list, gene_orig_list, run_parameters):
+def generate_net_correlation_output(pearson_array, pc_array, drug_name, gene_name_list, gene_orig_list, run_parameters):
     """ Save final output of correlation
     
     Args:
@@ -163,8 +155,8 @@ def generate_net_correlation_output(pearson_array, pc_array, drug_name, \
     output_val = np.column_stack(
         (drug_name_list, gene_name_list, pc_array, min_max_pc, pearson_array, percent_array))
 
-    df_header = ['Response', 'Gene ENSEMBL ID', 'quantitative sorting score', 'visualization score', \
-    'baseline score', 'Percent of appearing in restart set']
+    df_header = ['Response', 'Gene ENSEMBL ID', 'quantitative sorting score', 'visualization score',
+                 'baseline score', 'Percent of appearing in restart set']
     result_df = pd.DataFrame(output_val, columns=df_header).sort_values("visualization score", ascending=0)
 
     target_file_base_name = os.path.join(run_parameters["results_directory"], drug_name + '_' + "net_correlation_final_result")
@@ -207,6 +199,8 @@ def run_bootstrap_net_correlation(run_parameters):
     baseline_array = np.ones(network_mat.shape[0]) / network_mat.shape[0]
     baseline_array = kn.smooth_matrix_with_rwr(baseline_array, network_mat, run_parameters)[0]
 
+    pearson_array = get_correlation(sample_smooth,  drug_response_df.values[0], run_parameters)
+
     borda_count = np.zeros(sample_smooth.shape[0])
     for bootstrap_number in range(0, run_parameters["number_of_bootstraps"]):
         sample_random, sample_permutation = sample_a_matrix_pearson(
@@ -223,13 +217,11 @@ def run_bootstrap_net_correlation(run_parameters):
         pc_array = pc_array - baseline_array
         borda_count = sum_vote_to_borda_count(borda_count, pc_array)
 
-    borda_count = borda_count / max(borda_count)
-    result_df = pd.DataFrame(borda_count, index=spreadsheet_df.index.values,
-                             columns=['run_bootstrap_net_correlation']).sort_values("run_bootstrap_net_correlation",
-                                                                                    ascending=0)
-    result_df = result_df.loc[result_df.index.isin(spreadsheet_genes_as_input)]
+    pc_array = borda_count / max(borda_count)
 
-    write_results_dataframe(result_df, run_parameters["results_directory"], "gene_drug_network_bootstrap_correlation")
+    generate_net_correlation_output(
+        pearson_array, pc_array, drug_response_df.index.values[0],
+        spreadsheet_df.index, spreadsheet_genes_as_input, run_parameters)
     return
 
 

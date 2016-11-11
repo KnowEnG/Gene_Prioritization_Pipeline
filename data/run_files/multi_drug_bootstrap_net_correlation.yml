@@ -1,5 +1,6 @@
 # ------------------------------------------------------------------------------------------------------
 # - Analysis Method: correlation, net_correlation, bootstrap_correlation, or bootstrap_net_correlation -
+# - multi_drug_correlation
 # ------------------------------------------------------------------------------------------------------
 method: multi_drug_correlation
 multi_drug_method: bootstrap_net_correlation   
@@ -7,9 +8,9 @@ multi_drug_method: bootstrap_net_correlation
 # pearson, lasso
 correlation_method: pearson
 
-gg_network_name_full_path:  ../data/networks/keg_ST90_4col.edge
-spreadsheet_name_full_path: ../data/spreadsheets/DNMDP_gene_expression.tsv
-drug_response_full_path:    ../data/spreadsheets/DNMDP_single_drug_response.tsv
+gg_network_name_full_path:  ../data/networks/STRING_experimental.tsv
+spreadsheet_name_full_path: ../data/spreadsheets/CCLE_Expression_ensembl.df.txt
+drug_response_full_path:    ../data/spreadsheets/CCLE_drug_ec50_cleaned_NAremoved.tsv
 
 results_directory:           ./run_dir/results
 
@@ -19,10 +20,10 @@ rows_sampling_fraction:     1.0       # 1.0 means 100% of rows    (i.e., no samp
 cols_sampling_fraction:     1.0       # 1.0 means 100% of columns (i.e., no sampling) 
 
 rwr_max_iterations:         100
-rwr_convergence_tolerence:  1.0e-8
+rwr_convergence_tolerence:  1.0e-3
 rwr_restart_probability:    0.5       # Vn+1 = alpha * N * Vn + (1-alpha) * Vo
 
-top_beta_of_sort:           # 0.006414779652318943 # top 100 of 15589 in STRING_experimental.tsv
+top_beta_of_sort:           0.006414779652318943 # top 100 of 15589 in STRING_experimental.tsv
 
 # options: drop_NA, zero_NA
 drop_method:                drop_NA

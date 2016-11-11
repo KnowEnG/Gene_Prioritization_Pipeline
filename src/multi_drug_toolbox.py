@@ -38,7 +38,6 @@ SELECT = {
 
 def run_multi_drug_correlation(run_parameters):
     """  write correlation results for multi-drug (with NAs) input  """
-    print('run_multi_drug_correlation is on the job')
     drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
     genes_list, drugs_list, consolodated_df = get_consolodated_dataframe(spreadsheet_df, drug_response_df)
