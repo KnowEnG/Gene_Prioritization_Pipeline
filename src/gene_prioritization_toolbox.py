@@ -131,11 +131,11 @@ def run_net_correlation(run_parameters):
                              columns=['run_net_correlation']).sort_values("run_net_correlation",
                                                                                     ascending=0)
     result_df = result_df.loc[result_df.index.isin(spreadsheet_genes_as_input)]
-    print('\n\t\trun_net_correlation finishing up\n')
-    write_results_dataframe(result_df, run_parameters["results_directory"], "gene_drug_network_correlation")
+
+    write_results_dataframe(result_df, run_parameters["results_directory"], drug_name + '_' + "gene_drug_network_correlation")
 
     generate_net_correlation_output(
-        pearson_array, pc_array, drug_response_df.index.values, \
+        pearson_array, pc_array, drug_response_df.index.values[0], \
         spreadsheet_df.index, spreadsheet_genes_as_input, run_parameters)
 
     return
@@ -167,7 +167,7 @@ def generate_net_correlation_output(pearson_array, pc_array, drug_name, \
     'baseline score', 'Percent of appearing in restart set']
     result_df = pd.DataFrame(output_val, columns=df_header).sort_values("visualization score", ascending=0)
 
-    target_file_base_name = os.path.join(run_parameters["results_directory"], "net_correlation_final_result")
+    target_file_base_name = os.path.join(run_parameters["results_directory"], drug_name + '_' + "net_correlation_final_result")
     file_name = kn.create_timestamped_filename(target_file_base_name) + '.tsv'
     result_df.to_csv(file_name, header=True, index=False, sep='\t')
 
