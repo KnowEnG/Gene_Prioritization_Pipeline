@@ -41,9 +41,8 @@ def generate_correlation_output(pc_array, drug_name, gene_name_list, run_paramet
         run_parameters:
     """
     drug_name_list = np.repeat(drug_name, len(gene_name_list))
-    pc_array_base_0 = pc_array - min(pc_array)
     output_val = np.column_stack(
-        (drug_name_list, gene_name_list, pc_array_base_0, pc_array_base_0, pc_array))
+        (drug_name_list, gene_name_list, abs(pc_array), abs(pc_array), pc_array))
 
     df_header = ['Response', 'Gene ENSEMBL ID', 'quantitative sorting score', 'visualization score', 'baseline score']
     result_df = pd.DataFrame(output_val, columns=df_header).sort_values("visualization score", ascending=0)
