@@ -66,6 +66,7 @@ def run_net_correlation(run_parameters):
     """
     drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
+    spreadsheet_df = zscore_dataframe(spreadsheet_df)
     spreadsheet_genes_as_input = spreadsheet_df.index.values
 
     network_df = kn.get_network_df(run_parameters['gg_network_name_full_path'])
@@ -115,6 +116,7 @@ def run_bootstrap_net_correlation(run_parameters):
     """
     drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
+    spreadsheet_df = zscore_dataframe(spreadsheet_df)
     spreadsheet_genes_as_input = spreadsheet_df.index.values
 
     network_df = kn.get_network_df(run_parameters['gg_network_name_full_path'])
