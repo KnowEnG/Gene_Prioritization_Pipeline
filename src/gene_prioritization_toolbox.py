@@ -23,10 +23,6 @@ def run_correlation(run_parameters):
 
     pc_array = get_correlation(spreadsheet_df.as_matrix(), drug_response_df.values[0], run_parameters)
 
-    #result_df = pd.DataFrame(pc_array, index=spreadsheet_df.index.values,
-                             #columns=['PCC']).abs().sort_values("PCC", ascending=0)
-    #write_results_dataframe(result_df, run_parameters["results_directory"], "gene_drug_correlation")
-
     generate_correlation_output(pc_array, drug_response_df.index.values, spreadsheet_df.index, run_parameters)
 
     return
@@ -75,9 +71,7 @@ def run_bootstrap_correlation(run_parameters):
         borda_count = sum_vote_to_borda_count(borda_count, np.abs(pc_array))
 
     borda_count = borda_count / max(borda_count)
-    #result_df = pd.DataFrame(borda_count, index=spreadsheet_df.index.values,
-                             #columns=['PCC']).sort_values("PCC", ascending=0)
-    #write_results_dataframe(result_df, run_parameters["results_directory"], "gene_drug_bootstrap_correlation")
+
     generate_correlation_output(borda_count, drug_response_df.index.values, spreadsheet_df.index, run_parameters)
     return
 
