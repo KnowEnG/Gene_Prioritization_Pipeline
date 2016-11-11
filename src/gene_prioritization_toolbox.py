@@ -117,6 +117,7 @@ def run_net_correlation(run_parameters):
     baseline_array = kn.smooth_matrix_with_rwr(baseline_array, network_mat, run_parameters)[0]
 
     pc_array = get_correlation(sample_smooth,  drug_response_df.values[0], run_parameters)
+    Pearson_array = pc_array.copy()
     pc_array[~np.in1d(spreadsheet_df.index, spreadsheet_genes_as_input)] = 0.0
     pc_array = np.abs(trim_to_top_beta(pc_array, run_parameters["top_beta_of_sort"]))
     pc_array = pc_array / sum(pc_array)
@@ -129,8 +130,43 @@ def run_net_correlation(run_parameters):
     result_df = result_df.loc[result_df.index.isin(spreadsheet_genes_as_input)]
 
     write_results_dataframe(result_df, run_parameters["results_directory"], "gene_drug_network_correlation")
+
+    generate_net_correlation_output(
+        Pearson_array, pc_array, drug_response_df.index.values, spreadsheet_df.index, spreadsheet_genes_as_input, run_parameters)
+
     return
 
+def generate_net_correlation_output(Pearson_array, pc_array, drug_name, gene_name_list, gene_orig_list, run_parameters):
+    """ Save final output of correlation
+    
+    Args:
+        Pearson_array:
+        pc_array:
+        drug_name:
+        gene_name_list:
+        gene_orig_list:
+        run_parameters:
+    """
+    mask = np.in1d(gene_name_list, gene_orig_list)
+    pc_array = pc_array[mask]
+    Pearson_array = Pearson_array[mask]
+    min_max_pc = (pc_array-min(pc_array))/(max(pc_array)-min(pc_array))
+
+    gene_name_list = gene_name_list[mask]
+    drug_name_list = np.repeat(drug_name, len(gene_name_list))
+    output_val = np.column_stack(
+        (drug_name_list, gene_name_list, pc_array, min_max_pc, Pearson_array, np.ones(len(gene_name_list), dtype=np.int)))
+
+    df_header = ['Response', 'Gene ENSEMBL ID', 'quantitative sorting score', 'visualization score', \
+    'baseline score', 'Percent of appearing in restart set']
+    result_df = pd.DataFrame(output_val, columns=df_header).sort_values("visualization score", ascending=0)
+
+
+    target_file_base_name = os.path.join(run_parameters["results_directory"], "net_correlation_final_result")
+    file_name = kn.create_timestamped_filename(target_file_base_name) + '.df'
+    result_df.to_csv(file_name, header=True, index=False, sep='\t')
+
+    return 
 
 def run_bootstrap_net_correlation(run_parameters):
     """ perform gene prioritization using bootstrap sampling and network smoothing
