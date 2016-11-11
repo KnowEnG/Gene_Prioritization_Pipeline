@@ -7,8 +7,8 @@ method: net_correlation
 correlation_method: pearson
 
 gg_network_name_full_path:  ../data/networks/STRING_experimental.tsv
-spreadsheet_name_full_path: ../data/spreadsheets/17-AAG_gene_expression.tsv
-drug_response_full_path:    ../data/spreadsheets/17-AAG_single_drug_response.tsv
+spreadsheet_name_full_path: ../data/spreadsheets/DNMDP_gene_expression.tsv
+drug_response_full_path:    ../data/spreadsheets/DNMDP_single_drug_response.tsv
 
 results_directory:           ./run_dir/results
 
