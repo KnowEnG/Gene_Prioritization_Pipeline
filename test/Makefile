@@ -45,6 +45,9 @@ run_bootstrap_correlation:
 run_bootstrap_net_correlation:
 	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file bootstrap_net_correlation.yml 
 
+run_multi_drug_bootstrap_net_correlation:
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file multi_drug_bootstrap_net_correlation.yml 
+
 run_all_correlations: run_correlation run_net_correlation run_bootstrap_correlation run_bootstrap_net_correlation
 
 # ----------------------------------------------------------------
