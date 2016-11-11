@@ -173,9 +173,11 @@ def run_bootstrap_net_correlation(run_parameters):
             run_parameters["cols_sampling_fraction"])
 
         drug_response = drug_response_df.values[0, None]
-        pc_array = get_correlation(sample_random, drug_response[0, sample_permutation], run_parameters)
+        drug_response = drug_response[0, sample_permutation]
+        pc_array = get_correlation(sample_random, drug_response, run_parameters)
         pc_array[~np.in1d(spreadsheet_df.index, spreadsheet_genes_as_input)] = 0.0
-        pc_array = trim_to_top_beta(pc_array, run_parameters["top_beta_of_sort"])
+        pc_array = np.abs(trim_to_top_beta(pc_array, run_parameters["top_beta_of_sort"]))
+        pc_array = pc_array / sum(pc_array)
         pc_array = kn.smooth_matrix_with_rwr(pc_array, network_mat, run_parameters)[0]
         pc_array = pc_array - baseline_array
         borda_count = sum_vote_to_borda_count(borda_count, pc_array)
