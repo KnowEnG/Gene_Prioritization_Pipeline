@@ -27,8 +27,29 @@ def run_correlation(run_parameters):
                              columns=['PCC']).abs().sort_values("PCC", ascending=0)
 
     write_results_dataframe(result_df, run_parameters["results_directory"], "gene_drug_correlation")
+
+    generate_correlation_output(pc_array, drug_response_df.index.values, spreadsheet_df.index, run_parameters)
+    
     return
 
+def generate_correlation_output(pc_array, drug_name, gene_name_list, run_parameters):
+    """ Save final output of correlation
+    
+    Args:
+        pc_array:
+        drug_name:
+        gene_name_list:
+        run_parameters:
+    """
+    drug_name_list = np.repeat(drug_name, len(gene_name_list))
+    output_val = np.column_stack(
+        (drug_name_list, gene_name_list, np.abs(pc_array), np.abs(pc_array), pc_array))
+
+    df_header = ['Response', 'Gene ENSEMBL ID', 'quantitative sorting score', 'visualization score', 'baseline score']
+    result_df = pd.DataFrame(output_val, columns=df_header).sort_values("visualization score", ascending=0)
+    result_df.index = range(result_df.shape[0])
+    write_results_dataframe(result_df, run_parameters["results_directory"], "correlation_final_result")
+    return 
 
 def run_bootstrap_correlation(run_parameters):
     """ perform gene prioritization using bootstrap sampling
