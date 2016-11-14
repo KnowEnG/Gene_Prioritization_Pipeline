@@ -56,21 +56,23 @@ def run_bootstrap_correlation(run_parameters):
     Args:
         run_parameters: parameter set dictionary.
     """
+    if run_parameters["number_of_bootstraps"] <= 1:
+        run_correlation(run_parameters)
+        return
+    
     drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
 
-    borda_count = np.int_(np.zeros(spreadsheet_df.shape[0]))
-    pc_array = borda_count
+    pc_array = np.int_(np.zeros(spreadsheet_df.shape[0]))
     for bootstrap_number in range(0, run_parameters["number_of_bootstraps"]):
         sample_random, sample_permutation = sample_a_matrix_pearson(
             spreadsheet_df.as_matrix(), run_parameters["rows_sampling_fraction"],
             run_parameters["cols_sampling_fraction"])
-
+        #print('bootstrap_number {}'.format(bootstrap_number))
         drug_response = drug_response_df.values[0, None]
         drug_response = drug_response[0, sample_permutation]
         pc_array = get_correlation(sample_random, drug_response, run_parameters)
-        save_a_sample_correlation(pc_array, run_parameters) # <><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-        borda_count = sum_vote_to_borda_count(borda_count, np.abs(pc_array))
+        save_a_sample_correlation(pc_array, run_parameters)
 
     pcc_gm_array, borda_count, pc_array = get_bootstrap_correlation_score(run_parameters, pc_array)
     kn.remove_dir(run_parameters["pc_array_tmp_dir"])
@@ -94,7 +96,7 @@ def generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pc_array, d
     df_header = ['Response', 'Gene ENSEMBL ID', 'quantitative sorting score', 'visualization score', 'baseline score']
     result_df = pd.DataFrame(output_val, columns=df_header).sort_values("quantitative sorting score", ascending=0)
     result_df.index = range(result_df.shape[0])
-    target_file_base_name = os.path.join(run_parameters["results_directory"], drug_name + '_' + "correlation_final_result")
+    target_file_base_name = os.path.join(run_parameters["results_directory"], drug_name + '_' + "_bootstrap_correlation_final_result")
     file_name = kn.create_timestamped_filename(target_file_base_name) + '.tsv'
     result_df.to_csv(file_name, header=True, index=False, sep='\t')
 
