@@ -77,8 +77,9 @@ def run_bootstrap_correlation(run_parameters):
 
     pcc_gm_array, borda_count= get_bootstrap_correlation_score(run_parameters, pc_array.size)
     kn.remove_dir(run_parameters["pc_array_tmp_dir"])
-
-    generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pearson_array, drug_response_df.index.values[0], spreadsheet_df.index, run_parameters)
+    run_parameters['out_filename'] = 'bootstrap_correlation'
+    generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pearson_array, drug_response_df.index.values[0],
+                                          spreadsheet_df.index, run_parameters)
     return
 
 def generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pc_array, drug_name, gene_name_list, run_parameters):
@@ -97,7 +98,7 @@ def generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pc_array, d
     df_header = ['Response', 'Gene ENSEMBL ID', 'quantitative sorting score', 'visualization score', 'baseline score']
     result_df = pd.DataFrame(output_val, columns=df_header).sort_values("quantitative sorting score", ascending=0)
     result_df.index = range(result_df.shape[0])
-    target_file_base_name = os.path.join(run_parameters["results_directory"], drug_name + '_' + "_bootstrap_correlation_final_result")
+    target_file_base_name = os.path.join(run_parameters["results_directory"], drug_name + '_' + run_parameters['out_filename'])
     file_name = kn.create_timestamped_filename(target_file_base_name) + '.tsv'
     result_df.to_csv(file_name, header=True, index=False, sep='\t')
 
@@ -192,6 +193,10 @@ def run_bootstrap_net_correlation(run_parameters):
     Args:
         run_parameters: parameter set dictionary.
     """
+    if run_parameters["number_of_bootstraps"] <= 1:
+        run_net_correlation(run_parameters)
+        return
+
     drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
     spreadsheet_df = zscore_dataframe(spreadsheet_df)
@@ -221,8 +226,6 @@ def run_bootstrap_net_correlation(run_parameters):
     baseline_array = kn.smooth_matrix_with_rwr(baseline_array, network_mat, run_parameters)[0]
 
     pearson_array = get_correlation(sample_smooth,  drug_response_df.values[0], run_parameters)
-
-    borda_count = np.zeros(sample_smooth.shape[0])
     for bootstrap_number in range(0, run_parameters["number_of_bootstraps"]):
         sample_random, sample_permutation = sample_a_matrix_pearson(
             sample_smooth, run_parameters["rows_sampling_fraction"],
@@ -236,14 +239,14 @@ def run_bootstrap_net_correlation(run_parameters):
         pc_array = pc_array / sum(pc_array)
         pc_array = kn.smooth_matrix_with_rwr(pc_array, network_mat, run_parameters)[0]
         pc_array = pc_array - baseline_array
-        save_a_sample_correlation(pc_array, run_parameters) # <><><><><><><><><><><><><><><><>&~<><><><><><><><>&~<><><>
-        borda_count = sum_vote_to_borda_count(borda_count, pc_array)
+        save_a_sample_correlation(pc_array, run_parameters)
 
-    pc_array = borda_count / max(borda_count)
+    run_parameters['out_filename'] = 'bootstrap_net_correlation'
+    pcc_gm_array, borda_count = get_bootstrap_net_correlation_score(run_parameters, pearson_array.size)
+    kn.remove_dir(run_parameters["pc_array_tmp_dir"])
 
-    generate_net_correlation_output(
-        pearson_array, pc_array, drug_response_df.index.values[0],
-        spreadsheet_df.index, spreadsheet_genes_as_input, run_parameters)
+    generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pearson_array, drug_response_df.index.values[0],
+                                          spreadsheet_df.index, run_parameters)
     return
 
 
@@ -407,11 +410,10 @@ def get_bootstrap_correlation_score(run_parameters, n_rows):
 
     return pcc_gm_array, borda_count
 
-def get_bootstrap_net_correlation_score(run_parameters, pc_array):
+def get_bootstrap_net_correlation_score(run_parameters, n_rows):
     """
-
+    pcc_gm_array, borda_count = get_bootstrap_net_correlation_score(run_parameters, n_rows)
     """
-    n_rows = pc_array.size
     tmp_dir = run_parameters['pc_array_tmp_dir']
     dir_list = os.listdir(tmp_dir)
     n_cols = len(dir_list)
@@ -422,18 +424,14 @@ def get_bootstrap_net_correlation_score(run_parameters, pc_array):
         if tmp_f[0:16] == 'sampled_pc_array':
             pc_name = os.path.join(tmp_dir, tmp_f)
             corr_array = np.load(pc_name)
-            sum_vote_to_borda_count(borda_count, np.abs(corr_array))
-            pc_array_vectors[:,current_column] = corr_array
+            sum_vote_to_borda_count(borda_count, corr_array)
+            corr_array = corr_array - min(corr_array)
+            pc_array_vectors[:,current_column] = corr_array / max(corr_array)
             current_column += 1
-
-
 
     borda_count = borda_count / max(borda_count)
 
     pc_array_vectors = pc_array_vectors[:,0:current_column - 1]
-    pc_array = np.mean(pc_array_vectors, axis=1)
-    pc_array_vectors = np.abs(pc_array_vectors)
-    pc_array_vectors_gm_max = max(gmean(pc_array_vectors, axis=1))
-    pcc_gm_array = gmean(pc_array_vectors / pc_array_vectors_gm_max, axis=1)
+    pcc_gm_array = gmean(pc_array_vectors, axis=1)
 
-    return pcc_gm_array, borda_count, pc_array
+    return pcc_gm_array, borda_count
