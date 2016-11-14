@@ -18,9 +18,10 @@ spreadsheet_name_full_path:  ../data/spreadsheets/test1_gene_sample.tsv
 drug_response_full_path:     ../data/spreadsheets/test1_response.tsv
 
 # --------------------------------------------------------------------
-# - directory where the result files will be written                 -
+# - directory where the result and temporary files will be written   -
 # --------------------------------------------------------------------
-results_directory:            ./run_dir/results
+results_directory:          ./run_dir/results
+pc_array_tmp_dir:           ./run_dir/tmp_pc_array
 
 # --------------------------------------------------------------------
 # - Number of random samplings                                       -

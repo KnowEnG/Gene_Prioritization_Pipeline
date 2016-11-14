@@ -15,6 +15,7 @@ drug_response_full_path:    ../data/spreadsheets/TEST_1_response.tsv
 # drug_response_full_path:    ../data/spreadsheets/Test_2_response.txt
 
 results_directory:          ../test/run_dir/results
+pc_array_tmp_dir:           ../test/run_dir/tmp_pc_array
 
 number_of_bootstraps:       1
 

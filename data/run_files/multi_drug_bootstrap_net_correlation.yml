@@ -13,6 +13,7 @@ spreadsheet_name_full_path: ../data/spreadsheets/CCLE_Expression_ensembl.df.txt
 drug_response_full_path:    ../data/spreadsheets/CCLE_drug_ec50_cleaned_NAremoved.tsv
 
 results_directory:           ./run_dir/results
+pc_array_tmp_dir:           ./run_dir/tmp_pc_array
 
 number_of_bootstraps:       1
 

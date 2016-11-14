@@ -7,6 +7,7 @@ import pandas as pd
 
 from scipy.stats import pearsonr as pcc
 from scipy.stats.mstats import zscore
+from scipy.stats.mstats import gmean
 from sklearn.preprocessing import normalize
 from sklearn.linear_model import LassoCV
 
@@ -59,6 +60,7 @@ def run_bootstrap_correlation(run_parameters):
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
 
     borda_count = np.int_(np.zeros(spreadsheet_df.shape[0]))
+    pc_array = borda_count
     for bootstrap_number in range(0, run_parameters["number_of_bootstraps"]):
         sample_random, sample_permutation = sample_a_matrix_pearson(
             spreadsheet_df.as_matrix(), run_parameters["rows_sampling_fraction"],
@@ -67,12 +69,35 @@ def run_bootstrap_correlation(run_parameters):
         drug_response = drug_response_df.values[0, None]
         drug_response = drug_response[0, sample_permutation]
         pc_array = get_correlation(sample_random, drug_response, run_parameters)
-
+        save_a_sample_correlation(pc_array, run_parameters) # <><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
         borda_count = sum_vote_to_borda_count(borda_count, np.abs(pc_array))
 
-    borda_count = borda_count / max(borda_count)
+    pcc_gm_array, borda_count, pc_array = get_bootstrap_correlation_score(run_parameters, pc_array)
+    kn.remove_dir(run_parameters["pc_array_tmp_dir"])
 
-    generate_correlation_output(borda_count, drug_response_df.index.values[0], spreadsheet_df.index, run_parameters)
+    generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pc_array, drug_response_df.index.values[0], spreadsheet_df.index, run_parameters)
+    return
+
+def generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pc_array, drug_name, gene_name_list, run_parameters):
+    """ Save final output of correlation
+
+    Args:
+        pc_array:
+        drug_name:
+        gene_name_list:
+        run_parameters:
+    """
+    drug_name_list = np.repeat(drug_name, len(gene_name_list))
+    output_val = np.column_stack(
+        (drug_name_list, gene_name_list, borda_count, pcc_gm_array, pc_array))
+
+    df_header = ['Response', 'Gene ENSEMBL ID', 'quantitative sorting score', 'visualization score', 'baseline score']
+    result_df = pd.DataFrame(output_val, columns=df_header).sort_values("quantitative sorting score", ascending=0)
+    result_df.index = range(result_df.shape[0])
+    target_file_base_name = os.path.join(run_parameters["results_directory"], drug_name + '_' + "correlation_final_result")
+    file_name = kn.create_timestamped_filename(target_file_base_name) + '.tsv'
+    result_df.to_csv(file_name, header=True, index=False, sep='\t')
+
     return
 
 
@@ -326,3 +351,50 @@ def zscore_dataframe(gxs_df):
     """
     zscore_df = (gxs_df.sub(gxs_df.mean(axis=1), axis=0)).truediv(np.maximum(gxs_df.std(axis=1), 1e-12), axis=0)
     return zscore_df
+
+def save_a_sample_correlation(pc_array, run_parameters):
+    """ Save a correlation array to the pc_array_tmp_dir
+    Args:
+        pc_array:
+        run_paramters: with key 'pc_array_tmp_dir'
+    """
+    tmp_dir = run_parameters['pc_array_tmp_dir']
+    os.makedirs(tmp_dir, mode=0o755, exist_ok=True)
+    tmp_filename = kn.create_timestamped_filename('sampled_pc_array', name_extension=None, precision=1e12)
+
+    pc_array_filename = os.path.join(tmp_dir, tmp_filename)
+    with open(pc_array_filename , 'wb') as tmp_file_handle:
+        pc_array.dump(tmp_file_handle)
+
+    return
+
+def get_bootstrap_correlation_score(run_parameters, pc_array):
+    """
+
+    """
+    n_rows = pc_array.size
+    tmp_dir = run_parameters['pc_array_tmp_dir']
+    dir_list = os.listdir(tmp_dir)
+    n_cols = len(dir_list)
+    pc_array_vectors = np.zeros((n_rows, n_cols))
+    borda_count = np.zeros(n_rows)
+    current_column = 0
+    for tmp_f in dir_list:
+        if tmp_f[0:16] == 'sampled_pc_array':
+            pc_name = os.path.join(tmp_dir, tmp_f)
+            corr_array = np.load(pc_name)
+            sum_vote_to_borda_count(borda_count, np.abs(corr_array))
+            pc_array_vectors[:,current_column] = corr_array
+            current_column += 1
+
+
+
+    borda_count = borda_count / max(borda_count)
+
+    pc_array_vectors = pc_array_vectors[:,0:current_column - 1]
+    pc_array = np.mean(pc_array_vectors, axis=1)
+    pc_array_vectors = np.abs(pc_array_vectors)
+    pc_array_vectors_gm_max = max(gmean(pc_array_vectors, axis=1))
+    pcc_gm_array = gmean(pc_array_vectors / pc_array_vectors_gm_max, axis=1)
+
+    return pcc_gm_array, borda_count, pc_array

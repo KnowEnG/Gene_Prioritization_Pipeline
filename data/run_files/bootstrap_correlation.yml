@@ -6,10 +6,11 @@ method: bootstrap_correlation
 # pearson, lasso
 correlation_method: pearson       
 
-spreadsheet_name_full_path: ../data/spreadsheets/DNMDP_gene_expression.tsv
-drug_response_full_path:    ../data/spreadsheets/DNMDP_single_drug_response.tsv
+spreadsheet_name_full_path: ../data/spreadsheets/17-AAG_drop_NA_gene_expression.tsv
+drug_response_full_path:    ../data/spreadsheets/17-AAG_drop_NA_single_drug_response.tsv
 
 results_directory:           ./run_dir/results
+pc_array_tmp_dir:           ./run_dir/tmp_pc_array
 
 number_of_bootstraps:       1
 

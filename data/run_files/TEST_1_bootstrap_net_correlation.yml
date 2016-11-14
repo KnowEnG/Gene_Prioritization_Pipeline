@@ -11,6 +11,7 @@ spreadsheet_name_full_path: ../data/spreadsheets/TEST_1_gene_sample.tsv
 drug_response_full_path:    ../data/spreadsheets/TEST_1_response.tsv
 
 results_directory:          ./run_dir/results
+pc_array_tmp_dir:           ./run_dir/tmp_pc_array
 
 number_of_bootstraps:       1
 
