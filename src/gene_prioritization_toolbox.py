@@ -152,6 +152,7 @@ def run_net_correlation(run_parameters):
 
     pc_array = pc_array - baseline_array
     min_max_pc = (pc_array - min(pc_array)) / (max(pc_array) - min(pc_array))
+
     generate_net_correlation_output(
         pearson_array, pc_array, min_max_pc, restart_accumulator, drug_response_df.index.values[0],
         spreadsheet_df.index, spreadsheet_genes_as_input, run_parameters)
@@ -177,7 +178,6 @@ def generate_net_correlation_output(pearson_array, pc_array, min_max_pc, restart
     gene_name_list = gene_name_list[mask]
     restart_accumulator = restart_accumulator[mask]
     drug_name_list = np.repeat(drug_name, len(gene_name_list))
-    #min_max_pc = (pc_array - min(pc_array)) / (max(pc_array) - min(pc_array))
 
     output_val = np.column_stack(
         (drug_name_list, gene_name_list, pc_array, min_max_pc, pearson_array, restart_accumulator))
