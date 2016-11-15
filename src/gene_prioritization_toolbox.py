@@ -144,18 +144,21 @@ def run_net_correlation(run_parameters):
     pearson_array = pc_array.copy()
     pc_array[~np.in1d(spreadsheet_df.index, spreadsheet_genes_as_input)] = 0.0
     pc_array = np.abs(trim_to_top_beta(pc_array, run_parameters["top_beta_of_sort"]))
+    restart_accumulator = pc_array.copy()
+    restart_accumulator[restart_accumulator != 0] = 1
+
     pc_array = pc_array / sum(pc_array)
     pc_array = kn.smooth_matrix_with_rwr(pc_array, network_mat, run_parameters)[0]
 
     pc_array = pc_array - baseline_array
 
     generate_net_correlation_output(
-        pearson_array, pc_array, drug_response_df.index.values[0],
+        pearson_array, pc_array, restart_accumulator, drug_response_df.index.values[0],
         spreadsheet_df.index, spreadsheet_genes_as_input, run_parameters)
 
     return
 
-def generate_net_correlation_output(pearson_array, pc_array, drug_name, gene_name_list, gene_orig_list, run_parameters):
+def generate_net_correlation_output(pearson_array, pc_array, restart_accumulator, drug_name, gene_name_list, gene_orig_list, run_parameters):
     """ Save final output of correlation
     
     Args:
@@ -170,15 +173,15 @@ def generate_net_correlation_output(pearson_array, pc_array, drug_name, gene_nam
     pc_array = pc_array[mask]
     pearson_array = pearson_array[mask]
     gene_name_list = gene_name_list[mask]
-    percent_array = np.ones(len(gene_name_list), dtype=np.int)  
+    restart_accumulator = restart_accumulator[mask]
     drug_name_list = np.repeat(drug_name, len(gene_name_list))
     min_max_pc = (pc_array - min(pc_array)) / (max(pc_array) - min(pc_array))
 
     output_val = np.column_stack(
-        (drug_name_list, gene_name_list, pc_array, min_max_pc, pearson_array, percent_array))
+        (drug_name_list, gene_name_list, pc_array, min_max_pc, pearson_array, restart_accumulator))
 
     df_header = ['Response', 'Gene ENSEMBL ID', 'quantitative sorting score', 'visualization score',
-                 'baseline score', 'Percent of appearing in restart set']
+                 'baseline score', 'Percent appearing in restart set']
     result_df = pd.DataFrame(output_val, columns=df_header).sort_values("visualization score", ascending=0)
 
     target_file_base_name = os.path.join(run_parameters["results_directory"], drug_name + '_' + "net_correlation_final_result")
