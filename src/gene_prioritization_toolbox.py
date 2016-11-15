@@ -151,14 +151,15 @@ def run_net_correlation(run_parameters):
     pc_array = kn.smooth_matrix_with_rwr(pc_array, network_mat, run_parameters)[0]
 
     pc_array = pc_array - baseline_array
-
+    min_max_pc = (pc_array - min(pc_array)) / (max(pc_array) - min(pc_array))
     generate_net_correlation_output(
-        pearson_array, pc_array, restart_accumulator, drug_response_df.index.values[0],
+        pearson_array, pc_array, min_max_pc, restart_accumulator, drug_response_df.index.values[0],
         spreadsheet_df.index, spreadsheet_genes_as_input, run_parameters)
 
     return
 
-def generate_net_correlation_output(pearson_array, pc_array, restart_accumulator, drug_name, gene_name_list, gene_orig_list, run_parameters):
+def generate_net_correlation_output(pearson_array, pc_array, min_max_pc, restart_accumulator,
+                                    drug_name, gene_name_list, gene_orig_list, run_parameters):
     """ Save final output of correlation
     
     Args:
@@ -172,10 +173,11 @@ def generate_net_correlation_output(pearson_array, pc_array, restart_accumulator
     mask = np.in1d(gene_name_list, gene_orig_list)
     pc_array = pc_array[mask]
     pearson_array = pearson_array[mask]
+    min_max_pc = min_max_pc[mask]
     gene_name_list = gene_name_list[mask]
     restart_accumulator = restart_accumulator[mask]
     drug_name_list = np.repeat(drug_name, len(gene_name_list))
-    min_max_pc = (pc_array - min(pc_array)) / (max(pc_array) - min(pc_array))
+    #min_max_pc = (pc_array - min(pc_array)) / (max(pc_array) - min(pc_array))
 
     output_val = np.column_stack(
         (drug_name_list, gene_name_list, pc_array, min_max_pc, pearson_array, restart_accumulator))
@@ -225,6 +227,7 @@ def run_bootstrap_net_correlation(run_parameters):
 
     sample_smooth, iterations = kn.smooth_matrix_with_rwr(spreadsheet_df.as_matrix(), network_mat.T, run_parameters)
 
+    restart_accumulator = np.zeros(network_mat.shape[0])
     baseline_array = np.ones(network_mat.shape[0]) / network_mat.shape[0]
     baseline_array = kn.smooth_matrix_with_rwr(baseline_array, network_mat, run_parameters)[0]
 
@@ -239,17 +242,21 @@ def run_bootstrap_net_correlation(run_parameters):
         pc_array = get_correlation(sample_random, drug_response, run_parameters)
         pc_array[~np.in1d(spreadsheet_df.index, spreadsheet_genes_as_input)] = 0.0
         pc_array = np.abs(trim_to_top_beta(pc_array, run_parameters["top_beta_of_sort"]))
+        restart_accumulator[pc_array != 0] += 1
+
         pc_array = pc_array / sum(pc_array)
         pc_array = kn.smooth_matrix_with_rwr(pc_array, network_mat, run_parameters)[0]
         pc_array = pc_array - baseline_array
         save_a_sample_correlation(pc_array, run_parameters)
 
+    restart_accumulator = restart_accumulator / run_parameters["number_of_bootstraps"]
     run_parameters['out_filename'] = 'bootstrap_net_correlation'
     pcc_gm_array, borda_count = get_bootstrap_net_correlation_score(run_parameters, pearson_array.size)
     kn.remove_dir(run_parameters["pc_array_tmp_dir"])
 
-    generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pearson_array, drug_response_df.index.values[0],
-                                          spreadsheet_df.index, run_parameters)
+    generate_net_correlation_output(
+        pearson_array, borda_count, pcc_gm_array, restart_accumulator, drug_response_df.index.values[0],
+        spreadsheet_df.index, spreadsheet_genes_as_input, run_parameters)
     return
 
 
