@@ -32,10 +32,10 @@ def generate_correlation_output(pc_array, drug_name, gene_name_list, run_paramet
     """ Save final output of correlation
     
     Args:
-        pc_array:
-        drug_name:
-        gene_name_list:
-        run_parameters:
+        pc_array: pearson correlation coefficient array
+        drug_name: name of the drug
+        gene_name_list: list of the genes correlated (size of pc_array
+        run_parameters: dictionary of run parameters with key 'results_directory'
     """
     drug_name_list = np.repeat(drug_name, len(gene_name_list))
     output_val = np.column_stack(
@@ -86,10 +86,10 @@ def generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pc_array, d
     """ Save final output of correlation
 
     Args:
-        pc_array:
-        drug_name:
-        gene_name_list:
-        run_parameters:
+        pc_array: pearson correlation coefficient array
+        drug_name: name of the drug
+        gene_name_list: list of the genes correlated (size of pc_array
+        run_parameters: dictionary of run parameters with key 'results_directory'
     """
     drug_name_list = np.repeat(drug_name, len(gene_name_list))
     output_val = np.column_stack(
@@ -161,15 +161,15 @@ def run_net_correlation(run_parameters):
 
 def generate_net_correlation_output(pearson_array, pc_array, min_max_pc, restart_accumulator,
                                     drug_name, gene_name_list, gene_orig_list, run_parameters):
-    """ Save final output of correlation
+    """ Save final output of correlation with network
     
     Args:
-        pearson_array:
-        pc_array:
-        drug_name:
-        gene_name_list:
-        gene_orig_list:
-        run_parameters:
+        pearson_array: pearson correlation coefficient array
+        pc_array: correlation score used to sort genes
+        drug_name: name of the drug correlated
+        gene_name_list: list of genes correlated (pc_array & all will be trimmed to these)
+        gene_orig_list: original list of genes - size of pc_array
+        run_parameters: with key 'results_directory'
     """
     mask = np.in1d(gene_name_list, gene_orig_list)
     pc_array = pc_array[mask]
@@ -261,15 +261,17 @@ def run_bootstrap_net_correlation(run_parameters):
 
 
 def get_correlation(spreadsheet, drug_response, run_parameters, normalize=True, max_iter=1e6):
-    """
+    """ correlation function definition for all run methods
+
     Args:
-        spreadsheet:
-        drug_response:
-        run_parameters:
-        normalize:
-        max_iter:
+        spreadsheet: genes x samples
+        drug_response: one x samples
+        run_parameters: with key 'correlation_method'
+        normalize: for lasso only
+        max_iter: for lasso only
+
     Returns:
-        correlation_array
+        correlation_array: genes x one
     """
     correlation_array = np.zeros(spreadsheet.shape[0])
     if 'correlation_method' in run_parameters:
@@ -378,6 +380,7 @@ def zscore_dataframe(gxs_df):
 
 def save_a_sample_correlation(pc_array, run_parameters):
     """ Save a correlation array to the pc_array_tmp_dir
+
     Args:
         pc_array:
         run_paramters: with key 'pc_array_tmp_dir'
@@ -394,8 +397,15 @@ def save_a_sample_correlation(pc_array, run_parameters):
 
 
 def get_bootstrap_correlation_score(run_parameters, n_rows):
-    """
+    """ correlation scoring for bootstraps without network
 
+    Args:
+        run_parameters: with key 'pc_array_tmp_dir'
+        n_rows: number of genes in the files that will open
+
+    Returns:
+        pcc_gm_array: geometric mean of gene-drug correlation of all temporary files
+        borda_count:  borda ranking of the same
     """
     tmp_dir = run_parameters['pc_array_tmp_dir']
     dir_list = os.listdir(tmp_dir)
@@ -421,8 +431,15 @@ def get_bootstrap_correlation_score(run_parameters, n_rows):
     return pcc_gm_array, borda_count
 
 def get_bootstrap_net_correlation_score(run_parameters, n_rows):
-    """
-    pcc_gm_array, borda_count = get_bootstrap_net_correlation_score(run_parameters, n_rows)
+    """ correlation scoring for bootstraps without network
+
+    Args:
+        run_parameters: with key 'pc_array_tmp_dir'
+        n_rows: number of genes in the files that will open
+
+    Returns:
+        pcc_gm_array: geometric mean of gene-drug correlation of all temporary files
+        borda_count:  borda ranking of the same
     """
     tmp_dir = run_parameters['pc_array_tmp_dir']
     dir_list = os.listdir(tmp_dir)
