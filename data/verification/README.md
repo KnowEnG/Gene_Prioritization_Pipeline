@@ -13,12 +13,25 @@ The Makefile in the test directory contains the targes, needed to build the **Ge
     make run_small_data_test
 ```
 
-### 2. Compare the results with verification file: **TEST_1_bootstrap_net_correlstion_RESULTS.txt**
-```
-    open the verification file in exel or a text editor, compare the result file with a name like this:
-    run_dir/results/TEST_1_bootstrap_net_correlation_XXXXX..... .txt
-```
+* Compare the results with verification file: **TEST_1_bootstrap_net_correlstion_RESULTS.txt**
+
+* The result file will be in **run_dir/results/**  TEST_1_bootstrap_net_correlation_XXX_a_timestamp_XXX.txt
 
 * Results files are all based on the yaml parameter files preserved in **verification_yaml_set_used.zip**
 
 * If the results are not equal, unzip the file in **data/verification** and replace the .yml files in **test/run_dir**
+
+### 2. Run the other targets in the **test/Makefile**
+```
+    make run_correlation
+        or
+    make run_bootstrap_correlation
+```
+* Results will match **data/verification/17-AAG_correlation_final_result.txt**
+
+```
+    make run_bootstrap_net_correlation
+        or
+    make run_net_correlation
+```
+* Results will match **data/verification/17-AAG_net_correlation_final_result.txt**
