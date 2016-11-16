@@ -38,7 +38,7 @@ The Makefile in the test directory contains the targes, needed to build the **Ge
 ```
 * Results will match **data/verification/17-AAG_net_correlation_final_result.txt**
 
-*
+#
 
 ```
     make run_multi_drug_small
