@@ -1,42 +1,21 @@
-# Building The Gene Prioritization Pipeline Docker Image
-The Dockefile in this directory contains all the commands, in order, needed to build the **Gene Prioritization Pipeline** docker image.
+# Verification directory files are benchmark result files
+The Makefile in the test directory contains the targes, needed to build the **Gene Prioritization Pipeline** benchmarks.
 
 
-* Run the "make" command to build the **Gene Prioritization Pipeline** docker image (output: docker image called "gene_prioritization_pipeline" and a tag with today's date and time):
+* Follow the instructions on the **Gene Prioritization Pipeline** landing page to set up the environmet:
 ```
-    make build_docker_image
+    cd Gene_Prioritization_Pipeline/test
+    make decompress_input_data
+    make env_setup
 ```
-
-* Login to docker hub. When prompted, enter your password and press enter:
+### 1. Run the small data test
 ```
-    make login_to_dockerhub username=(enter your docker login here) email=(enter your email here)
-```
-
-* Upload your image to docker hub:
-```
-    make push_to_dockerhub
+    make run_small_data_test
 ```
 
-* * * 
-## How to run this docker image
-* * * 
-
-### 1. Run the following command with the specified docker image:
+### 2. Compare the results with verification file: TEST_1_bootstrap_net_correlstion_RESULTS.txt
 ```
-docker run -v `pwd`:/home/test/run_dir/ -it knowengdev/gene_prioritization_pipeline:11_01_2016 
+    open the verification file in exel or a text editor, compare the result file with a name like this:
+    run_dir/results/TEST_1_bootstrap_net_correlation_XXXXX..... .txt
 ```
 
-### 2. Change directory to the "test" directory
-```
-cd test
-```
-
-### 3. Create the local directory "run_dir" and place all the run files in it
-```
-make env_setup
-```
-
-### 4. Run the Gene Prioritization Pipeline
-```
-make correlation
-```
