@@ -19,8 +19,8 @@ rows_sampling_fraction:     1.0       # 1.0 means 100% of rows    (i.e., no samp
 cols_sampling_fraction:     1.0       # 1.0 means 100% of columns (i.e., no sampling) 
 
 rwr_max_iterations:         100
-rwr_convergence_tolerence:  1.0e-8
+rwr_convergence_tolerence:  1.0e-3
 rwr_restart_probability:    0.5       # Vn+1 = alpha * N * Vn + (1-alpha) * Vo
 
-top_beta_of_sort:           0.8       # top 100% of smoothed genes Expression data (i.e., all)
+top_beta_of_sort:           0.286     # top 100% of smoothed genes Expression data (i.e., all)
 
