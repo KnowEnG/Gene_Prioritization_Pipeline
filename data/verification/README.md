@@ -13,9 +13,14 @@ The Makefile in the test directory contains the targes, needed to build the **Ge
     make run_small_data_test
 ```
 
-### 2. Compare the results with verification file: TEST_1_bootstrap_net_correlstion_RESULTS.txt
+### 2. Compare the results with verification file: **TEST_1_bootstrap_net_correlstion_RESULTS.txt**
 ```
     open the verification file in exel or a text editor, compare the result file with a name like this:
     run_dir/results/TEST_1_bootstrap_net_correlation_XXXXX..... .txt
 ```
 
+### 2. Results files are all based on the yaml parameter files preserved in **verification_yaml_set_used.zip**
+```
+    If the results are not equal,
+    try replacing the *.yml files in test/run_dir with the preserves
+```
