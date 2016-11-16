@@ -24,6 +24,8 @@ def run_correlation(run_parameters):
 
     pc_array = get_correlation(spreadsheet_df.as_matrix(), drug_response_df.values[0], run_parameters)
 
+    run_parameters['out_filename'] = 'correlation'
+
     generate_correlation_output(pc_array, drug_response_df.index.values[0], spreadsheet_df.index, run_parameters)
 
     return
@@ -44,7 +46,7 @@ def generate_correlation_output(pc_array, drug_name, gene_name_list, run_paramet
     df_header = ['Response', 'Gene ENSEMBL ID', 'quantitative sorting score', 'visualization score', 'baseline score']
     result_df = pd.DataFrame(output_val, columns=df_header).sort_values("visualization score", ascending=0)
     result_df.index = range(result_df.shape[0])
-    target_file_base_name = os.path.join(run_parameters["results_directory"], drug_name + '_' + "correlation_final_result")
+    target_file_base_name = os.path.join(run_parameters["results_directory"], drug_name + '_' + run_parameters['out_filename'])
     file_name = kn.create_timestamped_filename(target_file_base_name) + '.tsv'
     result_df.to_csv(file_name, header=True, index=False, sep='\t')
 
@@ -153,6 +155,8 @@ def run_net_correlation(run_parameters):
     pc_array = pc_array - baseline_array
     min_max_pc = (pc_array - min(pc_array)) / (max(pc_array) - min(pc_array))
 
+    run_parameters['out_filename'] = 'net_correlation'
+
     generate_net_correlation_output(
         pearson_array, pc_array, min_max_pc, restart_accumulator, drug_response_df.index.values[0],
         spreadsheet_df.index, spreadsheet_genes_as_input, run_parameters)
@@ -186,7 +190,7 @@ def generate_net_correlation_output(pearson_array, pc_array, min_max_pc, restart
                  'baseline score', 'Percent appearing in restart set']
     result_df = pd.DataFrame(output_val, columns=df_header).sort_values("visualization score", ascending=0)
 
-    target_file_base_name = os.path.join(run_parameters["results_directory"], drug_name + '_' + "net_correlation_final_result")
+    target_file_base_name = os.path.join(run_parameters["results_directory"], drug_name + '_' + run_parameters['out_filename'])
     file_name = kn.create_timestamped_filename(target_file_base_name) + '.tsv'
     result_df.to_csv(file_name, header=True, index=False, sep='\t')
 
@@ -253,6 +257,8 @@ def run_bootstrap_net_correlation(run_parameters):
     run_parameters['out_filename'] = 'bootstrap_net_correlation'
     pcc_gm_array, borda_count = get_bootstrap_net_correlation_score(run_parameters, pearson_array.size)
     kn.remove_dir(run_parameters["pc_array_tmp_dir"])
+
+    run_parameters['out_filename'] = 'bootstrap_net_correlation'
 
     generate_net_correlation_output(
         pearson_array, borda_count, pcc_gm_array, restart_accumulator, drug_response_df.index.values[0],
