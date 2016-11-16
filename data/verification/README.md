@@ -22,6 +22,7 @@ The Makefile in the test directory contains the targes, needed to build the **Ge
 * If the results are not equal, unzip the file in **data/verification** and replace the .yml files in **test/run_dir**
 
 ### 2. Run the other targets in the **test/Makefile**
+
 ```
     make run_correlation
         or
@@ -29,9 +30,22 @@ The Makefile in the test directory contains the targes, needed to build the **Ge
 ```
 * Results will match **data/verification/17-AAG_correlation_final_result.txt**
 
+
 ```
     make run_bootstrap_net_correlation
         or
     make run_net_correlation
 ```
 * Results will match **data/verification/17-AAG_net_correlation_final_result.txt**
+
+
+```
+    make run_multi_drug_small
+```
+* Results will match **data/verification/TEST_1_multi_drug_debug_RESUTS.zip** (when unzipped)
+
+
+```
+    make run_multi_drug_bootstrap_correlation
+```
+* The first five files will match the five unzipped from **data/verification/CCLE_firs_5_bootstrap_net_correlation.zip.txt**
