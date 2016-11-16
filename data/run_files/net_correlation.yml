@@ -7,8 +7,8 @@ method: net_correlation
 correlation_method: pearson
 
 gg_network_name_full_path:  ../data/networks/STRING_experimental.tsv
-spreadsheet_name_full_path: ../data/spreadsheets/17-AAG_drop_NA_gene_expression.tsv
-drug_response_full_path:    ../data/spreadsheets/17-AAG_drop_NA_single_drug_response.tsv
+spreadsheet_name_full_path: ../data/spreadsheets/17-AAG_GDSC_gene_expression.tsv
+drug_response_full_path:    ../data/spreadsheets/17-AAG_GDSC_single_drug_response.tsv
 
 results_directory:           ./run_dir/results
 
@@ -21,6 +21,4 @@ rwr_max_iterations:         100
 rwr_convergence_tolerence:  1.0e-3
 rwr_restart_probability:    0.5       # Vn+1 = alpha * N * Vn + (1-alpha) * Vo
 
-top_beta_of_sort:           0.006414779652318943 # top 20% of smoothed genes Expression data
-
-
+top_beta_of_sort:           0.006414779652318943 # top 100 of 15589
