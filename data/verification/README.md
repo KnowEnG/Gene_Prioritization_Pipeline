@@ -19,8 +19,6 @@ The Makefile in the test directory contains the targes, needed to build the **Ge
     run_dir/results/TEST_1_bootstrap_net_correlation_XXXXX..... .txt
 ```
 
-### 2. Results files are all based on the yaml parameter files preserved in **verification_yaml_set_used.zip**
-```
-    If the results are not equal,
-    try replacing the *.yml files in test/run_dir with the preserves
-```
+* Results files are all based on the yaml parameter files preserved in **verification_yaml_set_used.zip**
+
+* If the results are not equal, unzip the file in **data/verification** and replace the .yml files in **test/run_dir**
