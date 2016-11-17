@@ -58,10 +58,6 @@ def run_bootstrap_correlation(run_parameters):
     Args:
         run_parameters: parameter set dictionary.
     """
-    if run_parameters["number_of_bootstraps"] <= 1:
-        run_correlation(run_parameters)
-        return
-
     drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
 
@@ -188,7 +184,7 @@ def generate_net_correlation_output(pearson_array, pc_array, min_max_pc, restart
 
     df_header = ['Response', 'Gene ENSEMBL ID', 'quantitative sorting score', 'visualization score',
                  'baseline score', 'Percent appearing in restart set']
-    result_df = pd.DataFrame(output_val, columns=df_header).sort_values("visualization score", ascending=0)
+    result_df = pd.DataFrame(output_val, columns=df_header).sort_values('quantitative sorting score', ascending=0)
 
     target_file_base_name = os.path.join(run_parameters["results_directory"], drug_name + '_' + run_parameters['out_filename'])
     file_name = kn.create_timestamped_filename(target_file_base_name) + '.tsv'
@@ -202,10 +198,6 @@ def run_bootstrap_net_correlation(run_parameters):
     Args:
         run_parameters: parameter set dictionary.
     """
-    if run_parameters["number_of_bootstraps"] <= 1:
-        run_net_correlation(run_parameters)
-        return
-
     drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
     spreadsheet_df = zscore_dataframe(spreadsheet_df)
