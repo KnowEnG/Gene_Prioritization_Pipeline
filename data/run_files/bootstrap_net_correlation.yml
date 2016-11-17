@@ -24,3 +24,5 @@ rwr_restart_probability:    0.5       # Vn+1 = alpha * N * Vn + (1-alpha) * Vo
 
 top_beta_of_sort:           0.006414779652318943 # top 100 of 15589
 
+# options: drop_NA, zero_NA
+drop_method:                drop_NA

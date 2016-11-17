@@ -19,3 +19,5 @@ cols_sampling_fraction:     1.0       # 1.0 means 100% of columns (i.e., no samp
 
 top_beta_of_sort:           0.006414779652318943 # top 100 of 15589
 
+# options: drop_NA, zero_NA
+drop_method:                drop_NA

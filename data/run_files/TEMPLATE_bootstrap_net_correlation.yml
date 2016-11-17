@@ -46,3 +46,5 @@ rwr_restart_probability:    0.5 # same as alpha in the above formula
 # --------------------------------------------------------------------
 top_beta_of_sort:           1.0       # top 100% of genes (all genese)
 
+# options: drop_NA, zero_NA
+drop_method:                drop_NA
