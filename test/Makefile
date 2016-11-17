@@ -16,7 +16,7 @@ MKDIR_P = 		mkdir -p
 # ----------------------------------------------------------------
 # Benchmarks setup Section                                       -
 # ----------------------------------------------------------------
-env_setup: create_run_dir copy_run_files
+env_setup: create_run_dir copy_run_files decompress_input_data
 
 decompress_input_data:
 	$(GZIP_D) $(INPUT_DATA_DIR)/networks/* $(INPUT_DATA_DIR)/spreadsheets/*
@@ -74,6 +74,8 @@ unit_tests:
 # ----------------------------------------------------------------
 # - CLEAN UP SECTION                                             -
 # ----------------------------------------------------------------	
+final_clean: clean_dir_recursively compress_input_data
+
 clean_dir_recursively:
 	$(RMR) $(RUN_DIR)	
 
