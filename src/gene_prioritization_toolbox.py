@@ -234,13 +234,15 @@ def run_bootstrap_net_correlation(run_parameters):
         network_df, len(unique_gene_names), len(unique_gene_names))
 
     network_mat = normalize(network_mat_sparse, norm="l1", axis=0)
-    restart_accumulator = np.zeros(network_mat.shape[0])
+
 
     baseline_array = np.ones(network_mat.shape[0]) / network_mat.shape[0]
     baseline_array = kn.smooth_matrix_with_rwr(baseline_array, network_mat, run_parameters)[0]
 
     run_parameters['out_filename'] = 'bootstrap_net_correlation'
     for drug_name in drugs_list:
+        restart_accumulator = np.zeros(network_mat.shape[0])
+
         drug_response_df, spreadsheet_df = get_data_for_drug(consolodated_df, genes_list, drug_name, run_parameters)
 
         spreadsheet_df = zscore_dataframe(spreadsheet_df)
@@ -261,7 +263,7 @@ def run_bootstrap_net_correlation(run_parameters):
             pc_array = get_correlation(sample_random, drug_response, run_parameters)
             pc_array[~np.in1d(spreadsheet_df.index, spreadsheet_genes_as_input)] = 0.0
             pc_array = np.abs(trim_to_top_beta(pc_array, run_parameters["top_beta_of_sort"]))
-            restart_accumulator[pc_array != 0] += 1
+            restart_accumulator[pc_array != 0] += 1.0
 
             pc_array = pc_array / sum(pc_array)
             pc_array = kn.smooth_matrix_with_rwr(pc_array, network_mat, run_parameters)[0]
@@ -474,7 +476,7 @@ def get_bootstrap_correlation_score(run_parameters, n_rows):
             pc_array_vectors[:,current_column] = corr_array
             current_column += 1
 
-    borda_count = borda_count / max(borda_count)
+    borda_count = np.round(borda_count / run_parameters["number_of_bootstraps"])
 
     pc_array_vectors = np.abs(pc_array_vectors[:,0:current_column - 1])
     pc_array_vectors_gm_max = max(gmean(pc_array_vectors, axis=1))
@@ -508,7 +510,7 @@ def get_bootstrap_net_correlation_score(run_parameters, n_rows):
             pc_array_vectors[:,current_column] = corr_array / max(corr_array)
             current_column += 1
 
-    borda_count = borda_count / max(borda_count)
+    borda_count = np.round(borda_count / run_parameters["number_of_bootstraps"])
 
     pc_array_vectors = pc_array_vectors[:,0:current_column - 1]
     pcc_gm_array = gmean(pc_array_vectors, axis=1)
