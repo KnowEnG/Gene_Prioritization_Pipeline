@@ -6,13 +6,10 @@ method: correlation
 # pearson, lasso
 correlation_method: pearson
 
-spreadsheet_name_full_path: ../data/spreadsheets/17-AAG_GDSC_gene_expression.tsv
-drug_response_full_path:    ../data/spreadsheets/17-AAG_GDSC_single_drug_response.tsv
+spreadsheet_name_full_path: ../data/spreadsheets/CCLE_Expression_ensembl.df
+drug_response_full_path:    ../data/spreadsheets/CCLE_drug_ec50_cleaned_NAremoved.txt
 
 results_directory:           ./run_dir/results
-
-rows_sampling_fraction:     1.0       # 1.0 means 100% of rows    (i.e., no sampling)
-cols_sampling_fraction:     1.0       # 1.0 means 100% of columns (i.e., no sampling) 
 
 top_beta_of_sort:           0.006414779652318943 # top 100 of 15589
 

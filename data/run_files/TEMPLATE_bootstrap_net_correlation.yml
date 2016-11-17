@@ -13,9 +13,9 @@ correlation_method: pearson
 # - spreadsheet          dataframe in .tsv format                    -
 # - phenotype            dataframe in .tsv format                    -
 # --------------------------------------------------------------------
-gg_network_name_full_path:   ../data/networks/test1_gene_gene.edge
-spreadsheet_name_full_path:  ../data/spreadsheets/test1_gene_sample.tsv
-drug_response_full_path:     ../data/spreadsheets/test1_response.tsv
+gg_network_name_full_path:  ../data/networks/TEST_1_gene_gene.edge
+spreadsheet_name_full_path: ../data/spreadsheets/TEST_1_gene_sample.tsv
+drug_response_full_path:    ../data/spreadsheets/TEST_multi_drug_response.txt
 
 # --------------------------------------------------------------------
 # - directory where the result and temporary files will be written   -
@@ -28,7 +28,7 @@ pc_array_tmp_dir:           ./run_dir/tmp_pc_array
 # - Fraction of rows selected at random                              -
 # - Fraction of columns selected at random                           -
 # --------------------------------------------------------------------
-number_of_bootstraps:       5
+number_of_bootstraps:       20
 rows_sampling_fraction:     1.0 # 1.0 means 100% of rows 
 cols_sampling_fraction:     0.8 # 0.8 means 80% of columns    
 
@@ -38,7 +38,7 @@ cols_sampling_fraction:     0.8 # 0.8 means 80% of columns
 # - rwr_restart_probability:   Vn+1 = alpha*N*Vn + (1-alpha)*Vo      -
 # --------------------------------------------------------------------
 rwr_max_iterations:         100
-rwr_convergence_tolerence:  1.0e-4
+rwr_convergence_tolerence:  1.0e-3
 rwr_restart_probability:    0.5 # same as alpha in the above formula 
 
 # --------------------------------------------------------------------
