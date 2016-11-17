@@ -1,17 +1,15 @@
 # ------------------------------------------------------------------------------------------------------
 # - Analysis Method: correlation, net_correlation, bootstrap_correlation, or bootstrap_net_correlation -
 # ------------------------------------------------------------------------------------------------------
-method: correlation
+method:                     correlation
 
-# pearson, lasso
-correlation_method: pearson
+correlation_method:         pearson
 
 spreadsheet_name_full_path: ../data/spreadsheets/CCLE_Expression_ensembl.df
 drug_response_full_path:    ../data/spreadsheets/CCLE_drug_ec50_cleaned_NAremoved.txt
 
-results_directory:           ./run_dir/results
+results_directory:          ./run_dir/results
 
 top_beta_of_sort:           0.006414779652318943 # top 100 of 15589
 
-# options: drop_NA, zero_NA
 drop_method:                drop_NA
