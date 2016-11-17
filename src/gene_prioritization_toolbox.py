@@ -43,6 +43,105 @@ def get_data_for_drug(consolodated_dataframe, genes_list, drug_name, run_paramet
 
     return drug_df, spreadsheet_df
 
+def run_correlation(run_parameters):
+    ''' perform gene prioritization
+
+    Args:
+        run_parameters: parameter set dictionary.
+    '''
+    drug_response_df_0 = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
+    spreadsheet_df_0 = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
+
+    genes_list, drugs_list, consolodated_df = get_consolodated_dataframe(spreadsheet_df_0, drug_response_df_0)
+    run_parameters['out_filename'] = 'correlation'
+
+    for drug_name in drugs_list:
+        drug_response_df, spreadsheet_df = get_data_for_drug(consolodated_df, genes_list, drug_name, run_parameters)
+        pc_array = get_correlation(spreadsheet_df.as_matrix(), drug_response_df.values[0], run_parameters)
+
+        generate_correlation_output(pc_array, drug_name, spreadsheet_df.index, run_parameters)
+
+    return
+
+def generate_correlation_output(pc_array, drug_name, gene_name_list, run_parameters):
+    """ Save final output of correlation
+    
+    Args:
+        pc_array: pearson correlation coefficient array
+        drug_name: name of the drug
+        gene_name_list: list of the genes correlated (size of pc_array
+        run_parameters: dictionary of run parameters with key 'results_directory'
+    """
+    drug_name_list = np.repeat(drug_name, len(gene_name_list))
+    output_val = np.column_stack(
+        (drug_name_list, gene_name_list, abs(pc_array), abs(pc_array), pc_array))
+
+    df_header = ['Response', 'Gene ENSEMBL ID', 'quantitative sorting score', 'visualization score', 'baseline score']
+    result_df = pd.DataFrame(output_val, columns=df_header).sort_values("visualization score", ascending=0)
+    result_df.index = range(result_df.shape[0])
+    target_file_base_name = os.path.join(run_parameters["results_directory"], drug_name + '_' + run_parameters['out_filename'])
+    file_name = kn.create_timestamped_filename(target_file_base_name) + '.tsv'
+    result_df.to_csv(file_name, header=True, index=False, sep='\t')
+
+    return 
+
+def run_bootstrap_correlation(run_parameters):
+    """ perform gene prioritization using bootstrap sampling
+
+    Args:
+        run_parameters: parameter set dictionary.
+    """
+    drug_response_df_0 = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
+    spreadsheet_df_0 = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
+
+    genes_list, drugs_list, consolodated_df = get_consolodated_dataframe(spreadsheet_df_0, drug_response_df_0)
+    run_parameters['out_filename'] = 'bootstrap_correlation'
+
+    for drug_name in drugs_list:
+        drug_response_df, spreadsheet_df = get_data_for_drug(consolodated_df, genes_list, drug_name, run_parameters)
+
+        pearson_array = get_correlation(spreadsheet_df.as_matrix(), drug_response_df.values[0], run_parameters)
+        pc_array = np.int_(np.zeros(spreadsheet_df.shape[0]))
+        for bootstrap_number in range(0, run_parameters["number_of_bootstraps"]):
+            sample_random, sample_permutation = sample_a_matrix_pearson(
+                spreadsheet_df.as_matrix(), run_parameters["rows_sampling_fraction"],
+                run_parameters["cols_sampling_fraction"])
+
+            drug_response = drug_response_df.values[0, None]
+            drug_response = drug_response[0, sample_permutation]
+            pc_array = get_correlation(sample_random, drug_response, run_parameters)
+            save_a_sample_correlation(pc_array, run_parameters)
+
+        pcc_gm_array, borda_count= get_bootstrap_correlation_score(run_parameters, pc_array.size)
+        kn.remove_dir(run_parameters["pc_array_tmp_dir"])
+        run_parameters['out_filename'] = 'bootstrap_correlation'
+        generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pearson_array, drug_response_df.index.values[0],
+                                              spreadsheet_df.index, run_parameters)
+    return
+
+def generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pc_array, drug_name, gene_name_list, run_parameters):
+    """ Save final output of correlation
+
+    Args:
+        pc_array: pearson correlation coefficient array
+        drug_name: name of the drug
+        gene_name_list: list of the genes correlated (size of pc_array
+        run_parameters: dictionary of run parameters with key 'results_directory'
+    """
+    drug_name_list = np.repeat(drug_name, len(gene_name_list))
+    output_val = np.column_stack(
+        (drug_name_list, gene_name_list, borda_count, pcc_gm_array, pc_array))
+
+    df_header = ['Response', 'Gene ENSEMBL ID', 'quantitative sorting score', 'visualization score', 'baseline score']
+    result_df = pd.DataFrame(output_val, columns=df_header).sort_values("quantitative sorting score", ascending=0)
+    result_df.index = range(result_df.shape[0])
+    target_file_base_name = os.path.join(run_parameters["results_directory"], drug_name + '_' + run_parameters['out_filename'])
+    file_name = kn.create_timestamped_filename(target_file_base_name) + '.tsv'
+    result_df.to_csv(file_name, header=True, index=False, sep='\t')
+
+    return
+
+
 def run_net_correlation(run_parameters):
     """ perform gene prioritization with network smoothing
 
@@ -54,7 +153,6 @@ def run_net_correlation(run_parameters):
     spreadsheet_df_0 = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
 
     genes_list, drugs_list, consolodated_df = get_consolodated_dataframe(spreadsheet_df_0, drug_response_df_0)
-
 
     network_df = kn.get_network_df(run_parameters['gg_network_name_full_path'])
     node_1_names, node_2_names = kn.extract_network_node_names(network_df)
@@ -106,100 +204,6 @@ def run_net_correlation(run_parameters):
             spreadsheet_df.index, spreadsheet_genes_as_input, run_parameters)
 
     return
-
-def run_correlation(run_parameters):
-    ''' perform gene prioritization
-
-    Args:
-        run_parameters: parameter set dictionary.
-    '''
-    drug_response_df_0 = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
-    spreadsheet_df_0 = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
-
-    genes_list, drugs_list, consolodated_df = get_consolodated_dataframe(spreadsheet_df_0, drug_response_df_0)
-    run_parameters['out_filename'] = 'correlation'
-
-    for drug_name in drugs_list:
-        drug_response_df, spreadsheet_df = get_data_for_drug(consolodated_df, genes_list, drug_name, run_parameters)
-        pc_array = get_correlation(spreadsheet_df.as_matrix(), drug_response_df.values[0], run_parameters)
-
-        generate_correlation_output(pc_array, drug_name, spreadsheet_df.index, run_parameters)
-
-    return
-
-def generate_correlation_output(pc_array, drug_name, gene_name_list, run_parameters):
-    """ Save final output of correlation
-    
-    Args:
-        pc_array: pearson correlation coefficient array
-        drug_name: name of the drug
-        gene_name_list: list of the genes correlated (size of pc_array
-        run_parameters: dictionary of run parameters with key 'results_directory'
-    """
-    drug_name_list = np.repeat(drug_name, len(gene_name_list))
-    output_val = np.column_stack(
-        (drug_name_list, gene_name_list, abs(pc_array), abs(pc_array), pc_array))
-
-    df_header = ['Response', 'Gene ENSEMBL ID', 'quantitative sorting score', 'visualization score', 'baseline score']
-    result_df = pd.DataFrame(output_val, columns=df_header).sort_values("visualization score", ascending=0)
-    result_df.index = range(result_df.shape[0])
-    target_file_base_name = os.path.join(run_parameters["results_directory"], drug_name + '_' + run_parameters['out_filename'])
-    file_name = kn.create_timestamped_filename(target_file_base_name) + '.tsv'
-    result_df.to_csv(file_name, header=True, index=False, sep='\t')
-
-    return 
-
-def run_bootstrap_correlation(run_parameters):
-    """ perform gene prioritization using bootstrap sampling
-
-    Args:
-        run_parameters: parameter set dictionary.
-    """
-    drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
-    spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
-
-    pearson_array = get_correlation(spreadsheet_df.as_matrix(), drug_response_df.values[0], run_parameters)
-    pc_array = np.int_(np.zeros(spreadsheet_df.shape[0]))
-    for bootstrap_number in range(0, run_parameters["number_of_bootstraps"]):
-        sample_random, sample_permutation = sample_a_matrix_pearson(
-            spreadsheet_df.as_matrix(), run_parameters["rows_sampling_fraction"],
-            run_parameters["cols_sampling_fraction"])
-
-        drug_response = drug_response_df.values[0, None]
-        drug_response = drug_response[0, sample_permutation]
-        pc_array = get_correlation(sample_random, drug_response, run_parameters)
-        save_a_sample_correlation(pc_array, run_parameters)
-
-    pcc_gm_array, borda_count= get_bootstrap_correlation_score(run_parameters, pc_array.size)
-    kn.remove_dir(run_parameters["pc_array_tmp_dir"])
-    run_parameters['out_filename'] = 'bootstrap_correlation'
-    generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pearson_array, drug_response_df.index.values[0],
-                                          spreadsheet_df.index, run_parameters)
-    return
-
-def generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pc_array, drug_name, gene_name_list, run_parameters):
-    """ Save final output of correlation
-
-    Args:
-        pc_array: pearson correlation coefficient array
-        drug_name: name of the drug
-        gene_name_list: list of the genes correlated (size of pc_array
-        run_parameters: dictionary of run parameters with key 'results_directory'
-    """
-    drug_name_list = np.repeat(drug_name, len(gene_name_list))
-    output_val = np.column_stack(
-        (drug_name_list, gene_name_list, borda_count, pcc_gm_array, pc_array))
-
-    df_header = ['Response', 'Gene ENSEMBL ID', 'quantitative sorting score', 'visualization score', 'baseline score']
-    result_df = pd.DataFrame(output_val, columns=df_header).sort_values("quantitative sorting score", ascending=0)
-    result_df.index = range(result_df.shape[0])
-    target_file_base_name = os.path.join(run_parameters["results_directory"], drug_name + '_' + run_parameters['out_filename'])
-    file_name = kn.create_timestamped_filename(target_file_base_name) + '.tsv'
-    result_df.to_csv(file_name, header=True, index=False, sep='\t')
-
-    return
-
-
 
 
 def generate_net_correlation_output(pearson_array, pc_array, min_max_pc, restart_accumulator,
