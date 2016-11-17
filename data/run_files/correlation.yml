@@ -10,6 +10,4 @@ drug_response_full_path:    ../data/spreadsheets/CCLE_drug_ec50_cleaned_NAremove
 
 results_directory:          ./run_dir/results
 
-top_beta_of_sort:           0.006414779652318943 # top 100 of 15589
-
 drop_method:                drop_NA
