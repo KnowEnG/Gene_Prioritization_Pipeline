@@ -14,7 +14,17 @@ from sklearn.linear_model import LassoCV
 import knpackage.toolbox as kn
 
 def get_consolodated_dataframe(gene_samples_df, drug_samples_df):
-    """  assemble the features X samples and data X samples dataframes into one  """
+    """  assemble the features X samples and data X samples dataframes into one
+
+    Args:
+        gene_samples_df:  spreadsheet with the same column headers as the drug_samples_df
+        drug_samples_df:  spreadsheet of drug response rows with same column header
+
+    Returns:
+        genes_list:       the list of genes that are the rows of the spreadsheet in the consolodated dataframe
+        drugs_list:       the list of drugs that for row names in the consolodated dataframe
+        consolodated_df:  input spreadsheet dataframe with the drug dataframe appended
+    """
     genes_list = gene_samples_df.index.values.tolist()
     drugs_list = drug_samples_df.index.values.tolist()
     consolodated_df = pd.DataFrame(
@@ -25,7 +35,18 @@ def get_consolodated_dataframe(gene_samples_df, drug_samples_df):
 
 
 def get_data_for_drug(consolodated_dataframe, genes_list, drug_name, run_parameters):
-    """     """
+    """ get spreadsheet and drug dataframes with the NA columns removed
+
+    Args:
+        consolodated_dataframe: the spreadsheet dataframe appended with the drug dataframe
+        genes_list:             the row names that constitute the spreadsheet
+        drug_name:              the individual drug to select
+        run_parameters:         parameters dict
+
+    Returns:
+        drug_df:        single drug dataframe with NA columns removed
+        spreadsheet_df: spreadsheet dataframe with same columns as drug_df
+    """
     names_selector = genes_list.copy()
     names_selector.insert(0, drug_name)
     tmp_df = consolodated_dataframe.loc[names_selector]
@@ -46,11 +67,11 @@ def get_data_for_drug(consolodated_dataframe, genes_list, drug_name, run_paramet
 
 
 def run_correlation(run_parameters):
-    ''' perform gene prioritization
+    """ perform gene prioritization
 
     Args:
         run_parameters: parameter set dictionary.
-    '''
+    """
     drug_response_df_0 = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
     spreadsheet_df_0 = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
 
@@ -121,6 +142,7 @@ def run_bootstrap_correlation(run_parameters):
         run_parameters['out_filename'] = 'bootstrap_correlation'
         generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pearson_array, drug_response_df.index.values[0],
                                               spreadsheet_df.index, run_parameters)
+
     return
 
 
@@ -279,6 +301,7 @@ def run_bootstrap_net_correlation(run_parameters):
         generate_net_correlation_output(
             pearson_array, borda_count, pcc_gm_array, restart_accumulator, drug_response_df.index.values[0],
             spreadsheet_df.index, spreadsheet_genes_as_input, run_parameters)
+
     return
 
 
@@ -383,6 +406,7 @@ def write_results_dataframe(result_df, run_dir, write_file_name):
 
     return
 
+
 def sample_a_matrix_pearson(spreadsheet_mat, rows_fraction, cols_fraction):
     """ percent_sample x percent_sample random sample, from spreadsheet_mat.
 
@@ -424,6 +448,7 @@ def trim_to_top_beta(corr_arr, Beta):
 
     return corr_arr
 
+
 def zscore_dataframe(gxs_df):
     """ zscore by rows for genes x samples dataframe
     Args:
@@ -433,6 +458,7 @@ def zscore_dataframe(gxs_df):
     """
     zscore_df = (gxs_df.sub(gxs_df.mean(axis=1), axis=0)).truediv(np.maximum(gxs_df.std(axis=1), 1e-12), axis=0)
     return zscore_df
+
 
 def save_a_sample_correlation(pc_array, run_parameters):
     """ Save a correlation array to the pc_array_tmp_dir
