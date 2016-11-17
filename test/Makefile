@@ -45,9 +45,6 @@ run_bootstrap_correlation:
 run_bootstrap_net_correlation:
 	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file bootstrap_net_correlation.yml 
 
-run_multi_drug_bootstrap_net_correlation:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file multi_drug_bootstrap_net_correlation.yml 
-
 run_all_correlations: run_correlation run_net_correlation run_bootstrap_correlation run_bootstrap_net_correlation
 
 # ----------------------------------------------------------------
@@ -58,9 +55,6 @@ run_small_data_test:
 
 run_debug_data_test:
 	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file TEST_1_debug.yml 
-
-run_multi_drug_small:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file TEST_1_multi_drug_debug.yml 
 
 # ----------------------------------------------------------------
 # - UNIT TESTS RUN SECTION                                       -
