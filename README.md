@@ -54,12 +54,6 @@ cd Gene_Prioritization_Pipeline
 ```
 cd test
 ```
-
-###5.5 Decompress the test data
-
-```
-make decompress_input_data
-```
  
 ###6. Create a local directory "run_dir" and place all the run files in it
 ```
