@@ -23,17 +23,11 @@ def bootstrap_net_correlation(run_parameters):
     from gene_prioritization_toolbox import run_bootstrap_net_correlation
     run_bootstrap_net_correlation(run_parameters)
 
-def multi_drug_correlation(run_parameters):
-    """  all the above for multiple drugs """
-    from multi_drug_toolbox import run_multi_drug_correlation
-    run_multi_drug_correlation(run_parameters)
-
 SELECT = {
     "correlation": correlation,
     "net_correlation": net_correlation,
     "bootstrap_correlation": bootstrap_correlation,
-    "bootstrap_net_correlation": bootstrap_net_correlation,
-    "multi_drug_correlation": multi_drug_correlation}
+    "bootstrap_net_correlation": bootstrap_net_correlation}
 
 def main():
     """
