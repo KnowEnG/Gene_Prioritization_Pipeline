@@ -236,34 +236,62 @@ def run_net_correlation(run_parameters):
     baseline_array = kn.smooth_matrix_with_rwr(baseline_array, network_mat, run_parameters)[0]
 
     run_parameters['out_filename'] = 'net_correlation'
-    for drug_name in drugs_list:
-        drug_response_df, spreadsheet_df = get_data_for_drug(consolodated_df, genes_list, drug_name, run_parameters)
-
-        spreadsheet_df = zscore_dataframe(spreadsheet_df)
-        spreadsheet_genes_as_input = spreadsheet_df.index.values
-
-        spreadsheet_df = kn.update_spreadsheet_df(spreadsheet_df, unique_gene_names)
-
-        sample_smooth, iterations = kn.smooth_matrix_with_rwr(spreadsheet_df.as_matrix(), network_mat.T, run_parameters)
-
-        pc_array = get_correlation(sample_smooth, drug_response_df.values[0], run_parameters)
-        pearson_array = pc_array.copy()
-        pc_array[~np.in1d(spreadsheet_df.index, spreadsheet_genes_as_input)] = 0.0
-        pc_array = np.abs(trim_to_top_beta(pc_array, run_parameters["top_beta_of_sort"]))
-        restart_accumulator = pc_array.copy()
-        restart_accumulator[restart_accumulator != 0] = 1
-
-        pc_array = pc_array / sum(pc_array)
-        pc_array = kn.smooth_matrix_with_rwr(pc_array, network_mat, run_parameters)[0]
-
-        pc_array = pc_array - baseline_array
-        min_max_pc = (pc_array - min(pc_array)) / (max(pc_array) - min(pc_array))
-
-        generate_net_correlation_output(
-            pearson_array, pc_array, min_max_pc, restart_accumulator, drug_response_df.index.values[0],
-            spreadsheet_df.index, spreadsheet_genes_as_input, run_parameters)
+    drug_level_parallelization_for_run_net_correlation(run_parameters, consolodated_df, genes_list, unique_gene_names,
+                                                       network_mat, baseline_array, drugs_list)
 
     return
+
+
+def drug_level_parallelization_for_run_net_correlation(run_parameters, consolodated_df, genes_list, unique_gene_names,
+                                                       network_mat, baseline_array, drugs_list):
+    range_list = range(0, len(drugs_list))
+    parallelism = dstutil.determine_parallelism_locally(len(drugs_list))
+
+    try:
+        p = multiprocessing.Pool(processes=parallelism)
+        p.starmap(worker_for_run_bootstrap_correlation,
+                  zip(itertools.repeat(run_parameters),
+                      itertools.repeat(consolodated_df),
+                      itertools.repeat(genes_list),
+                      itertools.repeat(unique_gene_names),
+                      itertools.repeat(network_mat),
+                      itertools.repeat(baseline_array),
+                      itertools.repeat(drugs_list),
+                      range_list))
+        p.close()
+        p.join()
+        return "Succeeded running drug_level_parallization!"
+    except:
+        raise OSError("Failed running parallel processing:{}".format(sys.exc_info()))
+
+
+def worker_for_run_net_correlation(run_parameters, consolodated_df, genes_list, unique_gene_names,
+                                   network_mat, baseline_array, drugs_list, i):
+    drug_response_df, spreadsheet_df = get_data_for_drug(consolodated_df, genes_list, drugs_list[i], run_parameters)
+
+    spreadsheet_df = zscore_dataframe(spreadsheet_df)
+    spreadsheet_genes_as_input = spreadsheet_df.index.values
+
+    spreadsheet_df = kn.update_spreadsheet_df(spreadsheet_df, unique_gene_names)
+
+    sample_smooth, iterations = kn.smooth_matrix_with_rwr(spreadsheet_df.as_matrix(), network_mat.T, run_parameters)
+
+    pc_array = get_correlation(sample_smooth, drug_response_df.values[0], run_parameters)
+    pearson_array = pc_array.copy()
+    pc_array[~np.in1d(spreadsheet_df.index, spreadsheet_genes_as_input)] = 0.0
+    pc_array = np.abs(trim_to_top_beta(pc_array, run_parameters["top_beta_of_sort"]))
+    restart_accumulator = pc_array.copy()
+    restart_accumulator[restart_accumulator != 0] = 1
+
+    pc_array = pc_array / sum(pc_array)
+    pc_array = kn.smooth_matrix_with_rwr(pc_array, network_mat, run_parameters)[0]
+
+    pc_array = pc_array - baseline_array
+    min_max_pc = (pc_array - min(pc_array)) / (max(pc_array) - min(pc_array))
+
+    generate_net_correlation_output(
+        pearson_array, pc_array, min_max_pc, restart_accumulator, drug_response_df.index.values[0],
+        spreadsheet_df.index, spreadsheet_genes_as_input, run_parameters)
 
 
 def run_bootstrap_net_correlation(run_parameters):
@@ -329,19 +357,22 @@ def drug_level_parallelization_for_bootstrap_net_correlation(run_parameters, con
 
     """
     range_list = range(0, len(drugs_list))
+
+    zip_iteralbe = [itertools.repeat(run_parameters),
+                    itertools.repeat(consolodated_df),
+                    itertools.repeat(genes_list),
+                    itertools.repeat(unique_gene_names),
+                    itertools.repeat(network_mat),
+                    itertools.repeat(baseline_array),
+                    itertools.repeat(drugs_list),
+                    range_list]
+
     parallelism = dstutil.determine_parallelism_locally(len(drugs_list))
 
     try:
         p = multiprocessing.Pool(processes=parallelism)
         p.starmap(worker_for_bootstrap_net_correlation,
-                  zip(itertools.repeat(run_parameters),
-                      itertools.repeat(consolodated_df),
-                      itertools.repeat(genes_list),
-                      itertools.repeat(unique_gene_names),
-                      itertools.repeat(network_mat),
-                      itertools.repeat(baseline_array),
-                      itertools.repeat(drugs_list),
-                      range_list))
+                  zip(zip_iteralbe))
         p.close()
         p.join()
         return "Succeeded running drug_level_parallization!"
