@@ -17,6 +17,7 @@ import multiprocessing
 import itertools
 import sys
 
+EPSILON_0 = 1e-7
 
 def get_consolodated_dataframe(gene_samples_df, drug_samples_df):
     """  assemble the features X samples and data X samples dataframes into one
@@ -122,18 +123,19 @@ def run_bootstrap_correlation(run_parameters):
     Args:
         run_parameters: parameter set dictionary.
     """
-    drug_response_df_0 = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
-    spreadsheet_df_0 = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
+    drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
+    spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
 
-    genes_list, drugs_list, consolodated_df = get_consolodated_dataframe(spreadsheet_df_0, drug_response_df_0)
+    genes_list, drugs_list, consolodated_df = get_consolodated_dataframe(spreadsheet_df, drug_response_df)
     run_parameters['out_filename'] = 'bootstrap_correlation'
-
+    n_bootstraps = run_parameters["number_of_bootstraps"]
     for drug_name in drugs_list:
         drug_response_df, spreadsheet_df = get_data_for_drug(consolodated_df, genes_list, drug_name, run_parameters)
 
         pearson_array = get_correlation(spreadsheet_df.as_matrix(), drug_response_df.values[0], run_parameters)
-        pc_array = np.int_(np.zeros(spreadsheet_df.shape[0]))
-        for bootstrap_number in range(0, run_parameters["number_of_bootstraps"]):
+        borda_count = np.zeros(spreadsheet_df.shape[0])
+        gm_accumulator = np.ones(spreadsheet_df.shape[0])
+        for bootstrap_number in range(0, n_bootstraps):
             sample_random, sample_permutation = sample_a_matrix_pearson(
                 spreadsheet_df.as_matrix(), run_parameters["rows_sampling_fraction"],
                 run_parameters["cols_sampling_fraction"])
@@ -141,13 +143,14 @@ def run_bootstrap_correlation(run_parameters):
             drug_response = drug_response_df.values[0, None]
             drug_response = drug_response[0, sample_permutation]
             pc_array = get_correlation(sample_random, drug_response, run_parameters)
-            save_a_sample_correlation(pc_array, run_parameters)
+            borda_count = sum_array_ranking_to_borda_count(borda_count, np.abs(pc_array))
+            gm_accumulator = (np.abs(pc_array) + EPSILON_0) * gm_accumulator
 
-        pcc_gm_array, borda_count = get_bootstrap_correlation_score(run_parameters, pc_array.size)
-        kn.remove_dir(run_parameters["pc_array_tmp_dir"])
+        pcc_gm_array = gm_accumulator**(1 / n_bootstraps)
+        borda_count = borda_count / n_bootstraps
+
         run_parameters['out_filename'] = 'bootstrap_correlation'
-        generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pearson_array,
-                                              drug_response_df.index.values[0],
+        generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pearson_array, drug_response_df.index.values[0],
                                               spreadsheet_df.index, run_parameters)
 
     return
@@ -245,9 +248,9 @@ def run_bootstrap_net_correlation(run_parameters):
     Args:
         run_parameters: parameter set dictionary.
     """
-    drug_response_df_0 = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
-    spreadsheet_df_0 = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
-    genes_list, drugs_list, consolodated_df = get_consolodated_dataframe(spreadsheet_df_0, drug_response_df_0)
+    drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
+    spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
+    spreadsheet_genes_as_input = spreadsheet_df.index.values
 
     network_df = kn.get_network_df(run_parameters['gg_network_name_full_path'])
     node_1_names, node_2_names = kn.extract_network_node_names(network_df)
@@ -265,17 +268,20 @@ def run_bootstrap_net_correlation(run_parameters):
         network_df, len(unique_gene_names), len(unique_gene_names))
 
     network_mat = normalize(network_mat_sparse, norm="l1", axis=0)
-    print('\n\t\trun_bootstrap_net_correlation\n')
+
+    spreadsheet_df = kn.update_spreadsheet_df(spreadsheet_df, unique_gene_names)
 
     baseline_array = np.ones(network_mat.shape[0]) / network_mat.shape[0]
     baseline_array = kn.smooth_matrix_with_rwr(baseline_array, network_mat, run_parameters)[0]
 
+    #n_bootstraps = run_parameters["number_of_bootstraps"]
     run_parameters['out_filename'] = 'bootstrap_net_correlation'
+
+    genes_list, drugs_list, consolodated_df = get_consolodated_dataframe(spreadsheet_df, drug_response_df)
+
     # calls parallelization worker on drug level
     drug_level_parallelization(run_parameters, consolodated_df, genes_list, unique_gene_names, network_mat,
                                baseline_array, drugs_list)
-
-    kn.remove_dir(run_parameters["pc_array_tmp_dir"])
 
     return
 
@@ -335,18 +341,20 @@ def worker_per_drug(run_parameters, consolodated_df, genes_list, unique_gene_nam
 
     """
     restart_accumulator = np.zeros(network_mat.shape[0])
+    gm_accumulator = np.ones(network_mat.shape[0])
+    borda_count = np.zeros(network_mat.shape[0])
+
 
     drug_response_df, spreadsheet_df = get_data_for_drug(consolodated_df, genes_list, drugs_list[i], run_parameters)
 
     spreadsheet_df = zscore_dataframe(spreadsheet_df)
     spreadsheet_genes_as_input = spreadsheet_df.index.values
 
-    spreadsheet_df = kn.update_spreadsheet_df(spreadsheet_df, unique_gene_names)
-
     sample_smooth, iterations = kn.smooth_matrix_with_rwr(spreadsheet_df.as_matrix(), network_mat.T, run_parameters)
 
     pearson_array = get_correlation(sample_smooth, drug_response_df.values[0], run_parameters)
-    for bootstrap_number in range(0, run_parameters["number_of_bootstraps"]):
+    n_bootstraps = run_parameters["number_of_bootstraps"]
+    for bootstrap_number in range(0, n_bootstraps):
         sample_random, sample_permutation = sample_a_matrix_pearson(
             sample_smooth, run_parameters["rows_sampling_fraction"],
             run_parameters["cols_sampling_fraction"])
@@ -362,10 +370,13 @@ def worker_per_drug(run_parameters, consolodated_df, genes_list, unique_gene_nam
         pc_array = kn.smooth_matrix_with_rwr(pc_array, network_mat, run_parameters)[0]
         pc_array = pc_array - baseline_array
 
-        save_a_sample_correlation(pc_array, run_parameters)
+        borda_count = sum_array_ranking_to_borda_count(borda_count, pc_array)
+        gm_accumulator = (np.abs(pc_array) + EPSILON_0) * gm_accumulator
 
-    restart_accumulator = restart_accumulator / run_parameters["number_of_bootstraps"]
-    pcc_gm_array, borda_count = get_bootstrap_net_correlation_score(run_parameters, pearson_array.size)
+
+    restart_accumulator = restart_accumulator / n_bootstraps
+    borda_count = borda_count  / n_bootstraps
+    pcc_gm_array = gm_accumulator**(1 / n_bootstraps)
 
     generate_net_correlation_output(
         pearson_array, borda_count, pcc_gm_array, restart_accumulator, drug_response_df.index.values[0],
@@ -439,25 +450,36 @@ def get_correlation(spreadsheet, drug_response, run_parameters, normalize=True, 
     return correlation_array
 
 
-def sum_vote_to_borda_count(borda_count, corr_array):
-    """ incrementally update borda count by borda weighted vote from correlation array
-
+def sum_array_ranking_to_borda_count(borda_count, corr_array):
+    """ sum to borda count with a contigous array added to borda count
     Args:
-        borda_count: (np.int_(borda_count) ) the current running total of Borda weighted votes
-        corr_array:  correlation ranking largest value gets largest borda vote score
-
+        borda_count: the current borda count - same size as correlation array
+        corr_array:  the correlation array to rank and add to the count
     Returns:
-        borda_count: input borda_count with borda weighted vote rankings added
+        borda_count: the ranking of the correlation array added to the input borda count
     """
-    borda_count[np.argsort(corr_array)] += np.int_(sorted(np.arange(0, corr_array.size) + 1))
+    num_elem = borda_count.size
 
-    uniq_vals, val_counts = np.unique(corr_array, return_counts=True)
-    if uniq_vals.size < corr_array.size:
-        for k in range(0, uniq_vals.size):
-            if val_counts[k] > 1:
-                borda_count[corr_array == uniq_vals[k]] = sum(borda_count[corr_array == uniq_vals[k]]) / val_counts[k]
+    # either assign (no duplicate case) or enumerate the correlation array
+    if num_elem == (np.unique(corr_array)).size:
+        borda_count[np.argsort(corr_array)] += np.int_(sorted(np.arange(0, corr_array.size) + 1))
+        return borda_count
 
-    return borda_count
+    # enumerate the borda vote
+    borda_add = np.zeros(num_elem)
+    enum_value = 1
+    sort_order = np.argsort(corr_array)
+    current_value = corr_array[sort_order[0]]
+    for k in range(0, num_elem):
+        if corr_array[sort_order[k]] != current_value:
+            enum_value += 1
+            current_value = corr_array[sort_order[k]]
+        borda_add[sort_order[k]] = enum_value
+
+    # scale to the number of elements in the array -- philosopical choice here --
+    borda_add = borda_add + (num_elem - enum_value)
+
+    return borda_count + borda_add
 
 
 def write_results_dataframe(result_df, run_dir, write_file_name):
@@ -527,89 +549,3 @@ def zscore_dataframe(gxs_df):
     zscore_df = (gxs_df.sub(gxs_df.mean(axis=1), axis=0)).truediv(np.maximum(gxs_df.std(axis=1), 1e-12), axis=0)
     return zscore_df
 
-
-def save_a_sample_correlation(pc_array, run_parameters):
-    """ Save a correlation array to the pc_array_tmp_dir
-
-    Args:
-        pc_array:
-        run_paramters: with key 'pc_array_tmp_dir'
-    """
-    tmp_dir = run_parameters['pc_array_tmp_dir']
-    os.makedirs(tmp_dir, mode=0o755, exist_ok=True)
-    tmp_filename = kn.create_timestamped_filename('sampled_pc_array', name_extension=None, precision=1e12)
-
-    pc_array_filename = os.path.join(tmp_dir, tmp_filename)
-    with open(pc_array_filename, 'wb') as tmp_file_handle:
-        pc_array.dump(tmp_file_handle)
-
-    return
-
-
-def get_bootstrap_correlation_score(run_parameters, n_rows):
-    """ correlation scoring for bootstraps without network
-
-    Args:
-        run_parameters: with key 'pc_array_tmp_dir'
-        n_rows: number of genes in the files that will open
-
-    Returns:
-        pcc_gm_array: geometric mean of gene-drug correlation of all temporary files
-        borda_count:  borda ranking of the same
-    """
-    tmp_dir = run_parameters['pc_array_tmp_dir']
-    dir_list = os.listdir(tmp_dir)
-    n_cols = len(dir_list)
-
-    pc_array_vectors = np.zeros((n_rows, n_cols))
-    borda_count = np.zeros(n_rows)
-    current_column = 0
-    for tmp_f in dir_list:
-        if tmp_f[0:16] == 'sampled_pc_array':
-            pc_name = os.path.join(tmp_dir, tmp_f)
-            corr_array = np.load(pc_name)
-            sum_vote_to_borda_count(borda_count, np.abs(corr_array))
-            pc_array_vectors[:, current_column] = corr_array
-            current_column += 1
-
-    borda_count = borda_count / run_parameters["number_of_bootstraps"]
-
-    pc_array_vectors = np.abs(pc_array_vectors[:, 0:current_column - 1])
-    pc_array_vectors_gm_max = max(gmean(pc_array_vectors, axis=1))
-    pcc_gm_array = gmean(pc_array_vectors / pc_array_vectors_gm_max, axis=1)
-
-    return pcc_gm_array, borda_count
-
-
-def get_bootstrap_net_correlation_score(run_parameters, n_rows):
-    """ correlation scoring for bootstraps without network
-
-    Args:
-        run_parameters: with key 'pc_array_tmp_dir'
-        n_rows: number of genes in the files that will open
-
-    Returns:
-        pcc_gm_array: geometric mean of gene-drug correlation of all temporary files
-        borda_count:  borda ranking of the same
-    """
-    tmp_dir = run_parameters['pc_array_tmp_dir']
-    dir_list = os.listdir(tmp_dir)
-    n_cols = len(dir_list)
-    pc_array_vectors = np.zeros((n_rows, n_cols))
-    borda_count = np.zeros(n_rows)
-    current_column = 0
-    for tmp_f in dir_list:
-        if tmp_f[0:16] == 'sampled_pc_array':
-            pc_name = os.path.join(tmp_dir, tmp_f)
-            corr_array = np.load(pc_name)
-            sum_vote_to_borda_count(borda_count, corr_array)
-            corr_array = corr_array - min(corr_array)
-            pc_array_vectors[:, current_column] = corr_array / max(corr_array)
-            current_column += 1
-
-    borda_count = borda_count / run_parameters["number_of_bootstraps"]
-
-    pc_array_vectors = pc_array_vectors[:, 0:current_column - 1]
-    pcc_gm_array = gmean(pc_array_vectors, axis=1)
-
-    return pcc_gm_array, borda_count
