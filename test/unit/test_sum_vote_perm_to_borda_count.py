@@ -13,7 +13,7 @@ class TestSum_vote_perm_to_borda_count(TestCase):
         pc_arr = np.array([0.162876, 0.800422, 0.080408, 0.842713, 0.750278, 0.969880])
         borda_count = np.zeros(pc_arr.size)
         expected_result = np.array([2, 4, 1, 5, 3, 6])
-        borda_returned = gptbx.sum_vote_to_borda_count(borda_count, pc_arr)
+        borda_returned = gptbx.sum_array_ranking_to_borda_count(borda_count, pc_arr)
         for n in range(0, expected_result.size):
             self.assertEqual(expected_result[n], borda_returned[n], msg='borda count unexpected')
 
