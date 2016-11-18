@@ -19,6 +19,7 @@ import sys
 
 EPSILON_0 = 1e-7
 
+
 def get_consolodated_dataframe(gene_samples_df, drug_samples_df):
     """  assemble the features X samples and data X samples dataframes into one
 
@@ -129,31 +130,54 @@ def run_bootstrap_correlation(run_parameters):
     genes_list, drugs_list, consolodated_df = get_consolodated_dataframe(spreadsheet_df, drug_response_df)
     run_parameters['out_filename'] = 'bootstrap_correlation'
     n_bootstraps = run_parameters["number_of_bootstraps"]
-    for drug_name in drugs_list:
-        drug_response_df, spreadsheet_df = get_data_for_drug(consolodated_df, genes_list, drug_name, run_parameters)
 
-        pearson_array = get_correlation(spreadsheet_df.as_matrix(), drug_response_df.values[0], run_parameters)
-        borda_count = np.zeros(spreadsheet_df.shape[0])
-        gm_accumulator = np.ones(spreadsheet_df.shape[0])
-        for bootstrap_number in range(0, n_bootstraps):
-            sample_random, sample_permutation = sample_a_matrix_pearson(
-                spreadsheet_df.as_matrix(), run_parameters["rows_sampling_fraction"],
-                run_parameters["cols_sampling_fraction"])
-
-            drug_response = drug_response_df.values[0, None]
-            drug_response = drug_response[0, sample_permutation]
-            pc_array = get_correlation(sample_random, drug_response, run_parameters)
-            borda_count = sum_array_ranking_to_borda_count(borda_count, np.abs(pc_array))
-            gm_accumulator = (np.abs(pc_array) + EPSILON_0) * gm_accumulator
-
-        pcc_gm_array = gm_accumulator**(1 / n_bootstraps)
-        borda_count = borda_count / n_bootstraps
-
-        run_parameters['out_filename'] = 'bootstrap_correlation'
-        generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pearson_array, drug_response_df.index.values[0],
-                                              spreadsheet_df.index, run_parameters)
+    drug_level_parallelization_for_run_bootstrap_correlation(run_parameters, consolodated_df, genes_list,
+                                                             n_bootstraps, drugs_list)
 
     return
+
+
+def drug_level_parallelization_for_run_bootstrap_correlation(run_parameters, consolodated_df, genes_list,
+                                                             n_bootstraps, drugs_list):
+    range_list = range(0, len(drugs_list))
+    parallelism = dstutil.determine_parallelism_locally(len(drugs_list))
+
+    try:
+        p = multiprocessing.Pool(processes=parallelism)
+        p.starmap(worker_for_run_bootstrap_correlation,
+                  zip(itertools.repeat(run_parameters),
+                      itertools.repeat(consolodated_df),
+                      itertools.repeat(genes_list),
+                      itertools.repeat(n_bootstraps),
+                      itertools.repeat(drugs_list),
+                      range_list))
+        p.close()
+        p.join()
+        return "Succeeded running drug_level_parallization!"
+    except:
+        raise OSError("Failed running parallel processing:{}".format(sys.exc_info()))
+
+
+def worker_for_run_bootstrap_correlation(run_parameters, consolodated_df, genes_list, n_bootstraps, drugs_list, i):
+    drug_response_df, spreadsheet_df = get_data_for_drug(consolodated_df, genes_list, drugs_list[i], run_parameters)
+    pearson_array = get_correlation(spreadsheet_df.as_matrix(), drug_response_df.values[0], run_parameters)
+    borda_count = np.zeros(spreadsheet_df.shape[0])
+    gm_accumulator = np.ones(spreadsheet_df.shape[0])
+    for bootstrap_number in range(0, n_bootstraps):
+        sample_random, sample_permutation = sample_a_matrix_pearson(
+            spreadsheet_df.as_matrix(), run_parameters["rows_sampling_fraction"],
+            run_parameters["cols_sampling_fraction"])
+        drug_response = drug_response_df.values[0, None]
+        drug_response = drug_response[0, sample_permutation]
+        pc_array = get_correlation(sample_random, drug_response, run_parameters)
+        borda_count = sum_array_ranking_to_borda_count(borda_count, np.abs(pc_array))
+        gm_accumulator = (np.abs(pc_array) + EPSILON_0) * gm_accumulator
+    pcc_gm_array = gm_accumulator ** (1 / n_bootstraps)
+    borda_count = borda_count / n_bootstraps
+    run_parameters['out_filename'] = 'bootstrap_correlation'
+    generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pearson_array,
+                                          drug_response_df.index.values[0],
+                                          spreadsheet_df.index, run_parameters)
 
 
 def generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pc_array, drug_name, gene_name_list,
@@ -274,20 +298,22 @@ def run_bootstrap_net_correlation(run_parameters):
     baseline_array = np.ones(network_mat.shape[0]) / network_mat.shape[0]
     baseline_array = kn.smooth_matrix_with_rwr(baseline_array, network_mat, run_parameters)[0]
 
-    #n_bootstraps = run_parameters["number_of_bootstraps"]
+    # n_bootstraps = run_parameters["number_of_bootstraps"]
     run_parameters['out_filename'] = 'bootstrap_net_correlation'
 
     genes_list, drugs_list, consolodated_df = get_consolodated_dataframe(spreadsheet_df, drug_response_df)
 
     # calls parallelization worker on drug level
-    drug_level_parallelization(run_parameters, consolodated_df, genes_list, unique_gene_names, network_mat,
-                               baseline_array, drugs_list)
+    drug_level_parallelization_for_bootstrap_net_correlation(run_parameters, consolodated_df, genes_list,
+                                                             unique_gene_names, network_mat,
+                                                             baseline_array, drugs_list)
 
     return
 
 
-def drug_level_parallelization(run_parameters, consolodated_df, genes_list, unique_gene_names,
-                               network_mat, baseline_array, drugs_list):
+def drug_level_parallelization_for_bootstrap_net_correlation(run_parameters, consolodated_df, genes_list,
+                                                             unique_gene_names,
+                                                             network_mat, baseline_array, drugs_list):
     """ parallel drug level computation.
 
     Args:
@@ -307,7 +333,7 @@ def drug_level_parallelization(run_parameters, consolodated_df, genes_list, uniq
 
     try:
         p = multiprocessing.Pool(processes=parallelism)
-        p.starmap(worker_per_drug,
+        p.starmap(worker_for_bootstrap_net_correlation,
                   zip(itertools.repeat(run_parameters),
                       itertools.repeat(consolodated_df),
                       itertools.repeat(genes_list),
@@ -323,8 +349,9 @@ def drug_level_parallelization(run_parameters, consolodated_df, genes_list, uniq
         raise OSError("Failed running parallel processing:{}".format(sys.exc_info()))
 
 
-def worker_per_drug(run_parameters, consolodated_df, genes_list, unique_gene_names, network_mat, baseline_array,
-                    drugs_list, i):
+def worker_for_bootstrap_net_correlation(run_parameters, consolodated_df, genes_list, unique_gene_names, network_mat,
+                                         baseline_array,
+                                         drugs_list, i):
     """ worker for drug level parallelization.
 
     Args:
@@ -335,7 +362,7 @@ def worker_per_drug(run_parameters, consolodated_df, genes_list, unique_gene_nam
         network_mat:
         baseline_array:
         drugs_list:
-        i: 
+        i:
 
     Returns:
 
@@ -343,7 +370,6 @@ def worker_per_drug(run_parameters, consolodated_df, genes_list, unique_gene_nam
     restart_accumulator = np.zeros(network_mat.shape[0])
     gm_accumulator = np.ones(network_mat.shape[0])
     borda_count = np.zeros(network_mat.shape[0])
-
 
     drug_response_df, spreadsheet_df = get_data_for_drug(consolodated_df, genes_list, drugs_list[i], run_parameters)
 
@@ -373,10 +399,9 @@ def worker_per_drug(run_parameters, consolodated_df, genes_list, unique_gene_nam
         borda_count = sum_array_ranking_to_borda_count(borda_count, pc_array)
         gm_accumulator = (np.abs(pc_array) + EPSILON_0) * gm_accumulator
 
-
     restart_accumulator = restart_accumulator / n_bootstraps
-    borda_count = borda_count  / n_bootstraps
-    pcc_gm_array = gm_accumulator**(1 / n_bootstraps)
+    borda_count = borda_count / n_bootstraps
+    pcc_gm_array = gm_accumulator ** (1 / n_bootstraps)
 
     generate_net_correlation_output(
         pearson_array, borda_count, pcc_gm_array, restart_accumulator, drug_response_df.index.values[0],
@@ -548,4 +573,3 @@ def zscore_dataframe(gxs_df):
     """
     zscore_df = (gxs_df.sub(gxs_df.mean(axis=1), axis=0)).truediv(np.maximum(gxs_df.std(axis=1), 1e-12), axis=0)
     return zscore_df
-
