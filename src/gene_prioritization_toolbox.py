@@ -267,7 +267,7 @@ def drug_level_parallelization_for_run_net_correlation(run_parameters, consoloda
 
 def worker_for_run_net_correlation(run_parameters, consolodated_df, genes_list, unique_gene_names,
                                    network_mat, baseline_array, drugs_list, i):
-    
+
     drug_response_df, spreadsheet_df = get_data_for_drug(consolodated_df, genes_list, drugs_list[i], run_parameters)
 
     spreadsheet_df = zscore_dataframe(spreadsheet_df)
@@ -359,21 +359,19 @@ def drug_level_parallelization_for_bootstrap_net_correlation(run_parameters, con
     """
     range_list = range(0, len(drugs_list))
 
-    zip_iteralbe = [itertools.repeat(run_parameters),
+    parallelism = dstutil.determine_parallelism_locally(len(drugs_list))
+
+    try:
+        p = multiprocessing.Pool(processes=parallelism)
+        p.starmap(worker_for_bootstrap_net_correlation,
+                  zip(itertools.repeat(run_parameters),
                     itertools.repeat(consolodated_df),
                     itertools.repeat(genes_list),
                     itertools.repeat(unique_gene_names),
                     itertools.repeat(network_mat),
                     itertools.repeat(baseline_array),
                     itertools.repeat(drugs_list),
-                    range_list]
-
-    parallelism = dstutil.determine_parallelism_locally(len(drugs_list))
-
-    try:
-        p = multiprocessing.Pool(processes=parallelism)
-        p.starmap(worker_for_bootstrap_net_correlation,
-                  zip(zip_iteralbe))
+                    range_list))
         p.close()
         p.join()
         return "Succeeded running drug_level_parallization!"
