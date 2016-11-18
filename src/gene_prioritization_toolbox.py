@@ -12,6 +12,11 @@ from sklearn.preprocessing import normalize
 from sklearn.linear_model import LassoCV
 
 import knpackage.toolbox as kn
+import knpackage.distributed_computing_utils as dstutil
+import multiprocessing
+import itertools
+import sys
+
 
 def get_consolodated_dataframe(gene_samples_df, drug_samples_df):
     """  assemble the features X samples and data X samples dataframes into one
@@ -103,11 +108,12 @@ def generate_correlation_output(pc_array, drug_name, gene_name_list, run_paramet
     df_header = ['Response', 'Gene ENSEMBL ID', 'quantitative sorting score', 'visualization score', 'baseline score']
     result_df = pd.DataFrame(output_val, columns=df_header).sort_values("visualization score", ascending=0)
     result_df.index = range(result_df.shape[0])
-    target_file_base_name = os.path.join(run_parameters["results_directory"], drug_name + '_' + run_parameters['out_filename'])
+    target_file_base_name = os.path.join(run_parameters["results_directory"],
+                                         drug_name + '_' + run_parameters['out_filename'])
     file_name = kn.create_timestamped_filename(target_file_base_name) + '.tsv'
     result_df.to_csv(file_name, header=True, index=False, sep='\t')
 
-    return 
+    return
 
 
 def run_bootstrap_correlation(run_parameters):
@@ -137,16 +143,18 @@ def run_bootstrap_correlation(run_parameters):
             pc_array = get_correlation(sample_random, drug_response, run_parameters)
             save_a_sample_correlation(pc_array, run_parameters)
 
-        pcc_gm_array, borda_count= get_bootstrap_correlation_score(run_parameters, pc_array.size)
+        pcc_gm_array, borda_count = get_bootstrap_correlation_score(run_parameters, pc_array.size)
         kn.remove_dir(run_parameters["pc_array_tmp_dir"])
         run_parameters['out_filename'] = 'bootstrap_correlation'
-        generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pearson_array, drug_response_df.index.values[0],
+        generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pearson_array,
+                                              drug_response_df.index.values[0],
                                               spreadsheet_df.index, run_parameters)
 
     return
 
 
-def generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pc_array, drug_name, gene_name_list, run_parameters):
+def generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pc_array, drug_name, gene_name_list,
+                                          run_parameters):
     """ Save final output of correlation
 
     Args:
@@ -162,7 +170,8 @@ def generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pc_array, d
     df_header = ['Response', 'Gene ENSEMBL ID', 'quantitative sorting score', 'visualization score', 'baseline score']
     result_df = pd.DataFrame(output_val, columns=df_header).sort_values("quantitative sorting score", ascending=0)
     result_df.index = range(result_df.shape[0])
-    target_file_base_name = os.path.join(run_parameters["results_directory"], drug_name + '_' + run_parameters['out_filename'])
+    target_file_base_name = os.path.join(run_parameters["results_directory"],
+                                         drug_name + '_' + run_parameters['out_filename'])
     file_name = kn.create_timestamped_filename(target_file_base_name) + '.tsv'
     result_df.to_csv(file_name, header=True, index=False, sep='\t')
 
@@ -210,7 +219,7 @@ def run_net_correlation(run_parameters):
 
         sample_smooth, iterations = kn.smooth_matrix_with_rwr(spreadsheet_df.as_matrix(), network_mat.T, run_parameters)
 
-        pc_array = get_correlation(sample_smooth,  drug_response_df.values[0], run_parameters)
+        pc_array = get_correlation(sample_smooth, drug_response_df.values[0], run_parameters)
         pearson_array = pc_array.copy()
         pc_array[~np.in1d(spreadsheet_df.index, spreadsheet_genes_as_input)] = 0.0
         pc_array = np.abs(trim_to_top_beta(pc_array, run_parameters["top_beta_of_sort"]))
@@ -262,47 +271,105 @@ def run_bootstrap_net_correlation(run_parameters):
     baseline_array = kn.smooth_matrix_with_rwr(baseline_array, network_mat, run_parameters)[0]
 
     run_parameters['out_filename'] = 'bootstrap_net_correlation'
-    for drug_name in drugs_list:
-        restart_accumulator = np.zeros(network_mat.shape[0])
+    # calls parallelization worker on drug level
+    drug_level_parallelization(run_parameters, consolodated_df, genes_list, unique_gene_names, network_mat,
+                               baseline_array, drugs_list)
 
-        drug_response_df, spreadsheet_df = get_data_for_drug(consolodated_df, genes_list, drug_name, run_parameters)
-
-        spreadsheet_df = zscore_dataframe(spreadsheet_df)
-        spreadsheet_genes_as_input = spreadsheet_df.index.values
-
-        spreadsheet_df = kn.update_spreadsheet_df(spreadsheet_df, unique_gene_names)
-
-        sample_smooth, iterations = kn.smooth_matrix_with_rwr(spreadsheet_df.as_matrix(), network_mat.T, run_parameters)
-
-        pearson_array = get_correlation(sample_smooth,  drug_response_df.values[0], run_parameters)
-        for bootstrap_number in range(0, run_parameters["number_of_bootstraps"]):
-            sample_random, sample_permutation = sample_a_matrix_pearson(
-                sample_smooth, run_parameters["rows_sampling_fraction"],
-                run_parameters["cols_sampling_fraction"])
-
-            drug_response = drug_response_df.values[0, None]
-            drug_response = drug_response[0, sample_permutation]
-            pc_array = get_correlation(sample_random, drug_response, run_parameters)
-            pc_array[~np.in1d(spreadsheet_df.index, spreadsheet_genes_as_input)] = 0.0
-            pc_array = np.abs(trim_to_top_beta(pc_array, run_parameters["top_beta_of_sort"]))
-            restart_accumulator[pc_array != 0] += 1.0
-
-            pc_array = pc_array / sum(pc_array)
-            pc_array = kn.smooth_matrix_with_rwr(pc_array, network_mat, run_parameters)[0]
-            pc_array = pc_array - baseline_array
-
-            save_a_sample_correlation(pc_array, run_parameters)
-
-        restart_accumulator = restart_accumulator / run_parameters["number_of_bootstraps"]
-        pcc_gm_array, borda_count = get_bootstrap_net_correlation_score(run_parameters, pearson_array.size)
-
-        kn.remove_dir(run_parameters["pc_array_tmp_dir"])
-
-        generate_net_correlation_output(
-            pearson_array, borda_count, pcc_gm_array, restart_accumulator, drug_response_df.index.values[0],
-            spreadsheet_df.index, spreadsheet_genes_as_input, run_parameters)
+    kn.remove_dir(run_parameters["pc_array_tmp_dir"])
 
     return
+
+
+def drug_level_parallelization(run_parameters, consolodated_df, genes_list, unique_gene_names,
+                               network_mat, baseline_array, drugs_list):
+    """ parallel drug level computation.
+
+    Args:
+        run_parameters:
+        consolodated_df:
+        genes_list:
+        unique_gene_names:
+        network_mat:
+        baseline_array:
+        drugs_list:
+
+    Returns:
+
+    """
+    range_list = range(0, len(drugs_list))
+    parallelism = dstutil.determine_parallelism_locally(len(drugs_list))
+
+    try:
+        p = multiprocessing.Pool(processes=parallelism)
+        p.starmap(worker_per_drug,
+                  zip(itertools.repeat(run_parameters),
+                      itertools.repeat(consolodated_df),
+                      itertools.repeat(genes_list),
+                      itertools.repeat(unique_gene_names),
+                      itertools.repeat(network_mat),
+                      itertools.repeat(baseline_array),
+                      itertools.repeat(drugs_list),
+                      range_list))
+        p.close()
+        p.join()
+        return "Succeeded running drug_level_parallization!"
+    except:
+        raise OSError("Failed running parallel processing:{}".format(sys.exc_info()))
+
+
+def worker_per_drug(run_parameters, consolodated_df, genes_list, unique_gene_names, network_mat, baseline_array,
+                    drugs_list, i):
+    """ worker for drug level parallelization.
+
+    Args:
+        run_parameters:
+        consolodated_df:
+        genes_list:
+        unique_gene_names:
+        network_mat:
+        baseline_array:
+        drugs_list:
+        i: 
+
+    Returns:
+
+    """
+    restart_accumulator = np.zeros(network_mat.shape[0])
+
+    drug_response_df, spreadsheet_df = get_data_for_drug(consolodated_df, genes_list, drugs_list[i], run_parameters)
+
+    spreadsheet_df = zscore_dataframe(spreadsheet_df)
+    spreadsheet_genes_as_input = spreadsheet_df.index.values
+
+    spreadsheet_df = kn.update_spreadsheet_df(spreadsheet_df, unique_gene_names)
+
+    sample_smooth, iterations = kn.smooth_matrix_with_rwr(spreadsheet_df.as_matrix(), network_mat.T, run_parameters)
+
+    pearson_array = get_correlation(sample_smooth, drug_response_df.values[0], run_parameters)
+    for bootstrap_number in range(0, run_parameters["number_of_bootstraps"]):
+        sample_random, sample_permutation = sample_a_matrix_pearson(
+            sample_smooth, run_parameters["rows_sampling_fraction"],
+            run_parameters["cols_sampling_fraction"])
+
+        drug_response = drug_response_df.values[0, None]
+        drug_response = drug_response[0, sample_permutation]
+        pc_array = get_correlation(sample_random, drug_response, run_parameters)
+        pc_array[~np.in1d(spreadsheet_df.index, spreadsheet_genes_as_input)] = 0.0
+        pc_array = np.abs(trim_to_top_beta(pc_array, run_parameters["top_beta_of_sort"]))
+        restart_accumulator[pc_array != 0] += 1.0
+
+        pc_array = pc_array / sum(pc_array)
+        pc_array = kn.smooth_matrix_with_rwr(pc_array, network_mat, run_parameters)[0]
+        pc_array = pc_array - baseline_array
+
+        save_a_sample_correlation(pc_array, run_parameters)
+
+    restart_accumulator = restart_accumulator / run_parameters["number_of_bootstraps"]
+    pcc_gm_array, borda_count = get_bootstrap_net_correlation_score(run_parameters, pearson_array.size)
+
+    generate_net_correlation_output(
+        pearson_array, borda_count, pcc_gm_array, restart_accumulator, drug_response_df.index.values[0],
+        spreadsheet_df.index, spreadsheet_genes_as_input, run_parameters)
 
 
 def generate_net_correlation_output(pearson_array, pc_array, min_max_pc, restart_accumulator,
@@ -332,7 +399,8 @@ def generate_net_correlation_output(pearson_array, pc_array, min_max_pc, restart
                  'baseline score', 'Percent appearing in restart set']
     result_df = pd.DataFrame(output_val, columns=df_header).sort_values('quantitative sorting score', ascending=0)
 
-    target_file_base_name = os.path.join(run_parameters["results_directory"], drug_name + '_' + run_parameters['out_filename'])
+    target_file_base_name = os.path.join(run_parameters["results_directory"],
+                                         drug_name + '_' + run_parameters['out_filename'])
     file_name = kn.create_timestamped_filename(target_file_base_name) + '.tsv'
     result_df.to_csv(file_name, header=True, index=False, sep='\t')
 
@@ -363,7 +431,7 @@ def get_correlation(spreadsheet, drug_response, run_parameters, normalize=True, 
 
         if run_parameters['correlation_method'] == 'lasso':
             drug_response = np.array([drug_response])
-            drug_response[ ~(np.isfinite(drug_response)) ] = 0
+            drug_response[~(np.isfinite(drug_response))] = 0
             lasso_cv_obj = LassoCV(normalize=normalize, max_iter=max_iter)
             lasso_cv_residual = lasso_cv_obj.fit(spreadsheet.T, drug_response[0])
             correlation_array = lasso_cv_residual.coef_
@@ -418,7 +486,7 @@ def sample_a_matrix_pearson(spreadsheet_mat, rows_fraction, cols_fraction):
         sample_random: A specified precentage sample of the spread sheet.
         sample_permutation: the array that correponds to columns sample.
     """
-    features_size = int(np.round(spreadsheet_mat.shape[0] * (1-rows_fraction)))
+    features_size = int(np.round(spreadsheet_mat.shape[0] * (1 - rows_fraction)))
     features_permutation = np.random.permutation(spreadsheet_mat.shape[0])
     features_permutation = features_permutation[0:features_size].T
 
@@ -472,7 +540,7 @@ def save_a_sample_correlation(pc_array, run_parameters):
     tmp_filename = kn.create_timestamped_filename('sampled_pc_array', name_extension=None, precision=1e12)
 
     pc_array_filename = os.path.join(tmp_dir, tmp_filename)
-    with open(pc_array_filename , 'wb') as tmp_file_handle:
+    with open(pc_array_filename, 'wb') as tmp_file_handle:
         pc_array.dump(tmp_file_handle)
 
     return
@@ -501,16 +569,17 @@ def get_bootstrap_correlation_score(run_parameters, n_rows):
             pc_name = os.path.join(tmp_dir, tmp_f)
             corr_array = np.load(pc_name)
             sum_vote_to_borda_count(borda_count, np.abs(corr_array))
-            pc_array_vectors[:,current_column] = corr_array
+            pc_array_vectors[:, current_column] = corr_array
             current_column += 1
 
     borda_count = borda_count / run_parameters["number_of_bootstraps"]
 
-    pc_array_vectors = np.abs(pc_array_vectors[:,0:current_column - 1])
+    pc_array_vectors = np.abs(pc_array_vectors[:, 0:current_column - 1])
     pc_array_vectors_gm_max = max(gmean(pc_array_vectors, axis=1))
     pcc_gm_array = gmean(pc_array_vectors / pc_array_vectors_gm_max, axis=1)
 
     return pcc_gm_array, borda_count
+
 
 def get_bootstrap_net_correlation_score(run_parameters, n_rows):
     """ correlation scoring for bootstraps without network
@@ -535,12 +604,12 @@ def get_bootstrap_net_correlation_score(run_parameters, n_rows):
             corr_array = np.load(pc_name)
             sum_vote_to_borda_count(borda_count, corr_array)
             corr_array = corr_array - min(corr_array)
-            pc_array_vectors[:,current_column] = corr_array / max(corr_array)
+            pc_array_vectors[:, current_column] = corr_array / max(corr_array)
             current_column += 1
 
     borda_count = borda_count / run_parameters["number_of_bootstraps"]
 
-    pc_array_vectors = pc_array_vectors[:,0:current_column - 1]
+    pc_array_vectors = pc_array_vectors[:, 0:current_column - 1]
     pcc_gm_array = gmean(pc_array_vectors, axis=1)
 
     return pcc_gm_array, borda_count
