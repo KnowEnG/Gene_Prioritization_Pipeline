@@ -7,7 +7,6 @@ import pandas as pd
 
 from scipy.stats import pearsonr as pcc
 from scipy.stats.mstats import zscore
-from scipy.stats.mstats import gmean
 from sklearn.preprocessing import normalize
 from sklearn.linear_model import LassoCV
 
@@ -85,14 +84,35 @@ def run_correlation(run_parameters):
     genes_list, drugs_list, consolodated_df = get_consolodated_dataframe(spreadsheet_df_0, drug_response_df_0)
     run_parameters['out_filename'] = 'correlation'
 
-    for drug_name in drugs_list:
-        drug_response_df, spreadsheet_df = get_data_for_drug(consolodated_df, genes_list, drug_name, run_parameters)
-        pc_array = get_correlation(spreadsheet_df.as_matrix(), drug_response_df.values[0], run_parameters)
-
-        generate_correlation_output(pc_array, drug_name, spreadsheet_df.index, run_parameters)
+    drug_level_paralleliztion_for_run_corrleation(run_parameters, consolodated_df, genes_list, drugs_list)
 
     return
 
+def drug_level_paralleliztion_for_run_corrleation(run_parameters, consolodated_df, genes_list, drugs_list):
+    """ no comment """
+    range_list = range(0, len(drugs_list))
+    parallelism = dstutil.determine_parallelism_locally(len(drugs_list))
+
+    try:
+        p = multiprocessing.Pool(processes=parallelism)
+        p.starmap(worker_for_run_correlation,
+                  zip(itertools.repeat(run_parameters),
+                      itertools.repeat(consolodated_df),
+                      itertools.repeat(genes_list),
+                      itertools.repeat(drugs_list),
+                      range_list))
+        p.close()
+        p.join()
+        return "Success run_correlation_paralell"
+    except:
+        raise OSError("Fail running paralell process")
+
+def worker_for_run_correlation(run_parameters, consolodated_df, genes_list, drugs_list, i):
+    """ no comment """
+    drug_response_df, spreadsheet_df = get_data_for_drug(consolodated_df, genes_list, drugs_list[i], run_parameters)
+    pc_array = get_correlation(spreadsheet_df.as_matrix(), drug_response_df.values[0], run_parameters)
+
+    generate_correlation_output(pc_array, drugs_list[i], spreadsheet_df.index, run_parameters)
 
 def generate_correlation_output(pc_array, drug_name, gene_name_list, run_parameters):
     """ Save final output of correlation
