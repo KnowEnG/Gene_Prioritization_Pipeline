@@ -89,7 +89,14 @@ def run_correlation(run_parameters):
     return
 
 def drug_level_paralleliztion_for_run_corrleation(run_parameters, consolodated_df, genes_list, drugs_list):
-    """ no comment """
+    """ parallelization dispatch for run correlation
+
+    Args:
+        run_parameters:  dict of parameters
+        consolodated_df: spreadsheet - drug consolodated data frame
+        genes_list:      ordered list of genes in consolodated_df
+        drugs_list:      ordered list of drugs in consolodated_df
+    """
     range_list = range(0, len(drugs_list))
     parallelism = dstutil.determine_parallelism_locally(len(drugs_list))
 
@@ -108,7 +115,15 @@ def drug_level_paralleliztion_for_run_corrleation(run_parameters, consolodated_d
         raise OSError("Fail running paralell process")
 
 def worker_for_run_correlation(run_parameters, consolodated_df, genes_list, drugs_list, i):
-    """ no comment """
+    """ core function for parallel run_correlation
+
+    Args:
+        run_parameters:  dict of parameters
+        consolodated_df: spreadsheet - drug consolodated data frame
+        genes_list:      ordered list of genes in consolodated_df
+        drugs_list:      ordered list of drugs in consolodated_df
+        i:               paralell iteration number
+    """
     drug_response_df, spreadsheet_df = get_data_for_drug(consolodated_df, genes_list, drugs_list[i], run_parameters)
     pc_array = get_correlation(spreadsheet_df.as_matrix(), drug_response_df.values[0], run_parameters)
 
@@ -159,6 +174,14 @@ def run_bootstrap_correlation(run_parameters):
 
 def drug_level_parallelization_for_run_bootstrap_correlation(run_parameters, consolodated_df, genes_list,
                                                              n_bootstraps, drugs_list):
+    """ dispatch function for parallel run_bootstrap_correlation
+    Args:
+        run_parameters:  dict of parameters
+        consolodated_df: spreadsheet - drug consolodated data frame
+        genes_list:      ordered list of genes in consolodated_df
+        n_bootstraps:    number of bootstrap samples to use
+        drugs_list:      ordered list of drugs in consolodated_df
+    """
     range_list = range(0, len(drugs_list))
     parallelism = dstutil.determine_parallelism_locally(len(drugs_list))
 
@@ -179,6 +202,16 @@ def drug_level_parallelization_for_run_bootstrap_correlation(run_parameters, con
 
 
 def worker_for_run_bootstrap_correlation(run_parameters, consolodated_df, genes_list, n_bootstraps, drugs_list, i):
+    """  core function for parallel run_bootstrap_correlation
+
+    Args:
+        run_parameters:  dict of parameters
+        consolodated_df: spreadsheet - drug consolodated data frame
+        genes_list:      ordered list of genes in consolodated_df
+        n_bootstraps:    number of bootstrap samples to use
+        drugs_list:      ordered list of drugs in consolodated_df
+        i:               paralell iteration number
+    """
     drug_response_df, spreadsheet_df = get_data_for_drug(consolodated_df, genes_list, drugs_list[i], run_parameters)
     pearson_array = get_correlation(spreadsheet_df.as_matrix(), drug_response_df.values[0], run_parameters)
     borda_count = np.zeros(spreadsheet_df.shape[0])
