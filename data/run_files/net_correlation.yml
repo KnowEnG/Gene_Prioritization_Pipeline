@@ -15,6 +15,6 @@ rwr_max_iterations:         100
 rwr_convergence_tolerence:  1.0e-2
 rwr_restart_probability:    0.5       # Vn+1 = alpha * N * Vn + (1-alpha) * Vo
 
-top_beta_of_sort:           0.006414779652318943 # top 100 of 15589
+top_beta_of_sort:           100
 
 drop_method:                drop_NA
