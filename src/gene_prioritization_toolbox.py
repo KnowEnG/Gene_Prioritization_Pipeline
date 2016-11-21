@@ -264,9 +264,9 @@ def run_net_correlation(run_parameters):
     Args:
         run_parameters: parameter set dictionary.
     """
-    drug_response_df_0 = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
-    spreadsheet_df_0 = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
-    genes_list, drugs_list, consolodated_df = get_consolodated_dataframe(spreadsheet_df_0, drug_response_df_0)
+    drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
+    spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
+    spreadsheet_genes_as_input = spreadsheet_df.index.values
 
     network_df = kn.get_network_df(run_parameters['gg_network_name_full_path'])
     node_1_names, node_2_names = kn.extract_network_node_names(network_df)
@@ -284,20 +284,21 @@ def run_net_correlation(run_parameters):
         network_df, len(unique_gene_names), len(unique_gene_names))
 
     network_mat = normalize(network_mat_sparse, norm="l1", axis=0)
-    network_mat_transpose = normalize(network_mat_sparse, norm="l1", axis=1)
 
     baseline_array = np.ones(network_mat.shape[0]) / network_mat.shape[0]
     baseline_array = kn.smooth_matrix_with_rwr(baseline_array, network_mat, run_parameters)[0]
 
+    genes_list, drugs_list, consolodated_df = get_consolodated_dataframe(spreadsheet_df, drug_response_df)
+
     run_parameters['out_filename'] = 'net_correlation'
     drug_level_parallelization_for_run_net_correlation(run_parameters, consolodated_df, genes_list, unique_gene_names,
-                                                       network_mat, network_mat_transpose, baseline_array, drugs_list)
+                                                       network_mat, spreadsheet_genes_as_input, baseline_array, drugs_list)
 
     return
 
 
 def drug_level_parallelization_for_run_net_correlation(run_parameters, consolodated_df, genes_list, unique_gene_names,
-                                                       network_mat, network_mat_transpose, baseline_array, drugs_list):
+                                                       network_mat, spreadsheet_genes_as_input, baseline_array, drugs_list):
     range_list = range(0, len(drugs_list))
     parallelism = dstutil.determine_parallelism_locally(len(drugs_list))
 
@@ -309,7 +310,7 @@ def drug_level_parallelization_for_run_net_correlation(run_parameters, consoloda
                       itertools.repeat(genes_list),
                       itertools.repeat(unique_gene_names),
                       itertools.repeat(network_mat),
-                      itertools.repeat(network_mat_transpose),
+                      itertools.repeat(spreadsheet_genes_as_input),
                       itertools.repeat(baseline_array),
                       itertools.repeat(drugs_list),
                       range_list))
@@ -321,16 +322,15 @@ def drug_level_parallelization_for_run_net_correlation(run_parameters, consoloda
 
 
 def worker_for_run_net_correlation(run_parameters, consolodated_df, genes_list, unique_gene_names,
-                                   network_mat, network_mat_transpose, baseline_array, drugs_list, i):
+                                   network_mat, spreadsheet_genes_as_input, baseline_array, drugs_list, i):
 
     drug_response_df, spreadsheet_df = get_data_for_drug(consolodated_df, genes_list, drugs_list[i], run_parameters)
 
     spreadsheet_df = zscore_dataframe(spreadsheet_df)
-    spreadsheet_genes_as_input = spreadsheet_df.index.values
 
     spreadsheet_df = kn.update_spreadsheet_df(spreadsheet_df, unique_gene_names)
 
-    sample_smooth, iterations = kn.smooth_matrix_with_rwr(spreadsheet_df.as_matrix(), network_mat_transpose, run_parameters)
+    sample_smooth, iterations = kn.smooth_matrix_with_rwr(spreadsheet_df.as_matrix(), network_mat.T, run_parameters)
 
     pc_array = get_correlation(sample_smooth, drug_response_df.values[0], run_parameters)
     pearson_array = pc_array.copy()
@@ -382,7 +382,6 @@ def run_bootstrap_net_correlation(run_parameters):
     baseline_array = np.ones(network_mat.shape[0]) / network_mat.shape[0]
     baseline_array = kn.smooth_matrix_with_rwr(baseline_array, network_mat, run_parameters)[0]
 
-    # n_bootstraps = run_parameters["number_of_bootstraps"]
     run_parameters['out_filename'] = 'bootstrap_net_correlation'
 
     genes_list, drugs_list, consolodated_df = get_consolodated_dataframe(spreadsheet_df, drug_response_df)
