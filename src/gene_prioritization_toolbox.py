@@ -544,7 +544,7 @@ def get_correlation(spreadsheet, drug_response, run_parameters, normalize=True, 
     correlation_array = np.zeros(spreadsheet.shape[0])
     if 'correlation_method' in run_parameters:
         if run_parameters['correlation_method'] == 'pearson':
-            spreadsheet = zscore(spreadsheet, axis=0, ddof=0)
+            spreadsheet = zscore(spreadsheet, axis=1, ddof=0)
             for row in range(0, spreadsheet.shape[0]):
                 correlation_array[row] = pcc(spreadsheet[row, :], drug_response)[0]
             correlation_array[~(np.isfinite(correlation_array))] = 0
