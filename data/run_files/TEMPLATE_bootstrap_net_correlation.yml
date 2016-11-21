@@ -1,0 +1,49 @@
+# ------------------------------------------------------------------------------------------------------
+# - Analysis Method: correlation, net_correlation, bootstrap_correlation, or bootstrap_net_correlation -
+# ------------------------------------------------------------------------------------------------------
+method: bootstrap_net_correlation   
+
+# ------------------------------------------------------------------------------------------------------
+# - Correlation Method: pearson, lasso -
+# ------------------------------------------------------------------------------------------------------
+correlation_method: pearson
+
+# --------------------------------------------------------------------
+# - 4 col edge adjacency dataframe in .tsv format                    -
+# - spreadsheet          dataframe in .tsv format                    -
+# - phenotype            dataframe in .tsv format                    -
+# --------------------------------------------------------------------
+gg_network_name_full_path:  ../data/networks/TEST_1_gene_gene.edge
+spreadsheet_name_full_path: ../data/spreadsheets/TEST_1_gene_sample.tsv
+drug_response_full_path:    ../data/spreadsheets/TEST_multi_drug_response.txt
+
+# --------------------------------------------------------------------
+# - directory where the result and temporary files will be written   -
+# --------------------------------------------------------------------
+results_directory:          ./run_dir/results
+
+# --------------------------------------------------------------------
+# - Number of random samplings                                       -
+# - Fraction of rows selected at random                              -
+# - Fraction of columns selected at random                           -
+# --------------------------------------------------------------------
+number_of_bootstraps:       20
+rows_sampling_fraction:     1.0 # 1.0 means 100% of rows 
+cols_sampling_fraction:     0.9 # 0.9 means 90% of columns    
+
+# --------------------------------------------------------------------
+# - maximum number of iterations without convergence                 -
+# - convergence tolerance using	frobenius norm                       -
+# - rwr_restart_probability:   Vn+1 = alpha*N*Vn + (1-alpha)*Vo      -
+# --------------------------------------------------------------------
+rwr_max_iterations:         100
+rwr_convergence_tolerence:  1.0e-2
+rwr_restart_probability:    0.5 # same as alpha in the above formula 
+
+# --------------------------------------------------------------------
+# - fraction to retain after first random walk smoothing             -
+# --------------------------------------------------------------------
+top_beta_of_sort:           3
+
+# options: drop_NA, zero_NA
+drop_method:                drop_NA
