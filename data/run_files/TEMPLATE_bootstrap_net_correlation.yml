@@ -21,7 +21,6 @@ drug_response_full_path:    ../data/spreadsheets/TEST_multi_drug_response.txt
 # - directory where the result and temporary files will be written   -
 # --------------------------------------------------------------------
 results_directory:          ./run_dir/results
-pc_array_tmp_dir:           ./run_dir/tmp_pc_array
 
 # --------------------------------------------------------------------
 # - Number of random samplings                                       -
