@@ -376,7 +376,6 @@ def run_bootstrap_net_correlation(run_parameters):
         network_df, len(unique_gene_names), len(unique_gene_names))
 
     network_mat = normalize(network_mat_sparse, norm="l1", axis=0)
-    network_mat_transpose = normalize(network_mat_sparse, norm="l1", axis=1)
 
     spreadsheet_df = kn.update_spreadsheet_df(spreadsheet_df, unique_gene_names)
 
@@ -390,14 +389,14 @@ def run_bootstrap_net_correlation(run_parameters):
 
     # calls parallelization worker on drug level
     drug_level_parallelization_for_bootstrap_net_correlation(run_parameters, consolodated_df, genes_list,
-                                                             unique_gene_names, network_mat, network_mat_transpose,
+                                                             spreadsheet_genes_as_input, network_mat,
                                                              baseline_array, drugs_list)
 
     return
 
 
 def drug_level_parallelization_for_bootstrap_net_correlation(run_parameters, consolodated_df, genes_list,
-                                                             unique_gene_names, network_mat, network_mat_transpose,
+                                                             spreadsheet_genes_as_input, network_mat,
                                                              baseline_array, drugs_list):
     """ parallel drug level computation.
 
@@ -424,7 +423,7 @@ def drug_level_parallelization_for_bootstrap_net_correlation(run_parameters, con
                     itertools.repeat(consolodated_df),
                     itertools.repeat(genes_list),
                     itertools.repeat(network_mat),
-                    itertools.repeat(network_mat_transpose),
+                    itertools.repeat(spreadsheet_genes_as_input),
                     itertools.repeat(baseline_array),
                     itertools.repeat(drugs_list),
                     range_list))
@@ -436,7 +435,7 @@ def drug_level_parallelization_for_bootstrap_net_correlation(run_parameters, con
 
 
 def worker_for_bootstrap_net_correlation(run_parameters, consolodated_df, genes_list, network_mat,
-                                         network_mat_transpose, baseline_array, drugs_list, i):
+                                         spreadsheet_genes_as_input, baseline_array, drugs_list, i):
     """ worker for drug level parallelization.
 
     Args:
@@ -459,9 +458,8 @@ def worker_for_bootstrap_net_correlation(run_parameters, consolodated_df, genes_
     drug_response_df, spreadsheet_df = get_data_for_drug(consolodated_df, genes_list, drugs_list[i], run_parameters)
 
     spreadsheet_df = zscore_dataframe(spreadsheet_df)
-    spreadsheet_genes_as_input = spreadsheet_df.index.values
 
-    sample_smooth, iterations = kn.smooth_matrix_with_rwr(spreadsheet_df.as_matrix(), network_mat_transpose, run_parameters)
+    sample_smooth, iterations = kn.smooth_matrix_with_rwr(spreadsheet_df.as_matrix(), network_mat.T, run_parameters)
 
     pearson_array = get_correlation(sample_smooth, drug_response_df.values[0], run_parameters)
     n_bootstraps = run_parameters["number_of_bootstraps"]
