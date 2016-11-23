@@ -479,14 +479,17 @@ def worker_for_bootstrap_net_correlation(run_parameters, consolodated_df, genes_
         pc_array = pc_array - baseline_array
 
         borda_count = sum_array_ranking_to_borda_count(borda_count, pc_array)
-        gm_accumulator = (np.abs(pc_array) + EPSILON_0) * gm_accumulator
+        pc_array = pc_array - min(pc_array)
+        gm_accumulator = (pc_array / max(pc_array)) * gm_accumulator
 
     restart_accumulator = restart_accumulator / n_bootstraps
     borda_count = borda_count / n_bootstraps
-    pcc_gm_array = gm_accumulator ** (1 / n_bootstraps)
+    gm_accumulator = gm_accumulator ** (1.0 / n_bootstraps)
+    gm_accumulator = gm_accumulator - min(gm_accumulator)
+    gm_accumulator = gm_accumulator / max(gm_accumulator)
 
     generate_net_correlation_output(
-        pearson_array, borda_count, pcc_gm_array, restart_accumulator, drug_response_df.index.values[0],
+        pearson_array, borda_count, gm_accumulator, restart_accumulator, drug_response_df.index.values[0],
         spreadsheet_df.index, spreadsheet_genes_as_input, run_parameters)
 
 
