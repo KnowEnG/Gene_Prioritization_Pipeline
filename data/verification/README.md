@@ -1,6 +1,6 @@
 # Verification directory files are benchmark result files
 The Makefile in the test directory contains the targets, needed to build the **Gene Prioritization Pipeline** benchmarks.
-For estimating memory requirments use the above estimator spreadsheet gene_prioritization_p_memory_estimator.xlsx
+For estimating memory requirments use the above spreadsheet gene_prioritization_p_memory_estimator.xlsx
 
 
 * Follow the instructions on the **Gene Prioritization Pipeline** landing page to set up the environmet:
