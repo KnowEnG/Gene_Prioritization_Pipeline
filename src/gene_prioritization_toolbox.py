@@ -165,7 +165,7 @@ def worker_for_run_correlation(run_parameters, consolidated_df, genes_list, drug
         genes_list:      ordered list of genes in consolidated_df
         drugs_list:      ordered list of drugs in consolidated_df
         i:               paralell iteration number
-        
+
     Returns:
         N/A
     """
@@ -198,8 +198,6 @@ def generate_correlation_output(pc_array, drug_name, gene_name_list, run_paramet
                                          drug_name + '_' + run_parameters['out_filename'])
     file_name = kn.create_timestamped_filename(target_file_base_name) + '.tsv'
     result_df.to_csv(file_name, header=True, index=False, sep='\t')
-
-    return
 
 
 def run_bootstrap_correlation(run_parameters):
@@ -279,8 +277,6 @@ def write_bootstrap_correlation_output(borda_count, pcc_gm_array, pc_array, drug
                                          drug_name + '_' + run_parameters['out_filename'])
     file_name = kn.create_timestamped_filename(target_file_base_name) + '.tsv'
     result_df.to_csv(file_name, header=True, index=False, sep='\t')
-
-    return
 
 
 def run_net_correlation(run_parameters):
@@ -447,8 +443,6 @@ def generate_net_correlation_output(pearson_array, pc_array, gm_accumulator, res
     file_name = kn.create_timestamped_filename(target_file_base_name) + '.tsv'
     result_df.to_csv(file_name, header=True, index=False, sep='\t')
 
-    return
-
 
 def get_correlation(spreadsheet, drug_response, run_parameters, lasso_normalize=True, max_iter=1e6):
     """ correlation function definition for all run methods
@@ -530,8 +524,6 @@ def write_results_dataframe(result_df, run_dir, write_file_name):
     target_file_base_name = os.path.join(run_dir, write_file_name)
     file_name = kn.create_timestamped_filename(target_file_base_name) + '.txt'
     result_df.to_csv(file_name, header=True, index=True, sep='\t')
-
-    return
 
 
 def sample_a_matrix_pearson(spreadsheet_mat, rows_fraction, cols_fraction):
