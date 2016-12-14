@@ -21,12 +21,11 @@ def get_input_data_iterator(run_parameters):
     """ get the data referenced in the run_parameters as a python iterator - list for use in parallel processing
 
     Args:
-        run_parameters:   with keys - drug_response_full_path, spreadsheet_name_full_path
+        run_parameters: with keys - drug_response_full_path, spreadsheet_name_full_path
 
     Returns:
-        zipped_arguments:         a python (list) iterator with keys - run_parameters, consolidated_df, genes_list, drugs_list
-                                                               and range_list
-        number_of_drugs:  number of drugs in drug response file
+        zipped_arguments: a python (list) iterator with keys - run_parameters, consolidated_df, genes_list, drugs_list                                    and range_list
+        number_of_drugs: number of drugs in drug response file
     """
     drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
@@ -48,13 +47,12 @@ def get_input_data_iterator_with_network(run_parameters):
     """ get the data referenced in the run_parameters as a python iterator - list for use in parallel processing
 
     Args:
-        run_parameters:   with keys - drug_response_full_path, spreadsheet_name_full_path, gg_network_name_full_path
+        run_parameters: with keys - drug_response_full_path, spreadsheet_name_full_path, gg_network_name_full_path
 
     Returns:
-        zipped_arguments:         a python (list) iterator with keys - run_parameters, consolidated_df, genes_list, network_mat,
-                                                               spreadsheet_genes_as_input, baseline_array,
-                                                               drugs_list and range_list
-        number_of_drugs:  number of drugs in drug response file
+        zipped_arguments: a python (list) iterator with keys - run_parameters, consolidated_df, genes_list, network_mat,
+                          spreadsheet_genes_as_input, baseline_array, drugs_list and range_list
+        number_of_drugs: number of drugs in drug response file
     """
     network_mat, unique_gene_names = get_network_mat(run_parameters)
     baseline_array = np.ones(network_mat.shape[0]) / network_mat.shape[0]
@@ -75,7 +73,7 @@ def get_input_data_iterator_with_network(run_parameters):
     range_list = range(0, number_of_drugs)
 
     zipped_arguments = dstutil.zip_parameters(run_parameters, consolidated_df, genes_list, network_mat,
-                                      spreadsheet_genes_as_input, baseline_array, drugs_list, range_list)
+                                              spreadsheet_genes_as_input, baseline_array, drugs_list, range_list)
 
     return zipped_arguments, number_of_drugs
 
@@ -84,10 +82,10 @@ def get_network_mat(run_parameters):
     """ get the network as a matrix from the network file
 
     Args:
-        run_parameters:    with key - gg_network_name_full_path
+        run_parameters: with key - gg_network_name_full_path
 
     Returns:
-        network_mat:       matrix form of the network
+        network_mat: matrix form of the network
         unique_gene_names: ordered list of genes in the network matrix
     """
     network_df = kn.get_network_df(run_parameters['gg_network_name_full_path'])
@@ -148,6 +146,8 @@ def run_correlation(run_parameters):
     Args:
         run_parameters: dict with all keys for correlation - drug_response_full_path, spreadsheet_name_full_path,
                         correlation_method, results_directory, drop_method
+    Returns:
+        N/A
     """
     run_parameters['out_filename'] = 'correlation'
 
@@ -165,6 +165,9 @@ def worker_for_run_correlation(run_parameters, consolidated_df, genes_list, drug
         genes_list:      ordered list of genes in consolidated_df
         drugs_list:      ordered list of drugs in consolidated_df
         i:               paralell iteration number
+        
+    Returns:
+        N/A
     """
     drug_response_df, spreadsheet_df = extract_data_for_drug(consolidated_df, genes_list, drugs_list[i], run_parameters)
     pc_array = get_correlation(spreadsheet_df.as_matrix(), drug_response_df.values[0], run_parameters)
@@ -180,6 +183,9 @@ def generate_correlation_output(pc_array, drug_name, gene_name_list, run_paramet
         drug_name: name of the drug
         gene_name_list: list of the genes correlated (same size os pc_array)
         run_parameters: dictionary of run parameters with keys - results_directory and out_filename
+
+    Returns:
+        N/A
     """
     drug_name_list = np.repeat(drug_name, len(gene_name_list))
     output_val = np.column_stack(
@@ -203,6 +209,9 @@ def run_bootstrap_correlation(run_parameters):
         run_parameters: dict with all keys for correlation - drug_response_full_path, spreadsheet_name_full_path,
                         correlation_method, results_directory, drop_method, number_of_bootstraps,
                         rows_sampling_fraction, cols_sampling_fraction
+
+    Returns:
+        N/A
     """
     run_parameters['out_filename'] = 'bootstrap_correlation'
     zipped_arguments, number_of_drugs = get_input_data_iterator(run_parameters)
@@ -219,6 +228,9 @@ def worker_for_run_bootstrap_correlation(run_parameters, consolidated_df, genes_
         genes_list:      ordered list of genes in consolidated_df
         drugs_list:      ordered list of drugs in consolidated_df
         i:               paralell iteration number
+
+    Returns:
+        N/A
     """
     n_bootstraps = run_parameters["number_of_bootstraps"]
     drug_response_df, spreadsheet_df = extract_data_for_drug(consolidated_df, genes_list, drugs_list[i], run_parameters)
@@ -254,6 +266,8 @@ def write_bootstrap_correlation_output(borda_count, pcc_gm_array, pc_array, drug
         drug_name:       name of the drug
         gene_name_list:  list of the genes correlated (size of pc_array
         run_parameters:  dictionary of run parameters with keys - results_directory and out_filename
+    Returns:
+        N/A
     """
     drug_name_list = np.repeat(drug_name, len(gene_name_list))
     output_val = np.column_stack((drug_name_list, gene_name_list, borda_count, pcc_gm_array, pc_array))
@@ -275,6 +289,9 @@ def run_net_correlation(run_parameters):
     Args:
         run_parameters: dict with all keys for correlation - drug_response_full_path, spreadsheet_name_full_path,
                         gg_network_name_full_path, correlation_method, results_directory, drop_method
+
+    Returns:
+        N/A
     """
     run_parameters['out_filename'] = 'net_correlation'
     zipped_arguments, number_of_drugs = get_input_data_iterator_with_network(run_parameters)
@@ -325,6 +342,9 @@ def run_bootstrap_net_correlation(run_parameters):
         run_parameters: dict with all keys for correlation - drug_response_full_path, spreadsheet_name_full_path,
                         gg_network_name_full_path, correlation_method, results_directory, drop_method,
                         number_of_bootstraps, rows_sampling_fraction, cols_sampling_fraction
+
+    Returns:
+        N/A
     """
     run_parameters['out_filename'] = 'bootstrap_net_correlation'
     zipped_arguments, number_of_drugs = get_input_data_iterator_with_network(run_parameters)
@@ -345,6 +365,9 @@ def worker_for_bootstrap_net_correlation(run_parameters, consolidated_df, genes_
         baseline_array:              baseline response of network genes (rwr of ones)
         drugs_list:                  ordered list of drugs in consolidated_df
         i:                           paralell iteration number
+
+    Returns:
+        N/A
     """
     restart_accumulator = np.zeros(network_mat.shape[0])
     gm_accumulator = np.ones(network_mat.shape[0])
@@ -400,6 +423,9 @@ def generate_net_correlation_output(pearson_array, pc_array, gm_accumulator, res
         gene_name_list:      list of genes correlated (pc_array & all will be trimmed to these)
         gene_orig_list:      original list of genes - size of pc_array
         run_parameters:      with key 'results_directory'
+
+    Returns:
+        N/A
     """
     mask = np.in1d(gene_name_list, gene_orig_list)
     pc_array = pc_array[mask]
@@ -497,6 +523,9 @@ def write_results_dataframe(result_df, run_dir, write_file_name):
         result_df:          a dataframe with row and column names
         run_dir:            the directory to write in
         write_file_name:    the file name to join with the directory
+
+    Returns:
+        N/A
     """
     target_file_base_name = os.path.join(run_dir, write_file_name)
     file_name = kn.create_timestamped_filename(target_file_base_name) + '.txt'
