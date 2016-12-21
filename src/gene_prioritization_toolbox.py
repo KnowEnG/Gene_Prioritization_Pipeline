@@ -13,9 +13,6 @@ from sklearn.linear_model import LassoCV
 
 import knpackage.toolbox as kn
 import knpackage.distributed_computing_utils as dstutil
-import multiprocessing
-import itertools
-import sys
 
 EPSILON_0 = 1e-7
 
@@ -85,35 +82,10 @@ def run_correlation(run_parameters):
     genes_list, drugs_list, consolodated_df = get_consolodated_dataframe(spreadsheet_df_0, drug_response_df_0)
     run_parameters['out_filename'] = 'correlation'
 
-    drug_level_paralleliztion_for_run_corrleation(run_parameters, consolodated_df, genes_list, drugs_list)
+    number_of_drugs = len(drugs_list)
+    zipped_arguments = dstutil.zip_parameters(run_parameters, consolodated_df, genes_list, drugs_list, range(0, number_of_drugs))
+    dstutil.parallelize_processes_locally(worker_for_run_correlation, zipped_arguments, number_of_drugs)
 
-    return
-
-def drug_level_paralleliztion_for_run_corrleation(run_parameters, consolodated_df, genes_list, drugs_list):
-    """ parallelization dispatch for run correlation
-
-    Args:
-        run_parameters:  dict of parameters
-        consolodated_df: spreadsheet - drug consolodated data frame
-        genes_list:      ordered list of genes in consolodated_df
-        drugs_list:      ordered list of drugs in consolodated_df
-    """
-    range_list = range(0, len(drugs_list))
-    parallelism = dstutil.determine_parallelism_locally(len(drugs_list))
-
-    try:
-        p = multiprocessing.Pool(processes=parallelism)
-        p.starmap(worker_for_run_correlation,
-                  zip(itertools.repeat(run_parameters),
-                      itertools.repeat(consolodated_df),
-                      itertools.repeat(genes_list),
-                      itertools.repeat(drugs_list),
-                      range_list))
-        p.close()
-        p.join()
-        return "Success run_correlation_paralell"
-    except:
-        raise OSError("Fail running paralell process")
 
 def worker_for_run_correlation(run_parameters, consolodated_df, genes_list, drugs_list, i):
     """ core function for parallel run_correlation
@@ -167,39 +139,10 @@ def run_bootstrap_correlation(run_parameters):
     run_parameters['out_filename'] = 'bootstrap_correlation'
     n_bootstraps = run_parameters["number_of_bootstraps"]
 
-    drug_level_parallelization_for_run_bootstrap_correlation(run_parameters, consolodated_df, genes_list,
-                                                             n_bootstraps, drugs_list)
-
-    return
-
-
-def drug_level_parallelization_for_run_bootstrap_correlation(run_parameters, consolodated_df, genes_list,
-                                                             n_bootstraps, drugs_list):
-    """ dispatch function for parallel run_bootstrap_correlation
-    Args:
-        run_parameters:  dict of parameters
-        consolodated_df: spreadsheet - drug consolodated data frame
-        genes_list:      ordered list of genes in consolodated_df
-        n_bootstraps:    number of bootstrap samples to use
-        drugs_list:      ordered list of drugs in consolodated_df
-    """
-    range_list = range(0, len(drugs_list))
-    parallelism = dstutil.determine_parallelism_locally(len(drugs_list))
-
-    try:
-        p = multiprocessing.Pool(processes=parallelism)
-        p.starmap(worker_for_run_bootstrap_correlation,
-                  zip(itertools.repeat(run_parameters),
-                      itertools.repeat(consolodated_df),
-                      itertools.repeat(genes_list),
-                      itertools.repeat(n_bootstraps),
-                      itertools.repeat(drugs_list),
-                      range_list))
-        p.close()
-        p.join()
-        return "Succeeded running drug_level_parallization!"
-    except:
-        raise OSError("Failed running parallel processing:{}".format(sys.exc_info()))
+    number_of_drugs = len(drugs_list)
+    zipped_arguments = dstutil.zip_parameters(run_parameters, consolodated_df, genes_list, n_bootstraps, drugs_list,
+                                              range(0, number_of_drugs))
+    dstutil.parallelize_processes_locally(worker_for_run_bootstrap_correlation, zipped_arguments, number_of_drugs)
 
 
 def worker_for_run_bootstrap_correlation(run_parameters, consolodated_df, genes_list, n_bootstraps, drugs_list, i):
@@ -311,33 +254,10 @@ def run_net_correlation(run_parameters):
     gc.collect()
 
     run_parameters['out_filename'] = 'net_correlation'
-    drug_level_parallelization_for_run_net_correlation(run_parameters, consolodated_df, genes_list,
-                                                       spreadsheet_genes_as_input, network_mat, baseline_array, drugs_list)
-
-    return
-
-
-def drug_level_parallelization_for_run_net_correlation(run_parameters, consolodated_df, genes_list,
-                                                       spreadsheet_genes_as_input, network_mat, baseline_array, drugs_list):
-    range_list = range(0, len(drugs_list))
-    parallelism = dstutil.determine_parallelism_locally(len(drugs_list))
-
-    try:
-        p = multiprocessing.Pool(processes=parallelism)
-        p.starmap(worker_for_run_net_correlation,
-                  zip(itertools.repeat(run_parameters),
-                      itertools.repeat(consolodated_df),
-                      itertools.repeat(genes_list),
-                      itertools.repeat(network_mat),
-                      itertools.repeat(spreadsheet_genes_as_input),
-                      itertools.repeat(baseline_array),
-                      itertools.repeat(drugs_list),
-                      range_list))
-        p.close()
-        p.join()
-        return "Succeeded running drug_level_parallization!"
-    except:
-        raise OSError("Failed running parallel processing:{}".format(sys.exc_info()))
+    number_of_drugs = len(drugs_list)
+    zipped_arguments = dstutil.zip_parameters(run_parameters, consolodated_df, genes_list, network_mat, spreadsheet_genes_as_input,
+                                              baseline_array, drugs_list, range(0, number_of_drugs))
+    dstutil.parallelize_processes_locally(worker_for_run_net_correlation, zipped_arguments, number_of_drugs)
 
 
 def worker_for_run_net_correlation(run_parameters, consolodated_df, genes_list,
@@ -414,51 +334,10 @@ def run_bootstrap_net_correlation(run_parameters):
     del drug_response_df
     gc.collect()
 
-    # calls parallelization worker on drug level
-    drug_level_parallelization_for_bootstrap_net_correlation(run_parameters, consolodated_df, genes_list,
-                                                             spreadsheet_genes_as_input, network_mat,
-                                                             baseline_array, drugs_list)
-
-    return
-
-
-def drug_level_parallelization_for_bootstrap_net_correlation(run_parameters, consolodated_df, genes_list,
-                                                             spreadsheet_genes_as_input, network_mat,
-                                                             baseline_array, drugs_list):
-    """ parallel drug level computation.
-
-    Args:
-        run_parameters:
-        consolodated_df:
-        genes_list:
-        unique_gene_names:
-        network_mat:
-        baseline_array:
-        drugs_list:
-
-    Returns:
-
-    """
-    range_list = range(0, len(drugs_list))
-
-    parallelism = dstutil.determine_parallelism_locally(len(drugs_list))
-
-    try:
-        p = multiprocessing.Pool(processes=parallelism)
-        p.starmap(worker_for_bootstrap_net_correlation,
-                  zip(itertools.repeat(run_parameters),
-                    itertools.repeat(consolodated_df),
-                    itertools.repeat(genes_list),
-                    itertools.repeat(network_mat),
-                    itertools.repeat(spreadsheet_genes_as_input),
-                    itertools.repeat(baseline_array),
-                    itertools.repeat(drugs_list),
-                    range_list))
-        p.close()
-        p.join()
-        return "Succeeded running drug_level_parallization!"
-    except:
-        raise OSError("Failed running parallel processing:{}".format(sys.exc_info()))
+    number_of_drugs = len(drugs_list)
+    zipped_arguments = dstutil.zip_parameters(run_parameters, consolodated_df, genes_list, network_mat,spreadsheet_genes_as_input,
+                                              baseline_array, drugs_list, range(0, number_of_drugs))
+    dstutil.parallelize_processes_locally(worker_for_bootstrap_net_correlation, zipped_arguments, number_of_drugs)
 
 
 def worker_for_bootstrap_net_correlation(run_parameters, consolodated_df, genes_list, network_mat,
