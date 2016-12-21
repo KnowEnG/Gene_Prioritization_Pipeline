@@ -1,4 +1,4 @@
-# KnowEnG's Gene Prioritization Pipeline
+### KnowEnG's Gene Prioritization Pipeline: Data Condition
 This pipeline is designed for speed and data conditioning is required before calling pipeline functoins.
 Some of the special data requirements are listed here.
 
