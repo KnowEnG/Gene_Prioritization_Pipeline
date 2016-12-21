@@ -6,6 +6,7 @@ import os
 import numpy as np
 import pandas as pd
 
+from scipy.stats import ttest_ind
 from scipy.stats import pearsonr as pcc
 from scipy.stats.mstats import zscore
 from sklearn.preprocessing import normalize
@@ -373,14 +374,11 @@ def run_bootstrap_net_correlation(run_parameters):
     network_df = kn.get_network_df(run_parameters['gg_network_name_full_path'])
     node_1_names, node_2_names = kn.extract_network_node_names(network_df)
     unique_gene_names = kn.find_unique_node_names(node_1_names, node_2_names)
-
     unique_gene_names = sorted(unique_gene_names)
-
     genes_lookup_table = kn.create_node_names_dict(unique_gene_names)
 
     network_df = kn.map_node_names_to_index(network_df, genes_lookup_table, 'node_1')
     network_df = kn.map_node_names_to_index(network_df, genes_lookup_table, 'node_2')
-
     network_df = kn.symmetrize_df(network_df)
     network_mat_sparse = kn.convert_network_df_to_sparse(
         network_df, len(unique_gene_names), len(unique_gene_names))
@@ -583,6 +581,17 @@ def get_correlation(spreadsheet, drug_response, run_parameters, normalize=True, 
             lasso_cv_obj = LassoCV(normalize=normalize, max_iter=max_iter)
             lasso_cv_residual = lasso_cv_obj.fit(spreadsheet.T, drug_response[0])
             correlation_array = lasso_cv_residual.coef_
+            return correlation_array
+
+        if run_parameters['correlation_method'] == 't_test':
+            for row in range(0, spreadsheet.shape[0]):
+                d = np.int_(drug_response)
+                a = spreadsheet[row, d != 0]
+                b = spreadsheet[row, d == 0]
+                correlation_array[row] = np.abs(ttest_ind(a, b, axis=None, equal_var=False)[0])
+
+            return correlation_array
+
 
     return correlation_array
 
