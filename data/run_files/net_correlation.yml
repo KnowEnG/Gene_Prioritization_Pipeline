@@ -3,6 +3,7 @@
 # ------------------------------------------------------------------------------------------------------
 method:                     net_correlation
 
+# pearson, t_test
 correlation_method:         pearson
 
 gg_network_name_full_path:  ../data/networks/STRING_experimental.tsv

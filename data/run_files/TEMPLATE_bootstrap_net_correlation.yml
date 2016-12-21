@@ -4,7 +4,7 @@
 method: bootstrap_net_correlation   
 
 # ------------------------------------------------------------------------------------------------------
-# - Correlation Method: pearson, lasso -
+# - Correlation Method: pearson, t_test -
 # ------------------------------------------------------------------------------------------------------
 correlation_method: pearson
 

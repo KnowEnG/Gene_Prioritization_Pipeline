@@ -3,6 +3,7 @@
 # ------------------------------------------------------------------------------------------------------
 method:                     bootstrap_correlation 
 
+# pearson, t_test
 correlation_method:         pearson       
 
 spreadsheet_name_full_path: ../data/spreadsheets/CCLE_Expression_ensembl.df
