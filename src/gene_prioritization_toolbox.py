@@ -83,7 +83,8 @@ def run_correlation(run_parameters):
     run_parameters['out_filename'] = 'correlation'
 
     number_of_drugs = len(drugs_list)
-    zipped_arguments = dstutil.zip_parameters(run_parameters, consolodated_df, genes_list, drugs_list, range(0, number_of_drugs))
+    zipped_arguments = dstutil.zip_parameters(run_parameters, consolodated_df, genes_list, drugs_list,
+                                              range(0, number_of_drugs))
     dstutil.parallelize_processes_locally(worker_for_run_correlation, zipped_arguments, number_of_drugs)
 
 
@@ -101,6 +102,7 @@ def worker_for_run_correlation(run_parameters, consolodated_df, genes_list, drug
     pc_array = get_correlation(spreadsheet_df.as_matrix(), drug_response_df.values[0], run_parameters)
 
     generate_correlation_output(pc_array, drugs_list[i], spreadsheet_df.index, run_parameters)
+
 
 def generate_correlation_output(pc_array, drug_name, gene_name_list, run_parameters):
     """ Save final output of correlation
@@ -122,8 +124,6 @@ def generate_correlation_output(pc_array, drug_name, gene_name_list, run_paramet
                                          drug_name + '_' + run_parameters['out_filename'])
     file_name = kn.create_timestamped_filename(target_file_base_name) + '.tsv'
     result_df.to_csv(file_name, header=True, index=False, sep='\t')
-
-    return
 
 
 def run_bootstrap_correlation(run_parameters):
@@ -199,8 +199,6 @@ def generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pc_array, d
     file_name = kn.create_timestamped_filename(target_file_base_name) + '.tsv'
     result_df.to_csv(file_name, header=True, index=False, sep='\t')
 
-    return
-
 
 def run_net_correlation(run_parameters):
     """ perform gene prioritization with network smoothing
@@ -255,14 +253,14 @@ def run_net_correlation(run_parameters):
 
     run_parameters['out_filename'] = 'net_correlation'
     number_of_drugs = len(drugs_list)
-    zipped_arguments = dstutil.zip_parameters(run_parameters, consolodated_df, genes_list, network_mat, spreadsheet_genes_as_input,
+    zipped_arguments = dstutil.zip_parameters(run_parameters, consolodated_df, genes_list, network_mat,
+                                              spreadsheet_genes_as_input,
                                               baseline_array, drugs_list, range(0, number_of_drugs))
     dstutil.parallelize_processes_locally(worker_for_run_net_correlation, zipped_arguments, number_of_drugs)
 
 
 def worker_for_run_net_correlation(run_parameters, consolodated_df, genes_list,
                                    network_mat, spreadsheet_genes_as_input, baseline_array, drugs_list, i):
-
     drug_response_df, spreadsheet_df = get_data_for_drug(consolodated_df, genes_list, drugs_list[i], run_parameters)
     sample_smooth = spreadsheet_df.as_matrix()
 
@@ -335,7 +333,8 @@ def run_bootstrap_net_correlation(run_parameters):
     gc.collect()
 
     number_of_drugs = len(drugs_list)
-    zipped_arguments = dstutil.zip_parameters(run_parameters, consolodated_df, genes_list, network_mat,spreadsheet_genes_as_input,
+    zipped_arguments = dstutil.zip_parameters(run_parameters, consolodated_df, genes_list, network_mat,
+                                              spreadsheet_genes_as_input,
                                               baseline_array, drugs_list, range(0, number_of_drugs))
     dstutil.parallelize_processes_locally(worker_for_bootstrap_net_correlation, zipped_arguments, number_of_drugs)
 
@@ -431,8 +430,6 @@ def generate_net_correlation_output(pearson_array, pc_array, min_max_pc, restart
     file_name = kn.create_timestamped_filename(target_file_base_name) + '.tsv'
     result_df.to_csv(file_name, header=True, index=False, sep='\t')
 
-    return
-
 
 def get_correlation(spreadsheet, drug_response, run_parameters, normalize=True, max_iter=1e6):
     """ correlation function definition for all run methods
@@ -509,8 +506,6 @@ def write_results_dataframe(result_df, run_dir, write_file_name):
     target_file_base_name = os.path.join(run_dir, write_file_name)
     file_name = kn.create_timestamped_filename(target_file_base_name) + '.txt'
     result_df.to_csv(file_name, header=True, index=True, sep='\t')
-
-    return
 
 
 def sample_a_matrix_pearson(spreadsheet_mat, rows_fraction, cols_fraction):
