@@ -354,7 +354,6 @@ def worker_for_bootstrap_net_correlation(run_parameters, consolodated_df, genes_
     sample_smooth = spreadsheet_df.as_matrix()
 
     del consolodated_df
-    del spreadsheet_df
     gc.collect()
 
     pearson_array = get_correlation(sample_smooth, drug_response_df.values[0], run_parameters)
