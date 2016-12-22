@@ -80,7 +80,6 @@ def run_correlation(run_parameters):
     spreadsheet_df_0 = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
 
     genes_list, drugs_list, consolodated_df = get_consolodated_dataframe(spreadsheet_df_0, drug_response_df_0)
-    run_parameters['out_filename'] = 'correlation'
 
     number_of_drugs = len(drugs_list)
     zipped_arguments = dstutil.zip_parameters(run_parameters, consolodated_df, genes_list, drugs_list,
@@ -136,7 +135,6 @@ def run_bootstrap_correlation(run_parameters):
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
 
     genes_list, drugs_list, consolodated_df = get_consolodated_dataframe(spreadsheet_df, drug_response_df)
-    run_parameters['out_filename'] = 'bootstrap_correlation'
     n_bootstraps = run_parameters["number_of_bootstraps"]
 
     number_of_drugs = len(drugs_list)
@@ -171,7 +169,6 @@ def worker_for_run_bootstrap_correlation(run_parameters, consolodated_df, genes_
         gm_accumulator = (np.abs(pc_array) + EPSILON_0) * gm_accumulator
     pcc_gm_array = gm_accumulator ** (1 / n_bootstraps)
     borda_count = borda_count / n_bootstraps
-    run_parameters['out_filename'] = 'bootstrap_correlation'
     generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pearson_array,
                                           drug_response_df.index.values[0],
                                           spreadsheet_df.index, run_parameters)
@@ -243,15 +240,12 @@ def run_net_correlation(run_parameters):
     baseline_array = np.ones(network_mat.shape[0]) / network_mat.shape[0]
     baseline_array = kn.smooth_matrix_with_rwr(baseline_array, network_mat, run_parameters)[0]
 
-    run_parameters['out_filename'] = 'bootstrap_net_correlation'
-
     genes_list, drugs_list, consolodated_df = get_consolodated_dataframe(spreadsheet_df, drug_response_df)
 
     del spreadsheet_df
     del drug_response_df
     gc.collect()
 
-    run_parameters['out_filename'] = 'net_correlation'
     number_of_drugs = len(drugs_list)
     zipped_arguments = dstutil.zip_parameters(run_parameters, consolodated_df, genes_list, network_mat,
                                               spreadsheet_genes_as_input,
@@ -320,8 +314,6 @@ def run_bootstrap_net_correlation(run_parameters):
 
     baseline_array = np.ones(network_mat.shape[0]) / network_mat.shape[0]
     baseline_array = kn.smooth_matrix_with_rwr(baseline_array, network_mat, run_parameters)[0]
-
-    run_parameters['out_filename'] = 'bootstrap_net_correlation'
 
     genes_list, drugs_list, consolodated_df = get_consolodated_dataframe(spreadsheet_df, drug_response_df)
 
