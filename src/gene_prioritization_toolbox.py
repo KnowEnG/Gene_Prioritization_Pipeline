@@ -10,7 +10,6 @@ from scipy.stats import ttest_ind
 from scipy.stats import pearsonr as pcc
 from scipy.stats.mstats import zscore
 from sklearn.preprocessing import normalize
-from sklearn.linear_model import LassoCV
 
 import knpackage.toolbox as kn
 import knpackage.distributed_computing_utils as dstutil
@@ -429,7 +428,7 @@ def generate_net_correlation_output(pearson_array, pc_array, min_max_pc, restart
     result_df.to_csv(file_name, header=True, index=False, sep='\t')
 
 
-def get_correlation(spreadsheet, drug_response, run_parameters, normalize=True, max_iter=1e6):
+def get_correlation(spreadsheet, drug_response, run_parameters):
     """ correlation function definition for all run methods
 
     Args:
@@ -449,14 +448,6 @@ def get_correlation(spreadsheet, drug_response, run_parameters, normalize=True, 
             for row in range(0, spreadsheet.shape[0]):
                 correlation_array[row] = pcc(spreadsheet[row, :], drug_response)[0]
             correlation_array[~(np.isfinite(correlation_array))] = 0
-            return correlation_array
-
-        if run_parameters['correlation_method'] == 'lasso':
-            drug_response = np.array([drug_response])
-            drug_response[~(np.isfinite(drug_response))] = 0
-            lasso_cv_obj = LassoCV(normalize=normalize, max_iter=max_iter)
-            lasso_cv_residual = lasso_cv_obj.fit(spreadsheet.T, drug_response[0])
-            correlation_array = lasso_cv_residual.coef_
             return correlation_array
 
         if run_parameters['correlation_method'] == 't_test':
