@@ -25,3 +25,5 @@ top_beta_of_sort:           2
 
 # options: drop_NA, zero_NA
 drop_method:                drop_NA
+
+out_filename:               bootstrap_net_correlation

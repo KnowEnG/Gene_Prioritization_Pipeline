@@ -24,3 +24,5 @@ rwr_restart_probability:    0.5       # Vn+1 = alpha * N * Vn + (1-alpha) * Vo
 top_beta_of_sort:           100
 
 drop_method:                drop_NA
+
+out_filename:               bootstrap_net_correlation
