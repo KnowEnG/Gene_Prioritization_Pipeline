@@ -350,8 +350,7 @@ def worker_for_bootstrap_net_correlation(run_parameters, consolodated_df, genes_
     borda_count = np.zeros(network_mat.shape[0])
 
     drug_response_df, spreadsheet_df = get_data_for_drug(consolodated_df, genes_list, drugs_list[i], run_parameters)
-    drug_name = drug_response_df.index.values[0]
-    gene_name_list = spreadsheet_df.index
+
     sample_smooth = spreadsheet_df.as_matrix()
 
     del consolodated_df
@@ -368,7 +367,7 @@ def worker_for_bootstrap_net_correlation(run_parameters, consolodated_df, genes_
         drug_response = drug_response_df.values[0, None]
         drug_response = drug_response[0, sample_permutation]
         pc_array = get_correlation(sample_random, drug_response, run_parameters)
-        pc_array[~np.in1d(gene_name_list, spreadsheet_genes_as_input)] = 0.0
+        pc_array[~np.in1d(spreadsheet_df.index, spreadsheet_genes_as_input)] = 0.0
         pc_array = np.abs(trim_to_top_beta(pc_array, run_parameters["top_beta_of_sort"]))
         restart_accumulator[pc_array != 0] += 1.0
 
@@ -383,8 +382,8 @@ def worker_for_bootstrap_net_correlation(run_parameters, consolodated_df, genes_
     borda_count = borda_count / n_bootstraps
     pcc_gm_array = gm_accumulator ** (1 / n_bootstraps)
 
-    generate_net_correlation_output(pearson_array, borda_count, pcc_gm_array, restart_accumulator, drug_name,
-                                    gene_name_list, spreadsheet_genes_as_input, run_parameters)
+    generate_net_correlation_output(pearson_array, borda_count, pcc_gm_array, restart_accumulator, drug_response_df.index.values[0],
+                                    spreadsheet_df.index, spreadsheet_genes_as_input, run_parameters)
 
 
 def generate_net_correlation_output(pearson_array, pc_array, min_max_pc, restart_accumulator,
