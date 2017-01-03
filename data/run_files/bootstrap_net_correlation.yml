@@ -3,6 +3,7 @@
 # ------------------------------------------------------------------------------------------------------
 method:                     bootstrap_net_correlation   
 
+# pearson, t_test
 correlation_method:         pearson
 
 gg_network_name_full_path:  ../data/networks/STRING_experimental.tsv
@@ -23,3 +24,5 @@ rwr_restart_probability:    0.5       # Vn+1 = alpha * N * Vn + (1-alpha) * Vo
 top_beta_of_sort:           100
 
 drop_method:                drop_NA
+
+out_filename:               bootstrap_net_correlation

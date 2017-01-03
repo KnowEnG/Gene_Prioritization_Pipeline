@@ -3,6 +3,7 @@
 # ------------------------------------------------------------------------------------------------------
 method:                     bootstrap_correlation 
 
+# pearson, t_test
 correlation_method:         pearson       
 
 spreadsheet_name_full_path: ../data/spreadsheets/CCLE_Expression_ensembl.df
@@ -16,3 +17,5 @@ rows_sampling_fraction:     1.0       # 1.0 means 100% of rows    (i.e., no samp
 cols_sampling_fraction:     0.9       # 1.0 means 100% of columns (i.e., no sampling) 
 
 drop_method:                drop_NA
+
+out_filename:               bootstrap_correlation

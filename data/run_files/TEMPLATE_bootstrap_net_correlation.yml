@@ -4,7 +4,7 @@
 method: bootstrap_net_correlation   
 
 # ------------------------------------------------------------------------------------------------------
-# - Correlation Method: pearson, lasso -
+# - Correlation Method: pearson, t_test -
 # ------------------------------------------------------------------------------------------------------
 correlation_method: pearson
 
@@ -47,3 +47,6 @@ top_beta_of_sort:           3
 
 # options: drop_NA, zero_NA
 drop_method:                drop_NA
+
+# output file name
+out_filename:               bootstrap_net_correlation

@@ -1,20 +1,18 @@
 """
 @author: The KnowEnG dev team
 """
+import gc
 import os
 import numpy as np
 import pandas as pd
 
+from scipy.stats import ttest_ind
 from scipy.stats import pearsonr as pcc
 from scipy.stats.mstats import zscore
 from sklearn.preprocessing import normalize
-from sklearn.linear_model import LassoCV
 
 import knpackage.toolbox as kn
 import knpackage.distributed_computing_utils as dstutil
-import multiprocessing
-import itertools
-import sys
 
 EPSILON_0 = 1e-7
 
@@ -82,37 +80,12 @@ def run_correlation(run_parameters):
     spreadsheet_df_0 = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
 
     genes_list, drugs_list, consolodated_df = get_consolodated_dataframe(spreadsheet_df_0, drug_response_df_0)
-    run_parameters['out_filename'] = 'correlation'
 
-    drug_level_paralleliztion_for_run_corrleation(run_parameters, consolodated_df, genes_list, drugs_list)
+    number_of_drugs = len(drugs_list)
+    zipped_arguments = dstutil.zip_parameters(run_parameters, consolodated_df, genes_list, drugs_list,
+                                              range(0, number_of_drugs))
+    dstutil.parallelize_processes_locally(worker_for_run_correlation, zipped_arguments, number_of_drugs)
 
-    return
-
-def drug_level_paralleliztion_for_run_corrleation(run_parameters, consolodated_df, genes_list, drugs_list):
-    """ parallelization dispatch for run correlation
-
-    Args:
-        run_parameters:  dict of parameters
-        consolodated_df: spreadsheet - drug consolodated data frame
-        genes_list:      ordered list of genes in consolodated_df
-        drugs_list:      ordered list of drugs in consolodated_df
-    """
-    range_list = range(0, len(drugs_list))
-    parallelism = dstutil.determine_parallelism_locally(len(drugs_list))
-
-    try:
-        p = multiprocessing.Pool(processes=parallelism)
-        p.starmap(worker_for_run_correlation,
-                  zip(itertools.repeat(run_parameters),
-                      itertools.repeat(consolodated_df),
-                      itertools.repeat(genes_list),
-                      itertools.repeat(drugs_list),
-                      range_list))
-        p.close()
-        p.join()
-        return "Success run_correlation_paralell"
-    except:
-        raise OSError("Fail running paralell process")
 
 def worker_for_run_correlation(run_parameters, consolodated_df, genes_list, drugs_list, i):
     """ core function for parallel run_correlation
@@ -128,6 +101,7 @@ def worker_for_run_correlation(run_parameters, consolodated_df, genes_list, drug
     pc_array = get_correlation(spreadsheet_df.as_matrix(), drug_response_df.values[0], run_parameters)
 
     generate_correlation_output(pc_array, drugs_list[i], spreadsheet_df.index, run_parameters)
+
 
 def generate_correlation_output(pc_array, drug_name, gene_name_list, run_parameters):
     """ Save final output of correlation
@@ -150,8 +124,6 @@ def generate_correlation_output(pc_array, drug_name, gene_name_list, run_paramet
     file_name = kn.create_timestamped_filename(target_file_base_name) + '.tsv'
     result_df.to_csv(file_name, header=True, index=False, sep='\t')
 
-    return
-
 
 def run_bootstrap_correlation(run_parameters):
     """ perform gene prioritization using bootstrap sampling
@@ -163,42 +135,12 @@ def run_bootstrap_correlation(run_parameters):
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
 
     genes_list, drugs_list, consolodated_df = get_consolodated_dataframe(spreadsheet_df, drug_response_df)
-    run_parameters['out_filename'] = 'bootstrap_correlation'
     n_bootstraps = run_parameters["number_of_bootstraps"]
 
-    drug_level_parallelization_for_run_bootstrap_correlation(run_parameters, consolodated_df, genes_list,
-                                                             n_bootstraps, drugs_list)
-
-    return
-
-
-def drug_level_parallelization_for_run_bootstrap_correlation(run_parameters, consolodated_df, genes_list,
-                                                             n_bootstraps, drugs_list):
-    """ dispatch function for parallel run_bootstrap_correlation
-    Args:
-        run_parameters:  dict of parameters
-        consolodated_df: spreadsheet - drug consolodated data frame
-        genes_list:      ordered list of genes in consolodated_df
-        n_bootstraps:    number of bootstrap samples to use
-        drugs_list:      ordered list of drugs in consolodated_df
-    """
-    range_list = range(0, len(drugs_list))
-    parallelism = dstutil.determine_parallelism_locally(len(drugs_list))
-
-    try:
-        p = multiprocessing.Pool(processes=parallelism)
-        p.starmap(worker_for_run_bootstrap_correlation,
-                  zip(itertools.repeat(run_parameters),
-                      itertools.repeat(consolodated_df),
-                      itertools.repeat(genes_list),
-                      itertools.repeat(n_bootstraps),
-                      itertools.repeat(drugs_list),
-                      range_list))
-        p.close()
-        p.join()
-        return "Succeeded running drug_level_parallization!"
-    except:
-        raise OSError("Failed running parallel processing:{}".format(sys.exc_info()))
+    number_of_drugs = len(drugs_list)
+    zipped_arguments = dstutil.zip_parameters(run_parameters, consolodated_df, genes_list, n_bootstraps, drugs_list,
+                                              range(0, number_of_drugs))
+    dstutil.parallelize_processes_locally(worker_for_run_bootstrap_correlation, zipped_arguments, number_of_drugs)
 
 
 def worker_for_run_bootstrap_correlation(run_parameters, consolodated_df, genes_list, n_bootstraps, drugs_list, i):
@@ -227,7 +169,6 @@ def worker_for_run_bootstrap_correlation(run_parameters, consolodated_df, genes_
         gm_accumulator = (np.abs(pc_array) + EPSILON_0) * gm_accumulator
     pcc_gm_array = gm_accumulator ** (1 / n_bootstraps)
     borda_count = borda_count / n_bootstraps
-    run_parameters['out_filename'] = 'bootstrap_correlation'
     generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pearson_array,
                                           drug_response_df.index.values[0],
                                           spreadsheet_df.index, run_parameters)
@@ -255,8 +196,6 @@ def generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pc_array, d
     file_name = kn.create_timestamped_filename(target_file_base_name) + '.tsv'
     result_df.to_csv(file_name, header=True, index=False, sep='\t')
 
-    return
-
 
 def run_net_correlation(run_parameters):
     """ perform gene prioritization with network smoothing
@@ -264,10 +203,6 @@ def run_net_correlation(run_parameters):
     Args:
         run_parameters: parameter set dictionary.
     """
-    drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
-    spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
-    spreadsheet_genes_as_input = spreadsheet_df.index.values
-
     network_df = kn.get_network_df(run_parameters['gg_network_name_full_path'])
     node_1_names, node_2_names = kn.extract_network_node_names(network_df)
     unique_gene_names = kn.find_unique_node_names(node_1_names, node_2_names)
@@ -285,52 +220,43 @@ def run_net_correlation(run_parameters):
 
     network_mat = normalize(network_mat_sparse, norm="l1", axis=0)
 
+    del network_df
+    del network_mat_sparse
+    del node_1_names
+    del node_2_names
+    del genes_lookup_table
+    gc.collect()
+
+    drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
+    spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
+    spreadsheet_genes_as_input = spreadsheet_df.index.values
+
+    spreadsheet_df = kn.update_spreadsheet_df(spreadsheet_df, unique_gene_names)
+    spreadsheet_df = zscore_dataframe(spreadsheet_df)
+
+    sample_smooth, iterations = kn.smooth_matrix_with_rwr(spreadsheet_df.as_matrix(), network_mat.T, run_parameters)
+    spreadsheet_df = pd.DataFrame(sample_smooth, index=spreadsheet_df.index, columns=spreadsheet_df.columns)
+
     baseline_array = np.ones(network_mat.shape[0]) / network_mat.shape[0]
     baseline_array = kn.smooth_matrix_with_rwr(baseline_array, network_mat, run_parameters)[0]
 
     genes_list, drugs_list, consolodated_df = get_consolodated_dataframe(spreadsheet_df, drug_response_df)
 
-    run_parameters['out_filename'] = 'net_correlation'
-    drug_level_parallelization_for_run_net_correlation(run_parameters, consolodated_df, genes_list, unique_gene_names,
-                                                       network_mat, spreadsheet_genes_as_input, baseline_array, drugs_list)
+    del spreadsheet_df
+    del drug_response_df
+    gc.collect()
 
-    return
-
-
-def drug_level_parallelization_for_run_net_correlation(run_parameters, consolodated_df, genes_list, unique_gene_names,
-                                                       network_mat, spreadsheet_genes_as_input, baseline_array, drugs_list):
-    range_list = range(0, len(drugs_list))
-    parallelism = dstutil.determine_parallelism_locally(len(drugs_list))
-
-    try:
-        p = multiprocessing.Pool(processes=parallelism)
-        p.starmap(worker_for_run_net_correlation,
-                  zip(itertools.repeat(run_parameters),
-                      itertools.repeat(consolodated_df),
-                      itertools.repeat(genes_list),
-                      itertools.repeat(unique_gene_names),
-                      itertools.repeat(network_mat),
-                      itertools.repeat(spreadsheet_genes_as_input),
-                      itertools.repeat(baseline_array),
-                      itertools.repeat(drugs_list),
-                      range_list))
-        p.close()
-        p.join()
-        return "Succeeded running drug_level_parallization!"
-    except:
-        raise OSError("Failed running parallel processing:{}".format(sys.exc_info()))
+    number_of_drugs = len(drugs_list)
+    zipped_arguments = dstutil.zip_parameters(run_parameters, consolodated_df, genes_list, network_mat,
+                                              spreadsheet_genes_as_input,
+                                              baseline_array, drugs_list, range(0, number_of_drugs))
+    dstutil.parallelize_processes_locally(worker_for_run_net_correlation, zipped_arguments, number_of_drugs)
 
 
-def worker_for_run_net_correlation(run_parameters, consolodated_df, genes_list, unique_gene_names,
+def worker_for_run_net_correlation(run_parameters, consolodated_df, genes_list,
                                    network_mat, spreadsheet_genes_as_input, baseline_array, drugs_list, i):
-
     drug_response_df, spreadsheet_df = get_data_for_drug(consolodated_df, genes_list, drugs_list[i], run_parameters)
-
-    spreadsheet_df = zscore_dataframe(spreadsheet_df)
-
-    spreadsheet_df = kn.update_spreadsheet_df(spreadsheet_df, unique_gene_names)
-
-    sample_smooth, iterations = kn.smooth_matrix_with_rwr(spreadsheet_df.as_matrix(), network_mat.T, run_parameters)
+    sample_smooth = spreadsheet_df.as_matrix()
 
     pc_array = get_correlation(sample_smooth, drug_response_df.values[0], run_parameters)
     pearson_array = pc_array.copy()
@@ -356,81 +282,50 @@ def run_bootstrap_net_correlation(run_parameters):
     Args:
         run_parameters: parameter set dictionary.
     """
-    drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
-    spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
-    spreadsheet_genes_as_input = spreadsheet_df.index.values
-
     network_df = kn.get_network_df(run_parameters['gg_network_name_full_path'])
     node_1_names, node_2_names = kn.extract_network_node_names(network_df)
     unique_gene_names = kn.find_unique_node_names(node_1_names, node_2_names)
-
     unique_gene_names = sorted(unique_gene_names)
-
     genes_lookup_table = kn.create_node_names_dict(unique_gene_names)
 
     network_df = kn.map_node_names_to_index(network_df, genes_lookup_table, 'node_1')
     network_df = kn.map_node_names_to_index(network_df, genes_lookup_table, 'node_2')
-
     network_df = kn.symmetrize_df(network_df)
     network_mat_sparse = kn.convert_network_df_to_sparse(
         network_df, len(unique_gene_names), len(unique_gene_names))
 
     network_mat = normalize(network_mat_sparse, norm="l1", axis=0)
 
+    del network_df
+    del network_mat_sparse
+    del node_1_names
+    del node_2_names
+    del genes_lookup_table
+    gc.collect()
+
+    drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
+    spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
+    spreadsheet_genes_as_input = spreadsheet_df.index.values
+
     spreadsheet_df = kn.update_spreadsheet_df(spreadsheet_df, unique_gene_names)
+    spreadsheet_df = zscore_dataframe(spreadsheet_df)
+    sample_smooth, iterations = kn.smooth_matrix_with_rwr(spreadsheet_df.as_matrix(), network_mat.T, run_parameters)
+    spreadsheet_df = pd.DataFrame(sample_smooth, index=spreadsheet_df.index, columns=spreadsheet_df.columns)
 
     baseline_array = np.ones(network_mat.shape[0]) / network_mat.shape[0]
     baseline_array = kn.smooth_matrix_with_rwr(baseline_array, network_mat, run_parameters)[0]
 
-    run_parameters['out_filename'] = 'bootstrap_net_correlation'
-
     genes_list, drugs_list, consolodated_df = get_consolodated_dataframe(spreadsheet_df, drug_response_df)
 
-    # calls parallelization worker on drug level
-    drug_level_parallelization_for_bootstrap_net_correlation(run_parameters, consolodated_df, genes_list,
-                                                             spreadsheet_genes_as_input, network_mat,
-                                                             baseline_array, drugs_list)
+    del spreadsheet_df
+    del drug_response_df
+    gc.collect()
 
-    return
-
-
-def drug_level_parallelization_for_bootstrap_net_correlation(run_parameters, consolodated_df, genes_list,
-                                                             spreadsheet_genes_as_input, network_mat,
-                                                             baseline_array, drugs_list):
-    """ parallel drug level computation.
-
-    Args:
-        run_parameters:
-        consolodated_df:
-        genes_list:
-        unique_gene_names:
-        network_mat:
-        baseline_array:
-        drugs_list:
-
-    Returns:
-
-    """
-    range_list = range(0, len(drugs_list))
-
-    parallelism = dstutil.determine_parallelism_locally(len(drugs_list))
-
-    try:
-        p = multiprocessing.Pool(processes=parallelism)
-        p.starmap(worker_for_bootstrap_net_correlation,
-                  zip(itertools.repeat(run_parameters),
-                    itertools.repeat(consolodated_df),
-                    itertools.repeat(genes_list),
-                    itertools.repeat(network_mat),
-                    itertools.repeat(spreadsheet_genes_as_input),
-                    itertools.repeat(baseline_array),
-                    itertools.repeat(drugs_list),
-                    range_list))
-        p.close()
-        p.join()
-        return "Succeeded running drug_level_parallization!"
-    except:
-        raise OSError("Failed running parallel processing:{}".format(sys.exc_info()))
+    number_of_drugs = len(drugs_list)
+    zipped_arguments = dstutil.zip_parameters(run_parameters, consolodated_df, genes_list, network_mat,
+                                              spreadsheet_genes_as_input,
+                                              baseline_array, drugs_list, range(0, number_of_drugs))
+    dstutil.parallelize_processes_locally(worker_for_bootstrap_net_correlation, zipped_arguments, number_of_drugs)
 
 
 def worker_for_bootstrap_net_correlation(run_parameters, consolodated_df, genes_list, network_mat,
@@ -456,9 +351,10 @@ def worker_for_bootstrap_net_correlation(run_parameters, consolodated_df, genes_
 
     drug_response_df, spreadsheet_df = get_data_for_drug(consolodated_df, genes_list, drugs_list[i], run_parameters)
 
-    spreadsheet_df = zscore_dataframe(spreadsheet_df)
+    sample_smooth = spreadsheet_df.as_matrix()
 
-    sample_smooth, iterations = kn.smooth_matrix_with_rwr(spreadsheet_df.as_matrix(), network_mat.T, run_parameters)
+    del consolodated_df
+    gc.collect()
 
     pearson_array = get_correlation(sample_smooth, drug_response_df.values[0], run_parameters)
     n_bootstraps = run_parameters["number_of_bootstraps"]
@@ -485,9 +381,8 @@ def worker_for_bootstrap_net_correlation(run_parameters, consolodated_df, genes_
     borda_count = borda_count / n_bootstraps
     pcc_gm_array = gm_accumulator ** (1 / n_bootstraps)
 
-    generate_net_correlation_output(
-        pearson_array, borda_count, pcc_gm_array, restart_accumulator, drug_response_df.index.values[0],
-        spreadsheet_df.index, spreadsheet_genes_as_input, run_parameters)
+    generate_net_correlation_output(pearson_array, borda_count, pcc_gm_array, restart_accumulator, drug_response_df.index.values[0],
+                                    spreadsheet_df.index, spreadsheet_genes_as_input, run_parameters)
 
 
 def generate_net_correlation_output(pearson_array, pc_array, min_max_pc, restart_accumulator,
@@ -522,10 +417,8 @@ def generate_net_correlation_output(pearson_array, pc_array, min_max_pc, restart
     file_name = kn.create_timestamped_filename(target_file_base_name) + '.tsv'
     result_df.to_csv(file_name, header=True, index=False, sep='\t')
 
-    return
 
-
-def get_correlation(spreadsheet, drug_response, run_parameters, normalize=True, max_iter=1e6):
+def get_correlation(spreadsheet, drug_response, run_parameters):
     """ correlation function definition for all run methods
 
     Args:
@@ -547,12 +440,15 @@ def get_correlation(spreadsheet, drug_response, run_parameters, normalize=True, 
             correlation_array[~(np.isfinite(correlation_array))] = 0
             return correlation_array
 
-        if run_parameters['correlation_method'] == 'lasso':
-            drug_response = np.array([drug_response])
-            drug_response[~(np.isfinite(drug_response))] = 0
-            lasso_cv_obj = LassoCV(normalize=normalize, max_iter=max_iter)
-            lasso_cv_residual = lasso_cv_obj.fit(spreadsheet.T, drug_response[0])
-            correlation_array = lasso_cv_residual.coef_
+        if run_parameters['correlation_method'] == 't_test':
+            for row in range(0, spreadsheet.shape[0]):
+                d = np.int_(drug_response)
+                a = spreadsheet[row, d != 0]
+                b = spreadsheet[row, d == 0]
+                correlation_array[row] = np.abs(ttest_ind(a, b, axis=None, equal_var=False)[0])
+
+            return correlation_array
+
 
     return correlation_array
 
@@ -600,8 +496,6 @@ def write_results_dataframe(result_df, run_dir, write_file_name):
     target_file_base_name = os.path.join(run_dir, write_file_name)
     file_name = kn.create_timestamped_filename(target_file_base_name) + '.txt'
     result_df.to_csv(file_name, header=True, index=True, sep='\t')
-
-    return
 
 
 def sample_a_matrix_pearson(spreadsheet_mat, rows_fraction, cols_fraction):
