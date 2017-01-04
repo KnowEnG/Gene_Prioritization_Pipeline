@@ -124,6 +124,16 @@ def generate_correlation_output(pc_array, drug_name, gene_name_list, run_paramet
     file_name = kn.create_timestamped_filename(target_file_base_name) + '.tsv'
     result_df.to_csv(file_name, header=True, index=False, sep='\t')
 
+    download_result_df = pd.DataFrame(data=None,index=None,columns=['Response', 'Gene ENSEMBL ID'])
+    download_result_df['Response'] = result_df['Response']
+    download_result_df['Gene ENSEMBL ID'] = result_df['Gene ENSEMBL ID']
+
+    download_target_file_base_name = os.path.join(run_parameters["results_directory"],
+                                                  drug_name + '_' + run_parameters['out_filename'])
+
+    download_file_name = kn.create_timestamped_filename(download_target_file_base_name) + '_download' + '.tsv'
+    download_result_df.to_csv(download_file_name, header=True, index=False, sep='\t')
+
 
 def run_bootstrap_correlation(run_parameters):
     """ perform gene prioritization using bootstrap sampling
@@ -195,6 +205,16 @@ def generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pc_array, d
                                          drug_name + '_' + run_parameters['out_filename'])
     file_name = kn.create_timestamped_filename(target_file_base_name) + '.tsv'
     result_df.to_csv(file_name, header=True, index=False, sep='\t')
+
+    download_result_df = pd.DataFrame(data=None,index=None,columns=['Response', 'Gene ENSEMBL ID'])
+    download_result_df['Response'] = result_df['Response']
+    download_result_df['Gene ENSEMBL ID'] = result_df['Gene ENSEMBL ID']
+
+    download_target_file_base_name = os.path.join(run_parameters["results_directory"],
+                                                  drug_name + '_' + run_parameters['out_filename'])
+
+    download_file_name = kn.create_timestamped_filename(download_target_file_base_name) + '_download' + '.tsv'
+    download_result_df.to_csv(download_file_name, header=True, index=False, sep='\t')
 
 
 def run_net_correlation(run_parameters):
@@ -558,3 +578,42 @@ def zscore_dataframe(gxs_df):
     """
     zscore_df = (gxs_df.sub(gxs_df.mean(axis=1), axis=0)).truediv(np.maximum(gxs_df.std(axis=1), 1e-12), axis=0)
     return zscore_df
+
+
+def write_phenotype_data_all(run_parameters, top_n=100):
+    """ Post Processing: writes rows as genes, cols as drugs, data is gene in top n for the drug T or F.
+
+    Args:
+        run_parameters: with field: 'results_directory'
+        top_n:          number of genes to rank (default=100)
+
+    Returns: (writes consolodation file)
+    """
+    if 'top_beta_of_sort' in run_parameters:   top_n = run_parameters['top_beta_of_sort']
+    dirList = sorted(os.listdir(run_parameters["results_directory"]))
+    download_list = []
+    for fileName in dirList:
+        if fileName[-12:] == 'download.tsv':
+            download_list.append(fileName)
+
+    if len(download_list) == 0:
+        return
+
+    StartFileName = os.path.join(run_parameters["results_directory"], download_list[0])
+    src_df = pd.read_csv(StartFileName, sep='\t', header=0, index_col=None)
+    index_list = src_df['Gene ENSEMBL ID'].values
+
+    all_phenotypes_df = pd.DataFrame(data=None, index=index_list)
+
+    for fileName in download_list:
+        tFileName = os.path.join(run_parameters["results_directory"], fileName)
+        src_df = pd.read_csv(tFileName, sep='\t', header=0, index_col=None)
+        all_phenotypes_df.insert(all_phenotypes_df.shape[1], src_df['Response'][1], [0]*all_phenotypes_df.shape[0],
+                                 allow_duplicates=True)
+        top_n_list = src_df['Gene ENSEMBL ID'][0:top_n]
+        all_phenotypes_df[src_df['Response'][1]].loc[top_n_list] = 1
+
+    download_target_file_base_name = os.path.join(run_parameters["results_directory"],
+                                                  'all_drugs' + '_' + run_parameters['out_filename'])
+    write_file_name = kn.create_timestamped_filename(download_target_file_base_name) + '.tsv'
+    all_phenotypes_df.to_csv(write_file_name, header=True, index=True, sep='\t')
