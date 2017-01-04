@@ -414,8 +414,19 @@ def generate_net_correlation_output(pearson_array, pc_array, min_max_pc, restart
 
     target_file_base_name = os.path.join(run_parameters["results_directory"],
                                          drug_name + '_' + run_parameters['out_filename'])
+
     file_name = kn.create_timestamped_filename(target_file_base_name) + '.tsv'
     result_df.to_csv(file_name, header=True, index=False, sep='\t')
+
+    download_result_df = pd.DataFrame(data=None,index=None,columns=['Response', 'Gene ENSEMBL ID'])
+    download_result_df['Response'] = result_df['Response']
+    download_result_df['Gene ENSEMBL ID'] = result_df['Gene ENSEMBL ID']
+
+    download_target_file_base_name = os.path.join(run_parameters["results_directory"],
+                                         drug_name + '_' + run_parameters['out_filename'])
+
+    download_file_name = kn.create_timestamped_filename(download_target_file_base_name) + '_download' + '.tsv'
+    download_result_df.to_csv(download_file_name, header=True, index=False, sep='\t')
 
 
 def get_correlation(spreadsheet, drug_response, run_parameters):
