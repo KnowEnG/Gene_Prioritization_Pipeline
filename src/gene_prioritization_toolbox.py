@@ -615,5 +615,5 @@ def write_phenotype_data_all(run_parameters, top_n=100):
 
     download_target_file_base_name = os.path.join(run_parameters["results_directory"],
                                                   'all_drugs' + '_' + run_parameters['out_filename'])
-    write_file_name = kn.create_timestamped_filename(download_target_file_base_name) + '.tsv'
+    write_file_name = kn.create_timestamped_filename(download_target_file_base_name) + 'download.tsv'
     all_phenotypes_df.to_csv(write_file_name, header=True, index=True, sep='\t')
