@@ -33,28 +33,43 @@ copy_run_files:
 # ----------------------------------------------------------------
 # Large Benchmarks RUN Section                                   -
 # ----------------------------------------------------------------
-run_correlation:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file correlation.yml 
+# pearson
 
-run_net_correlation:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file net_correlation.yml 
+run_correlation_pearson:
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_1_correlation_pearson.yml
 
-run_bootstrap_correlation:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file bootstrap_correlation.yml 
+run_net_correlation_pearson:
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_1_net_correlation_pearson.yml
 
-run_bootstrap_net_correlation:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file bootstrap_net_correlation.yml 
+run_bootstrap_correlation_pearson:
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_1_bootstrap_correlation_pearson.yml
 
-run_all_correlations: run_correlation run_net_correlation run_bootstrap_correlation run_bootstrap_net_correlation
+run_bootstrap_net_correlation_pearson:
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_1_bootstrap_net_correlation_pearson.yml
+
+# ----------------------------------------------------------------
+# t_test
+
+run_correlation_t_test:
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_1_correlation_t_test.yml
+
+run_net_correlation_t_test:
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_1_net_correlation_t_test.yml
+
+run_bootstrap_correlation_t_test:
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_1_bootstrap_correlation_t_test.yml
+
+run_bootstrap_net_correlation_t_test:
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_1_bootstrap_net_correlation_t_test.yml
 
 # ----------------------------------------------------------------
 # Small Benchmarks RUN Section                                   -
 # ----------------------------------------------------------------
-run_small_data_test:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file TEST_1_bootstrap_net_correlation.yml 
+run_small_data_multidrug_test:
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file TEST_1_multidrug_small_data_pearson.yml
 
-run_debug_data_test:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file TEST_1_debug.yml 
+run_small_data_test:
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file TEST_1_single_drug_small_data_pearson.yml
 
 # ----------------------------------------------------------------
 # - UNIT TESTS RUN SECTION                                       -
