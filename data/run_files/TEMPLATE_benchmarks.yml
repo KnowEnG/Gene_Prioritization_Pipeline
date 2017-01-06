@@ -6,7 +6,7 @@ method: bootstrap_net_correlation
 # ------------------------------------------------------------------------------------------------------
 # - Correlation Method: pearson, t_test -
 # ------------------------------------------------------------------------------------------------------
-correlation_method: pearson
+correlation_measure: pearson
 
 # --------------------------------------------------------------------
 # - 4 col edge adjacency dataframe in .tsv format                    -
