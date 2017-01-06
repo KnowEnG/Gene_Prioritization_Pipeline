@@ -455,7 +455,7 @@ def get_correlation(spreadsheet, drug_response, run_parameters):
     Args:
         spreadsheet: genes x samples
         drug_response: one x samples
-        run_parameters: with key 'correlation_method'
+        run_parameters: with key 'correlation_measure'
         normalize: for lasso only
         max_iter: for lasso only
 
@@ -463,15 +463,15 @@ def get_correlation(spreadsheet, drug_response, run_parameters):
         correlation_array: genes x one
     """
     correlation_array = np.zeros(spreadsheet.shape[0])
-    if 'correlation_method' in run_parameters:
-        if run_parameters['correlation_method'] == 'pearson':
+    if 'correlation_measure' in run_parameters:
+        if run_parameters['correlation_measure'] == 'pearson':
             spreadsheet = zscore(spreadsheet, axis=1, ddof=0)
             for row in range(0, spreadsheet.shape[0]):
                 correlation_array[row] = pcc(spreadsheet[row, :], drug_response)[0]
             correlation_array[~(np.isfinite(correlation_array))] = 0
             return correlation_array
 
-        if run_parameters['correlation_method'] == 't_test':
+        if run_parameters['correlation_measure'] == 't_test':
             for row in range(0, spreadsheet.shape[0]):
                 d = np.int_(drug_response)
                 a = spreadsheet[row, d != 0]
@@ -593,7 +593,7 @@ def write_phenotype_data_all(run_parameters, top_n=100):
     dirList = sorted(os.listdir(run_parameters["results_directory"]))
     download_list = []
     for fileName in dirList:
-        if fileName[-12:] == 'download.tsv':
+        if (fileName[0:4] != 'all_') & (fileName[-12:] == 'download.tsv'):
             download_list.append(fileName)
 
     if len(download_list) == 0:
