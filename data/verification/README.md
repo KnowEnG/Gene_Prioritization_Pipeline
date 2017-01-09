@@ -23,3 +23,5 @@ For estimating base memory requirments use the above heuristic _gene_prioritizat
     make run_small_data_multidrug_pearson
 ```
 * Results will match **data/verification/TEST_1_multidrug_results_pearson/** (when unzipped)
+
+### The file **gene_prioritization_runtime_memory.xlsx** is a development tool for estimating memory in different environments
