@@ -65,11 +65,17 @@ run_bootstrap_net_correlation_t_test:
 # ----------------------------------------------------------------
 # Small Benchmarks RUN Section                                   -
 # ----------------------------------------------------------------
-run_small_data_multidrug_test:
+run_small_data_multidrug_pearson:
 	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file TEST_1_multidrug_small_data_pearson.yml
 
-run_small_data_test:
+run_small_data_pearson:
 	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file TEST_1_single_drug_small_data_pearson.yml
+
+run_small_data_multidrug_t_test:
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file TEST_1_multidrug_small_data_t_test.yml
+
+run_small_data_t_test:
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file TEST_1_single_drug_small_data_t_test.yml
 
 # ----------------------------------------------------------------
 # - UNIT TESTS RUN SECTION                                       -
