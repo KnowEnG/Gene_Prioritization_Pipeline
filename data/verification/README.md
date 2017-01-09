@@ -10,7 +10,7 @@ For estimating base memory requirments use the above heuristic _gene_prioritizat
 ```
 ### 1. Run the single drug small data test
 ```
-    make run_small_data_test
+    make run_small_data_pearson
 ```
 
 * Compare the results with verification file: **TEST_1_bootstrap_net_correlstion_RESULTS.txt**
@@ -24,6 +24,6 @@ For estimating base memory requirments use the above heuristic _gene_prioritizat
 ### 2. Run the multi-drug samll data test **test/Makefile**
 
 ```
-    make run_small_data_multidrug_test
+    make run_small_data_multidrug_pearson
 ```
 * Results will match **data/verification/TEST_1_multi_drug_debug_RESUTS.zip** (when unzipped)
