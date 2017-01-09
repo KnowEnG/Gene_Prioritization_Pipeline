@@ -6,7 +6,7 @@ Assuming you have cloned the Gene_Prioritization_Pipeline to your computer as de
 
 It may take more than 60 seconds depending on your computer hardware.
 
-### The output files in "results" are compressed and may be uncompressed by changing to ./Dec_22_2016_24drug_output/results and entering the unzip command.
+### The output files in "results" are compressed and may be uncompressed by changing to "./Dec_22_2016_24drug_output/results" and entering the unzip command.
 * gzip -d *.gz
 
 The unzipped *.tsv files may be viewed as spreadsheet files to compare with your *.tsv results.
