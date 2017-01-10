@@ -86,7 +86,7 @@ def run_correlation(run_parameters):
     dstutil.parallelize_processes_locally(worker_for_run_correlation, zipped_arguments, number_of_jobs)
 
 
-def worker_for_run_correlation(run_parameters, spreadsheet_df, phenotype_df, i):
+def worker_for_run_correlation(run_parameters, spreadsheet_df, phenotype_df, job_id):
     """ core function for parallel run_correlation
 
     Args:
@@ -97,7 +97,7 @@ def worker_for_run_correlation(run_parameters, spreadsheet_df, phenotype_df, i):
         i:               paralell iteration number
     """
     # selects the ith row in phenotype_df
-    phenotype_df = phenotype_df.iloc[[i], :]
+    phenotype_df = phenotype_df.iloc[[job_id], :]
 
     spreadsheet_df_trimmed, phenotype_df_trimmed, err_msg = datacln.check_input_value_for_gene_prioritazion(
         spreadsheet_df, phenotype_df)
@@ -152,12 +152,11 @@ def run_bootstrap_correlation(run_parameters):
 
     number_of_jobs = len(drug_response_df.index)
     jobs_id = range(0, number_of_jobs)
-    zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, drug_response_df, n_bootstraps,
-                                              jobs_id)
+    zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, drug_response_df, n_bootstraps, jobs_id)
     dstutil.parallelize_processes_locally(worker_for_run_bootstrap_correlation, zipped_arguments, number_of_jobs)
 
 
-def worker_for_run_bootstrap_correlation(run_parameters, spreadsheet_df, phenotype_df, n_bootstraps, i):
+def worker_for_run_bootstrap_correlation(run_parameters, spreadsheet_df, phenotype_df, n_bootstraps, job_id):
     """  core function for parallel run_bootstrap_correlation
 
     Args:
@@ -168,7 +167,7 @@ def worker_for_run_bootstrap_correlation(run_parameters, spreadsheet_df, phenoty
         drugs_list:      ordered list of drugs in consolodated_df
         i:               paralell iteration number
     """
-    phenotype_df = phenotype_df.iloc[[i], :]
+    phenotype_df = phenotype_df.iloc[[job_id], :]
     spreadsheet_df_trimmed, phenotype_df_trimmed, ret_msg = datacln.check_input_value_for_gene_prioritazion(
         spreadsheet_df, phenotype_df)
 
@@ -267,27 +266,25 @@ def run_net_correlation(run_parameters):
     baseline_array = np.ones(network_mat.shape[0]) / network_mat.shape[0]
     baseline_array = kn.smooth_matrix_with_rwr(baseline_array, network_mat, run_parameters)[0]
 
-    genes_list, drugs_list, consolodated_df = get_consolodated_dataframe(spreadsheet_df, drug_response_df)
-
-    del spreadsheet_df
-    del drug_response_df
-    gc.collect()
-
-    number_of_drugs = len(drugs_list)
-    zipped_arguments = dstutil.zip_parameters(run_parameters, consolodated_df, genes_list, network_mat,
-                                              spreadsheet_genes_as_input,
-                                              baseline_array, drugs_list, range(0, number_of_drugs))
-    dstutil.parallelize_processes_locally(worker_for_run_net_correlation, zipped_arguments, number_of_drugs)
+    number_of_jobs = len(drug_response_df.index)
+    jobs_id = range(0, number_of_jobs)
+    zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, drug_response_df, network_mat,
+                                              spreadsheet_genes_as_input, baseline_array, jobs_id)
+    dstutil.parallelize_processes_locally(worker_for_run_net_correlation, zipped_arguments, number_of_jobs)
 
 
-def worker_for_run_net_correlation(run_parameters, consolodated_df, genes_list,
-                                   network_mat, spreadsheet_genes_as_input, baseline_array, drugs_list, i):
-    drug_response_df, spreadsheet_df = get_data_for_drug(consolodated_df, genes_list, drugs_list[i], run_parameters)
-    sample_smooth = spreadsheet_df.as_matrix()
+def worker_for_run_net_correlation(run_parameters, spreadsheet_df, phenotype_df, network_mat,
+                                   spreadsheet_genes_as_input, baseline_array, job_id):
 
-    pc_array = get_correlation(sample_smooth, drug_response_df.values[0], run_parameters)
+    phenotype_df = phenotype_df.iloc[[job_id], :]
+    spreadsheet_df_trimmed, phenotype_df_trimmed, ret_msg = datacln.check_input_value_for_gene_prioritazion(
+        spreadsheet_df, phenotype_df)
+
+    sample_smooth = spreadsheet_df_trimmed.as_matrix()
+
+    pc_array = get_correlation(sample_smooth, phenotype_df_trimmed.values[0], run_parameters)
     pearson_array = pc_array.copy()
-    pc_array[~np.in1d(spreadsheet_df.index, spreadsheet_genes_as_input)] = 0.0
+    pc_array[~np.in1d(spreadsheet_df_trimmed.index, spreadsheet_genes_as_input)] = 0.0
     pc_array = np.abs(trim_to_top_beta(pc_array, run_parameters["top_beta_of_sort"]))
     restart_accumulator = pc_array.copy()
     restart_accumulator[restart_accumulator != 0] = 1
@@ -299,8 +296,8 @@ def worker_for_run_net_correlation(run_parameters, consolodated_df, genes_list,
     min_max_pc = (pc_array - min(pc_array)) / (max(pc_array) - min(pc_array))
 
     generate_net_correlation_output(
-        pearson_array, pc_array, min_max_pc, restart_accumulator, drug_response_df.index.values[0],
-        spreadsheet_df.index, spreadsheet_genes_as_input, run_parameters)
+        pearson_array, pc_array, min_max_pc, restart_accumulator, phenotype_df_trimmed.index.values[0],
+        spreadsheet_df_trimmed.index, spreadsheet_genes_as_input, run_parameters)
 
 
 def run_bootstrap_net_correlation(run_parameters):
@@ -342,21 +339,15 @@ def run_bootstrap_net_correlation(run_parameters):
     baseline_array = np.ones(network_mat.shape[0]) / network_mat.shape[0]
     baseline_array = kn.smooth_matrix_with_rwr(baseline_array, network_mat, run_parameters)[0]
 
-    genes_list, drugs_list, consolodated_df = get_consolodated_dataframe(spreadsheet_df, drug_response_df)
-
-    del spreadsheet_df
-    del drug_response_df
-    gc.collect()
-
-    number_of_drugs = len(drugs_list)
-    zipped_arguments = dstutil.zip_parameters(run_parameters, consolodated_df, genes_list, network_mat,
-                                              spreadsheet_genes_as_input,
-                                              baseline_array, drugs_list, range(0, number_of_drugs))
-    dstutil.parallelize_processes_locally(worker_for_run_bootstrap_net_correlation, zipped_arguments, number_of_drugs)
+    number_of_jobs = len(drug_response_df.index)
+    jobs_id = range(0, number_of_jobs)
+    zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, drug_response_df, network_mat,
+                                              spreadsheet_genes_as_input, baseline_array, jobs_id)
+    dstutil.parallelize_processes_locally(worker_for_run_bootstrap_net_correlation, zipped_arguments, number_of_jobs)
 
 
-def worker_for_run_bootstrap_net_correlation(run_parameters, consolodated_df, genes_list, network_mat,
-                                             spreadsheet_genes_as_input, baseline_array, drugs_list, i):
+def worker_for_run_bootstrap_net_correlation(run_parameters, spreadsheet_df, phenotype_df, network_mat,
+                                             spreadsheet_genes_as_input, baseline_array, job_id):
     """ worker for drug level parallelization.
 
     Args:
@@ -376,24 +367,23 @@ def worker_for_run_bootstrap_net_correlation(run_parameters, consolodated_df, ge
     gm_accumulator = np.ones(network_mat.shape[0])
     borda_count = np.zeros(network_mat.shape[0])
 
-    drug_response_df, spreadsheet_df = get_data_for_drug(consolodated_df, genes_list, drugs_list[i], run_parameters)
+    phenotype_df = phenotype_df.iloc[[job_id], :]
+    spreadsheet_df_trimmed, phenotype_df_trimmed, ret_msg = datacln.check_input_value_for_gene_prioritazion(
+        spreadsheet_df, phenotype_df)
 
-    sample_smooth = spreadsheet_df.as_matrix()
+    sample_smooth = spreadsheet_df_trimmed.as_matrix()
 
-    del consolodated_df
-    gc.collect()
-
-    pearson_array = get_correlation(sample_smooth, drug_response_df.values[0], run_parameters)
+    pearson_array = get_correlation(sample_smooth, phenotype_df_trimmed.values[0], run_parameters)
     n_bootstraps = run_parameters["number_of_bootstraps"]
     for bootstrap_number in range(0, n_bootstraps):
         sample_random, sample_permutation = sample_a_matrix_pearson(
             sample_smooth, run_parameters["rows_sampling_fraction"],
             run_parameters["cols_sampling_fraction"])
 
-        drug_response = drug_response_df.values[0, None]
+        drug_response = phenotype_df_trimmed.values[0, None]
         drug_response = drug_response[0, sample_permutation]
         pc_array = get_correlation(sample_random, drug_response, run_parameters)
-        pc_array[~np.in1d(spreadsheet_df.index, spreadsheet_genes_as_input)] = 0.0
+        pc_array[~np.in1d(spreadsheet_df_trimmed.index, spreadsheet_genes_as_input)] = 0.0
         pc_array = np.abs(trim_to_top_beta(pc_array, run_parameters["top_beta_of_sort"]))
         restart_accumulator[pc_array != 0] += 1.0
 
@@ -409,8 +399,8 @@ def worker_for_run_bootstrap_net_correlation(run_parameters, consolodated_df, ge
     pcc_gm_array = gm_accumulator ** (1 / n_bootstraps)
 
     generate_net_correlation_output(pearson_array, borda_count, pcc_gm_array, restart_accumulator,
-                                    drug_response_df.index.values[0],
-                                    spreadsheet_df.index, spreadsheet_genes_as_input, run_parameters)
+                                    phenotype_df_trimmed.index.values[0],
+                                    spreadsheet_df_trimmed.index, spreadsheet_genes_as_input, run_parameters)
 
 
 def generate_net_correlation_output(pearson_array, pc_array, min_max_pc, restart_accumulator,
