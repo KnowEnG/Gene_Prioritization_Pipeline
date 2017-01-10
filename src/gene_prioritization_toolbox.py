@@ -80,10 +80,10 @@ def run_correlation(run_parameters):
     phenotype_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
 
-    number_of_drugs = len(phenotype_df.index)
-    zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, phenotype_df,
-                                              range(0, number_of_drugs))
-    dstutil.parallelize_processes_locally(worker_for_run_correlation, zipped_arguments, number_of_drugs)
+    number_of_jobs = len(phenotype_df.index)
+    list_of_job_id = range(0, number_of_jobs)
+    zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, phenotype_df, list_of_job_id)
+    dstutil.parallelize_processes_locally(worker_for_run_correlation, zipped_arguments, number_of_jobs)
 
 
 def worker_for_run_correlation(run_parameters, spreadsheet_df, phenotype_df, i):
@@ -151,8 +151,8 @@ def run_bootstrap_correlation(run_parameters):
     n_bootstraps = run_parameters["number_of_bootstraps"]
 
     number_of_jobs = len(drug_response_df.index)
-    jobs_id = range(0, number_of_jobs)
-    zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, drug_response_df, n_bootstraps, jobs_id)
+    list_of_job_id = range(0, number_of_jobs)
+    zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, drug_response_df, n_bootstraps, list_of_job_id)
     dstutil.parallelize_processes_locally(worker_for_run_bootstrap_correlation, zipped_arguments, number_of_jobs)
 
 
