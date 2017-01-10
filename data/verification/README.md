@@ -10,20 +10,18 @@ For estimating base memory requirments use the above heuristic _gene_prioritizat
 ```
 ### 1. Run the single drug small data test
 ```
-    make run_debug_data_test
+    make run_small_data_pearson
 ```
 
-* Compare the results with verification file: **TEST_1_bootstrap_net_correlstion_RESULTS.txt**
+* Compare the results with files in directory: **TEST_1_results_pearson/**
 
-* The result file will be in **run_dir/results/**  TEST_1_bootstrap_net_correlation_XXX_a_timestamp_XXX.txt
-
-* Results files are all based on the yaml parameter files preserved in **verification_yaml_set_used.zip**
-
-* If the results are not equal, unzip the file in **data/verification** and replace the .yml files in **test/run_dir**
+* The local result files will be in **run_dir/results/** 
 
 ### 2. Run the multi-drug samll data test **test/Makefile**
 
 ```
-    make run_small_data_test
+    make run_small_data_multidrug_pearson
 ```
-* Results will match **data/verification/TEST_1_multi_drug_debug_RESUTS.zip** (when unzipped)
+* Results will match **data/verification/TEST_1_multidrug_results_pearson/** (when unzipped)
+
+### The file **gene_prioritization_runtime_memory.xlsx** is a development tool for estimating memory in different environments
