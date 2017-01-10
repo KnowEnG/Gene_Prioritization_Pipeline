@@ -148,16 +148,15 @@ def run_bootstrap_correlation(run_parameters):
     drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
 
-    genes_list, drugs_list, consolodated_df = get_consolodated_dataframe(spreadsheet_df, drug_response_df)
     n_bootstraps = run_parameters["number_of_bootstraps"]
 
-    number_of_drugs = len(drugs_list)
-    zipped_arguments = dstutil.zip_parameters(run_parameters, consolodated_df, genes_list, n_bootstraps, drugs_list,
-                                              range(0, number_of_drugs))
-    dstutil.parallelize_processes_locally(worker_for_run_bootstrap_correlation, zipped_arguments, number_of_drugs)
+    number_of_jobs = len(drug_response_df.index)
+    jobs_id = range(0, number_of_jobs)
+    zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, drug_response_df, n_bootstraps, jobs_id)
+    dstutil.parallelize_processes_locally(worker_for_run_bootstrap_correlation, zipped_arguments, number_of_jobs)
 
 
-def worker_for_run_bootstrap_correlation(run_parameters, consolodated_df, genes_list, n_bootstraps, drugs_list, i):
+def worker_for_run_bootstrap_correlation(run_parameters, spreadsheet_df, phenotype_df, n_bootstraps, i):
     """  core function for parallel run_bootstrap_correlation
 
     Args:
@@ -168,15 +167,18 @@ def worker_for_run_bootstrap_correlation(run_parameters, consolodated_df, genes_
         drugs_list:      ordered list of drugs in consolodated_df
         i:               paralell iteration number
     """
-    drug_response_df, spreadsheet_df = get_data_for_drug(consolodated_df, genes_list, drugs_list[i], run_parameters)
-    pearson_array = get_correlation(spreadsheet_df.as_matrix(), drug_response_df.values[0], run_parameters)
+    phenotype_df = phenotype_df.iloc[[i], :]
+    spreadsheet_df_trimmed, phenotype_df_trimmed, ret_msg = datacln.check_input_value_for_gene_prioritazion(
+        spreadsheet_df, phenotype_df)
+
+    pearson_array = get_correlation(spreadsheet_df_trimmed.as_matrix(), phenotype_df_trimmed.values[0], run_parameters)
     borda_count = np.zeros(spreadsheet_df.shape[0])
     gm_accumulator = np.ones(spreadsheet_df.shape[0])
     for bootstrap_number in range(0, n_bootstraps):
         sample_random, sample_permutation = sample_a_matrix_pearson(
-            spreadsheet_df.as_matrix(), run_parameters["rows_sampling_fraction"],
+            spreadsheet_df_trimmed.as_matrix(), run_parameters["rows_sampling_fraction"],
             run_parameters["cols_sampling_fraction"])
-        drug_response = drug_response_df.values[0, None]
+        drug_response = phenotype_df_trimmed.values[0, None]
         drug_response = drug_response[0, sample_permutation]
         pc_array = get_correlation(sample_random, drug_response, run_parameters)
         borda_count = sum_array_ranking_to_borda_count(borda_count, np.abs(pc_array))
@@ -184,8 +186,8 @@ def worker_for_run_bootstrap_correlation(run_parameters, consolodated_df, genes_
     pcc_gm_array = gm_accumulator ** (1 / n_bootstraps)
     borda_count = borda_count / n_bootstraps
     generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pearson_array,
-                                          drug_response_df.index.values[0],
-                                          spreadsheet_df.index, run_parameters)
+                                          phenotype_df_trimmed.index.values[0],
+                                          spreadsheet_df_trimmed.index, run_parameters)
 
 
 def generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pc_array, drug_name, gene_name_list,
@@ -349,10 +351,10 @@ def run_bootstrap_net_correlation(run_parameters):
     zipped_arguments = dstutil.zip_parameters(run_parameters, consolodated_df, genes_list, network_mat,
                                               spreadsheet_genes_as_input,
                                               baseline_array, drugs_list, range(0, number_of_drugs))
-    dstutil.parallelize_processes_locally(worker_for_bootstrap_net_correlation, zipped_arguments, number_of_drugs)
+    dstutil.parallelize_processes_locally(worker_for_run_bootstrap_net_correlation, zipped_arguments, number_of_drugs)
 
 
-def worker_for_bootstrap_net_correlation(run_parameters, consolodated_df, genes_list, network_mat,
+def worker_for_run_bootstrap_net_correlation(run_parameters, consolodated_df, genes_list, network_mat,
                                          spreadsheet_genes_as_input, baseline_array, drugs_list, i):
     """ worker for drug level parallelization.
 
