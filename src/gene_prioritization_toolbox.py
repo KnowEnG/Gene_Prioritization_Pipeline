@@ -81,8 +81,8 @@ def run_correlation(run_parameters):
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
 
     number_of_jobs = len(phenotype_df.index)
-    list_of_job_id = range(0, number_of_jobs)
-    zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, phenotype_df, list_of_job_id)
+    jobs_id = range(0, number_of_jobs)
+    zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, phenotype_df, jobs_id)
     dstutil.parallelize_processes_locally(worker_for_run_correlation, zipped_arguments, number_of_jobs)
 
 
@@ -151,8 +151,9 @@ def run_bootstrap_correlation(run_parameters):
     n_bootstraps = run_parameters["number_of_bootstraps"]
 
     number_of_jobs = len(drug_response_df.index)
-    list_of_job_id = range(0, number_of_jobs)
-    zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, drug_response_df, n_bootstraps, list_of_job_id)
+    jobs_id = range(0, number_of_jobs)
+    zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, drug_response_df, n_bootstraps,
+                                              jobs_id)
     dstutil.parallelize_processes_locally(worker_for_run_bootstrap_correlation, zipped_arguments, number_of_jobs)
 
 
@@ -355,7 +356,7 @@ def run_bootstrap_net_correlation(run_parameters):
 
 
 def worker_for_run_bootstrap_net_correlation(run_parameters, consolodated_df, genes_list, network_mat,
-                                         spreadsheet_genes_as_input, baseline_array, drugs_list, i):
+                                             spreadsheet_genes_as_input, baseline_array, drugs_list, i):
     """ worker for drug level parallelization.
 
     Args:
