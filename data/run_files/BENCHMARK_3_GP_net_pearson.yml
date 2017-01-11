@@ -1,0 +1,23 @@
+# ------------------------------------------------------------------------------------------------------
+# - Analysis Method: correlation, net_correlation, bootstrap_correlation, or bootstrap_net_correlation -
+# ------------------------------------------------------------------------------------------------------
+method:                     net_correlation
+
+# pearson, t_test
+correlation_measure:         pearson
+
+gg_network_name_full_path:  ../data/networks/STRING_experimental_gene_gene.edge
+spreadsheet_name_full_path: ../data/spreadsheets/CCLE_Expression_ensembl.df
+drug_response_full_path:    ../data/spreadsheets/CCLE_drug_ec50_cleaned_NAremoved.txt
+
+results_directory:          ./run_dir/results
+
+rwr_max_iterations:         100
+rwr_convergence_tolerence:  1.0e-2
+rwr_restart_probability:    0.5       # Vn+1 = alpha * N * Vn + (1-alpha) * Vo
+
+top_beta_of_sort:           100
+
+drop_method:                drop_NA
+
+out_filename:               net_correlation

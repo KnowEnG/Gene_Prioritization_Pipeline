@@ -1,0 +1,27 @@
+# ------------------------------------------------------------------------------------------------------
+# - Analysis Method: correlation, net_correlation, bootstrap_correlation, or bootstrap_net_correlation -                
+# ------------------------------------------------------------------------------------------------------
+method: net_correlation
+
+# pearson, t_test
+correlation_measure: pearson
+
+gg_network_name_full_path:  ../data/networks/TEST_1_gene_gene.edge
+spreadsheet_name_full_path: ../data/spreadsheets/TEST_1_gene_sample.tsv
+drug_response_full_path:    ../data/spreadsheets/TEST_1_response.tsv
+
+results_directory:          ../test/run_dir/results
+
+rows_sampling_fraction:     1.0       # 1.0 means 100% of rows    (i.e., no sampling)
+cols_sampling_fraction:     1.0       # 1.0 means 100% of columns (i.e., no sampling) 
+
+rwr_max_iterations:         100
+rwr_convergence_tolerence:  1.0e-2
+rwr_restart_probability:    0.5       # Vn+1 = alpha * N * Vn + (1-alpha) * Vo
+
+top_beta_of_sort:           2
+
+# options: drop_NA, zero_NA
+drop_method:                drop_NA
+
+out_filename:               net_correlation
