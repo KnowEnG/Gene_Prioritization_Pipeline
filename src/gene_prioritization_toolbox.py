@@ -224,8 +224,6 @@ def worker_for_run_net_correlation(run_parameters, spreadsheet_df, phenotype_df,
     phenotype_df = phenotype_df.iloc[[job_id], :]
     spreadsheet_df_trimmed, phenotype_df_trimmed, ret_msg = datacln.check_input_value_for_gene_prioritazion(
         spreadsheet_df, phenotype_df)
-    spreadsheet_df_trimmed.to_csv(run_parameters['results_directory'] + "/spreadsheet_new.tsv", sep='\t', header=True, index=True)
-    phenotype_df_trimmed.to_csv(run_parameters['results_directory'] + "/phenotype_new.tsv", sep='\t', header=True, index=True)
 
     sample_smooth = spreadsheet_df_trimmed.as_matrix()
 
