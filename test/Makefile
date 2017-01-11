@@ -49,46 +49,46 @@ copy_run_files:
 # pearson
 
 run_correlation_pearson:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_1_correlation_pearson.yml
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_1_GP_pearson.yml
 
 run_net_correlation_pearson:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_1_net_correlation_pearson.yml
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_3_GP_net_pearson.yml
 
 run_bootstrap_correlation_pearson:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_1_bootstrap_correlation_pearson.yml
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_2_GP_bootstrap_pearson.yml
 
 run_bootstrap_net_correlation_pearson:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_1_bootstrap_net_correlation_pearson.yml
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_4_GP_bootstrap_net_pearson.yml
 
 # ----------------------------------------------------------------
 # t_test
 
 run_correlation_t_test:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_1_correlation_t_test.yml
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_5_GP_t_test.yml
 
 run_net_correlation_t_test:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_1_net_correlation_t_test.yml
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_7_GP_net_t_test.yml
 
 run_bootstrap_correlation_t_test:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_1_bootstrap_correlation_t_test.yml
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_6_GP_bootstrap_t_test.yml
 
 run_bootstrap_net_correlation_t_test:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_1_bootstrap_net_correlation_t_test.yml
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_8_GP_bootstrap_net_t_test.yml
 
 # ----------------------------------------------------------------
 # Small Benchmarks RUN Section                                   -
 # ----------------------------------------------------------------
 run_small_data_multidrug_pearson:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file TEST_1_multidrug_small_data_pearson.yml
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file TEST_2_GP_many_drugs_pearson.yml
 
 run_small_data_pearson:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file TEST_1_single_drug_small_data_pearson.yml
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file TEST_1_GP_single_drug_pearson.yml
 
 run_small_data_multidrug_t_test:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file TEST_1_multidrug_small_data_t_test.yml
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file TEST_4_GP_many_drugs_t_test.yml
 
 run_small_data_t_test:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file TEST_1_single_drug_small_data_t_test.yml
+	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file TEST_3_GP_single_drug_t_test.yml
 
 # ----------------------------------------------------------------
 # - UNIT TESTS RUN SECTION                                       -
