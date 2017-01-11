@@ -1,20 +1,20 @@
 # ----------------------------------------------------------------
 # Variables setup Section                                        -
 # ----------------------------------------------------------------
-SCRIPT = 		../src/gene_prioritization.py
-RUN_DIR = 		./run_dir
-RUN_FILES = 		../data/run_files
-RESULTS_DIR = 		$(RUN_DIR)/results
-INPUT_DATA_DIR = 	../data
-UNIT_TEST_TEMP_DIR = 	./unit/tmp
-DATA_DIR = ../data/networks ../data/spreadsheets
-INPUT_DATA = $(foreach dir,$(DATA_DIR),$(wildcard $(dir)/*))
-INPUT_DATA_SUFFIX = $(suffix $(INPUT_DATA))
+SCRIPT =             ../src/gene_prioritization.py
+RUN_DIR =            ./run_dir
+RUN_FILES =          ../data/run_files
+RESULTS_DIR =        $(RUN_DIR)/results
+INPUT_DATA_DIR =     ./data
+UNIT_TEST_TEMP_DIR = ./unit/tmp
+DATA_DIR =           ../data/networks ../data/spreadsheets
+INPUT_DATA =         $(foreach dir,$(DATA_DIR),$(wildcard $(dir)/*))
+INPUT_DATA_SUFFIX =  $(suffix $(INPUT_DATA))
 
-RMR = 			rm -rf
-GZIP = 			gzip
-GZIP_D = 		gzip -d
-MKDIR_P = 		mkdir -p
+RMR =                rm -rf
+GZIP =               gzip
+GZIP_D =             gzip -d
+MKDIR_P =            mkdir -p
 
 # ----------------------------------------------------------------
 # Benchmarks setup Section                                       -
