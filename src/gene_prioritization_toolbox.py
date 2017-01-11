@@ -18,59 +18,6 @@ import knpackage.data_cleanup_toolbox as datacln
 EPSILON_0 = 1e-7
 
 
-def get_consolodated_dataframe(gene_samples_df, drug_samples_df):
-    """  assemble the features X samples and data X samples dataframes into one
-
-    Args:
-        gene_samples_df:  spreadsheet with the same column headers as the drug_samples_df
-        drug_samples_df:  spreadsheet of drug response rows with same column header
-
-    Returns:
-        genes_list:       the list of genes that are the rows of the spreadsheet in the consolodated dataframe
-        drugs_list:       the list of drugs that for row names in the consolodated dataframe
-        consolodated_df:  input spreadsheet dataframe with the drug dataframe appended
-    """
-    genes_list = gene_samples_df.index.values.tolist()
-    drugs_list = drug_samples_df.index.values.tolist()
-    consolodated_df = pd.DataFrame(
-        gene_samples_df.as_matrix(), index=genes_list, columns=gene_samples_df.columns.values)
-    consolodated_df = consolodated_df.append(drug_samples_df)
-
-    return genes_list, drugs_list, consolodated_df
-
-
-def get_data_for_drug(consolodated_dataframe, genes_list, drug_name, run_parameters):
-    """ get spreadsheet and drug dataframes with the NA columns removed
-
-    Args:
-        consolodated_dataframe: the spreadsheet dataframe appended with the drug dataframe
-        genes_list:             the row names that constitute the spreadsheet
-        drug_name:              the individual drug to select
-        run_parameters:         parameters dict
-
-    Returns:
-        drug_df:        single drug dataframe with NA columns removed
-        spreadsheet_df: spreadsheet dataframe with same columns as drug_df
-    """
-    names_selector = genes_list.copy()
-    names_selector.insert(0, drug_name)
-    tmp_df = consolodated_dataframe.loc[names_selector]
-    if run_parameters['drop_method'] is 'drop_NA':
-        tmp_df = tmp_df.dropna(axis=1)
-    else:
-        tmp_df = tmp_df.fillna(0)
-
-    drug_array = np.array([tmp_df.as_matrix()[0, :]])
-    tmp_df = tmp_df.drop(drug_name)
-    spreadsheet_matrix = tmp_df.as_matrix()
-    sample_names = tmp_df.columns.values
-
-    drug_df = pd.DataFrame(drug_array, index={drug_name}, columns=sample_names)
-    spreadsheet_df = pd.DataFrame(spreadsheet_matrix, index=genes_list, columns=sample_names)
-
-    return drug_df, spreadsheet_df
-
-
 def run_correlation(run_parameters):
     """ perform gene prioritization
 
@@ -91,10 +38,9 @@ def worker_for_run_correlation(run_parameters, spreadsheet_df, phenotype_df, job
 
     Args:
         run_parameters:  dict of parameters
-        spreadsheet_df: spreadsheet - drug consolodated data frame
-        genes_list:      ordered list of genes in consolodated_df
-        drugs_list:      ordered list of drugs in consolodated_df
-        i:               paralell iteration number
+        spreadsheet_df:  spreadsheet data frame
+        phenotype_df:    drug data frame
+        job_id:          parallel iteration number
     """
     # selects the ith row in phenotype_df
     phenotype_df = phenotype_df.iloc[[job_id], :]
@@ -161,11 +107,10 @@ def worker_for_run_bootstrap_correlation(run_parameters, spreadsheet_df, phenoty
 
     Args:
         run_parameters:  dict of parameters
-        consolodated_df: spreadsheet - drug consolodated data frame
-        genes_list:      ordered list of genes in consolodated_df
+        spreadsheet_df:  spreadsheet data frame
+        phenotype_df:    phenotype data frame
         n_bootstraps:    number of bootstrap samples to use
-        drugs_list:      ordered list of drugs in consolodated_df
-        i:               paralell iteration number
+        job_id:          parallel iteration number
     """
     phenotype_df = phenotype_df.iloc[[job_id], :]
     spreadsheet_df_trimmed, phenotype_df_trimmed, ret_msg = datacln.check_input_value_for_gene_prioritazion(
@@ -279,6 +224,8 @@ def worker_for_run_net_correlation(run_parameters, spreadsheet_df, phenotype_df,
     phenotype_df = phenotype_df.iloc[[job_id], :]
     spreadsheet_df_trimmed, phenotype_df_trimmed, ret_msg = datacln.check_input_value_for_gene_prioritazion(
         spreadsheet_df, phenotype_df)
+    spreadsheet_df_trimmed.to_csv(run_parameters['results_directory'] + "/spreadsheet_new.tsv", sep='\t', header=True, index=True)
+    phenotype_df_trimmed.to_csv(run_parameters['results_directory'] + "/phenotype_new.tsv", sep='\t', header=True, index=True)
 
     sample_smooth = spreadsheet_df_trimmed.as_matrix()
 
@@ -352,13 +299,11 @@ def worker_for_run_bootstrap_net_correlation(run_parameters, spreadsheet_df, phe
 
     Args:
         run_parameters:
-        consolodated_df:
-        genes_list:
-        unique_gene_names:
+        spreadsheet_df:
+        phenotype_df:
         network_mat:
         baseline_array:
-        drugs_list:
-        i:
+        job_id:
 
     Returns:
 
