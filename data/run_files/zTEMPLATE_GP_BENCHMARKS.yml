@@ -44,9 +44,3 @@ rwr_restart_probability:    0.5 # same as alpha in the above formula
 # - fraction to retain after first random walk smoothing             -
 # --------------------------------------------------------------------
 top_beta_of_sort:           3
-
-# options: drop_NA, zero_NA
-drop_method:                drop_NA
-
-# output file name
-out_filename:               bootstrap_net_correlation
