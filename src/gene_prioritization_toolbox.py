@@ -70,21 +70,12 @@ def generate_correlation_output(pc_array, drug_name, gene_name_list, run_paramet
     result_df = pd.DataFrame(output_val, columns=df_header).sort_values("visualization score", ascending=0)
     result_df.index = range(result_df.shape[0])
 
-    #target_file_base_name = os.path.join(run_parameters["results_directory"],
-                                         #drug_name + '_' + run_parameters['out_filename'])
-    #file_name = kn.create_timestamped_filename(target_file_base_name) + '.tsv'
-
     result_df.to_csv(get_output_file_name(run_parameters, drug_name), header=True, index=False, sep='\t')
 
     download_result_df = pd.DataFrame(data=None, index=None, columns=['Response', 'Gene ENSEMBL ID'])
     download_result_df['Response'] = result_df['Response']
     download_result_df['Gene ENSEMBL ID'] = result_df['Gene ENSEMBL ID']
 
-    #download_target_file_base_name = os.path.join(run_parameters["results_directory"],
-                                                  #drug_name + '_' + run_parameters['out_filename'])
-    #download_file_name = kn.create_timestamped_filename(download_target_file_base_name) + '_download' + '.tsv'
-
-    #download_file_name = get_output_file_name(run_parameters, drug_name, 'download')
     download_result_df.to_csv(get_output_file_name(run_parameters, drug_name, 'download'),
                               header=True, index=False, sep='\t')
 
@@ -157,18 +148,12 @@ def generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pc_array, d
     result_df = pd.DataFrame(output_val, columns=df_header).sort_values("quantitative sorting score", ascending=0)
     result_df.index = range(result_df.shape[0])
 
-    #target_file_base_name = os.path.join(run_parameters["results_directory"],
-                                         #drug_name + '_' + run_parameters['out_filename'])
-    #file_name = kn.create_timestamped_filename(target_file_base_name) + '.tsv'
     result_df.to_csv(get_output_file_name(run_parameters, drug_name), header=True, index=False, sep='\t')
 
     download_result_df = pd.DataFrame(data=None, index=None, columns=['Response', 'Gene ENSEMBL ID'])
     download_result_df['Response'] = result_df['Response']
     download_result_df['Gene ENSEMBL ID'] = result_df['Gene ENSEMBL ID']
 
-    #download_target_file_base_name = os.path.join(run_parameters["results_directory"],
-                                                  #drug_name + '_' + run_parameters['out_filename'])
-    #download_file_name = kn.create_timestamped_filename(download_target_file_base_name) + '_download' + '.tsv'
     download_result_df.to_csv(get_output_file_name(run_parameters, drug_name, 'download'), header=True, index=False, sep='\t')
 
 
@@ -377,18 +362,12 @@ def generate_net_correlation_output(pearson_array, pc_array, min_max_pc, restart
                  'baseline score', 'Percent appearing in restart set']
     result_df = pd.DataFrame(output_val, columns=df_header).sort_values('quantitative sorting score', ascending=0)
 
-    #target_file_base_name = os.path.join(run_parameters["results_directory"],
-                                         #drug_name + '_' + run_parameters['out_filename'])
-    #file_name = kn.create_timestamped_filename(target_file_base_name) + '.tsv'
     result_df.to_csv(get_output_file_name(run_parameters, drug_name), header=True, index=False, sep='\t')
 
     download_result_df = pd.DataFrame(data=None, index=None, columns=['Response', 'Gene ENSEMBL ID'])
     download_result_df['Response'] = result_df['Response']
     download_result_df['Gene ENSEMBL ID'] = result_df['Gene ENSEMBL ID']
 
-    #download_target_file_base_name = os.path.join(run_parameters["results_directory"],
-                                                  #drug_name + '_' + run_parameters['out_filename'])
-    #download_file_name = kn.create_timestamped_filename(download_target_file_base_name) + '_download' + '.tsv'
     download_result_df.to_csv(get_output_file_name(run_parameters, drug_name, 'download'), header=True, index=False, sep='\t')
 
 
@@ -557,21 +536,21 @@ def write_phenotype_data_all(run_parameters, top_n=100):
         top_n_list = src_df['Gene ENSEMBL ID'][0:top_n]
         all_phenotypes_df[src_df['Response'][1]].loc[top_n_list] = 1
 
-    #download_target_file_base_name = os.path.join(run_parameters["results_directory"],
-                                                  #'all_phenotypes' + '_' + run_parameters['out_filename'])
-    #write_file_name = kn.create_timestamped_filename(download_target_file_base_name) + '_download.tsv'ß
     all_phenotypes_df.to_csv(get_output_file_name(run_parameters, 'all_phenotypes', 'download'), header=True, index=True, sep='\t')
 
 
-def get_output_file_name(run_parameters, prefix_string, suffix_string=''):
+def get_output_file_name(run_parameters, prefix_string, suffix_string='', type_suffix='tsv'):
     """ get the full directory / filename for writing
     Args:
+        run_parameters: dictionary with keys: "results_directory", "method" and "correlation_measure"
+        prefix_string:  the first letters of the ouput file name
+        suffix_string:  the last letters of the output file name before '.tsv'
 
     Returns:
-
+        output_file_name:   full file and directory name suitable for file writing
     """
     output_file_name = os.path.join(run_parameters["results_directory"], prefix_string + '_' +
-                                    run_parameters['method'] + '_' + run_parameters['correlation_measure'])
+                                    run_parameters['method'] + '_' + run_parameters["correlation_measure"])
 
-    output_file_name = kn.create_timestamped_filename(output_file_name) + '_' + suffix_string + '.tsv'
+    output_file_name = kn.create_timestamped_filename(output_file_name) + '_' + suffix_string + '.' + type_suffix
     return output_file_name
