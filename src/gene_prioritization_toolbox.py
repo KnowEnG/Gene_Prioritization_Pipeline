@@ -67,18 +67,26 @@ def generate_correlation_output(pc_array, drug_name, gene_name_list, run_paramet
         (drug_name_list, gene_name_list, abs(pc_array), abs(pc_array), pc_array))
 
     df_header = ['Response', 'Gene_ENSEMBL_ID', 'quantitative_sorting_score', 'visualization_score', 'baseline_score']
-    result_df = pd.DataFrame(output_val, columns=df_header).sort_values("visualization score", ascending=0)
+    result_df = pd.DataFrame(output_val, columns=df_header).sort_values("visualization_score", ascending=0)
     result_df.index = range(result_df.shape[0])
 
     result_df.to_csv(get_output_file_name(run_parameters, drug_name), header=True, index=False, sep='\t')
 
-    download_result_df = pd.DataFrame(data=None, index=None, columns=['Gene_ENSEMBL_ID'])
-    # download_result_df['Response'] = result_df['Response']
-    download_result_df['Gene_ENSEMBL_ID'] = result_df['Gene_ENSEMBL_ID']
+    curr_dir = run_parameters["results_directory"]
+    new_dir = os.path.join(run_parameters["results_directory"], 'tmp')
+    if not os.path.isdir(new_dir):
+        os.mkdir(new_dir)
+    run_parameters["results_directory"] = new_dir
 
-    download_result_df.to_csv(get_output_file_name(run_parameters, drug_name, 'download'),
-                              header=True, index=False, sep='\t')
+    download_result_df = pd.DataFrame(data=None, index=None, columns=[drug_name])
+    download_result_df[drug_name] = result_df['Gene_ENSEMBL_ID']
+    download_result_df.to_csv(get_output_file_name(run_parameters, drug_name, 'download'), header=True, index=False, sep='\t')
+    
+    top_genes = download_result_df.values[: run_parameters['top_beta_of_sort']]
+    update_orig_result_df = pd.DataFrame(np.in1d(gene_name_list, top_genes).astype(int), index=gene_name_list, columns=[drug_name])
+    update_orig_result_df.to_csv(get_output_file_name(run_parameters, drug_name, 'original'), header=True, index=True, sep='\t')
 
+    run_parameters["results_directory"] = curr_dir
 
 def run_bootstrap_correlation(run_parameters):
     """ perform gene prioritization using bootstrap sampling
@@ -145,16 +153,26 @@ def generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pc_array, d
         (drug_name_list, gene_name_list, borda_count, pcc_gm_array, pc_array))
 
     df_header = ['Response', 'Gene_ENSEMBL_ID', 'quantitative_sorting_score', 'visualization_score', 'baseline_score']
-    result_df = pd.DataFrame(output_val, columns=df_header).sort_values("quantitative sorting score", ascending=0)
+    result_df = pd.DataFrame(output_val, columns=df_header).sort_values("quantitative_sorting_score", ascending=0)
     result_df.index = range(result_df.shape[0])
 
     result_df.to_csv(get_output_file_name(run_parameters, drug_name), header=True, index=False, sep='\t')
 
-    download_result_df = pd.DataFrame(data=None, index=None, columns=['Gene_ENSEMBL_ID'])
-    # download_result_df['Response'] = result_df['Response']
-    download_result_df['Gene_ENSEMBL_ID'] = result_df['Gene_ENSEMBL_ID']
+    curr_dir = run_parameters["results_directory"]
+    new_dir = os.path.join(run_parameters["results_directory"], 'tmp')
+    if not os.path.isdir(new_dir):
+        os.mkdir(new_dir)
+    run_parameters["results_directory"] = new_dir
 
+    download_result_df = pd.DataFrame(data=None, index=None, columns=[drug_name])
+    download_result_df[drug_name] = result_df['Gene_ENSEMBL_ID']
     download_result_df.to_csv(get_output_file_name(run_parameters, drug_name, 'download'), header=True, index=False, sep='\t')
+    
+    top_genes = download_result_df.values[: run_parameters['top_beta_of_sort']]
+    update_orig_result_df = pd.DataFrame(np.in1d(gene_name_list, top_genes).astype(int), index=gene_name_list, columns=[drug_name])
+    update_orig_result_df.to_csv(get_output_file_name(run_parameters, drug_name, 'original'), header=True, index=True, sep='\t')
+
+    run_parameters["results_directory"] = curr_dir
 
 
 def run_net_correlation(run_parameters):
