@@ -66,15 +66,15 @@ def generate_correlation_output(pc_array, drug_name, gene_name_list, run_paramet
     output_val = np.column_stack(
         (drug_name_list, gene_name_list, abs(pc_array), abs(pc_array), pc_array))
 
-    df_header = ['Response', 'Gene ENSEMBL ID', 'quantitative sorting score', 'visualization score', 'baseline score']
+    df_header = ['Response', 'Gene_ENSEMBL_ID', 'quantitative_sorting_score', 'visualization_score', 'baseline_score']
     result_df = pd.DataFrame(output_val, columns=df_header).sort_values("visualization score", ascending=0)
     result_df.index = range(result_df.shape[0])
 
     result_df.to_csv(get_output_file_name(run_parameters, drug_name), header=True, index=False, sep='\t')
 
-    download_result_df = pd.DataFrame(data=None, index=None, columns=['Response', 'Gene ENSEMBL ID'])
-    download_result_df['Response'] = result_df['Response']
-    download_result_df['Gene ENSEMBL ID'] = result_df['Gene ENSEMBL ID']
+    download_result_df = pd.DataFrame(data=None, index=None, columns=['Gene_ENSEMBL_ID'])
+    # download_result_df['Response'] = result_df['Response']
+    download_result_df['Gene_ENSEMBL_ID'] = result_df['Gene_ENSEMBL_ID']
 
     download_result_df.to_csv(get_output_file_name(run_parameters, drug_name, 'download'),
                               header=True, index=False, sep='\t')
@@ -144,15 +144,15 @@ def generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pc_array, d
     output_val = np.column_stack(
         (drug_name_list, gene_name_list, borda_count, pcc_gm_array, pc_array))
 
-    df_header = ['Response', 'Gene ENSEMBL ID', 'quantitative sorting score', 'visualization score', 'baseline score']
+    df_header = ['Response', 'Gene_ENSEMBL_ID', 'quantitative_sorting_score', 'visualization_score', 'baseline_score']
     result_df = pd.DataFrame(output_val, columns=df_header).sort_values("quantitative sorting score", ascending=0)
     result_df.index = range(result_df.shape[0])
 
     result_df.to_csv(get_output_file_name(run_parameters, drug_name), header=True, index=False, sep='\t')
 
-    download_result_df = pd.DataFrame(data=None, index=None, columns=['Response', 'Gene ENSEMBL ID'])
-    download_result_df['Response'] = result_df['Response']
-    download_result_df['Gene ENSEMBL ID'] = result_df['Gene ENSEMBL ID']
+    download_result_df = pd.DataFrame(data=None, index=None, columns=['Gene_ENSEMBL_ID'])
+    # download_result_df['Response'] = result_df['Response']
+    download_result_df['Gene_ENSEMBL_ID'] = result_df['Gene_ENSEMBL_ID']
 
     download_result_df.to_csv(get_output_file_name(run_parameters, drug_name, 'download'), header=True, index=False, sep='\t')
 
@@ -358,18 +358,27 @@ def generate_net_correlation_output(pearson_array, pc_array, min_max_pc, restart
     output_val = np.column_stack(
         (drug_name_list, gene_name_list, pc_array, min_max_pc, pearson_array, restart_accumulator))
 
-    df_header = ['Response', 'Gene ENSEMBL ID', 'quantitative sorting score', 'visualization score',
-                 'baseline score', 'Percent appearing in restart set']
-    result_df = pd.DataFrame(output_val, columns=df_header).sort_values('quantitative sorting score', ascending=0)
+    df_header = ['Response', 'Gene_ENSEMBL_ID', 'quantitative_sorting_score', 'visualization_score',
+                 'baseline_score', 'Percent_appearing_in_restart_set']
+    result_df = pd.DataFrame(output_val, columns=df_header).sort_values('quantitative_sorting_score', ascending=0)
 
     result_df.to_csv(get_output_file_name(run_parameters, drug_name), header=True, index=False, sep='\t')
 
-    download_result_df = pd.DataFrame(data=None, index=None, columns=['Response', 'Gene ENSEMBL ID'])
-    download_result_df['Response'] = result_df['Response']
-    download_result_df['Gene ENSEMBL ID'] = result_df['Gene ENSEMBL ID']
+    curr_dir = run_parameters["results_directory"]
+    new_dir = os.path.join(run_parameters["results_directory"], 'tmp')
+    if not os.path.isdir(new_dir):
+        os.mkdir(new_dir)
+    run_parameters["results_directory"] = new_dir
 
+    download_result_df = pd.DataFrame(data=None, index=None, columns=[drug_name])
+    download_result_df[drug_name] = result_df['Gene_ENSEMBL_ID']
     download_result_df.to_csv(get_output_file_name(run_parameters, drug_name, 'download'), header=True, index=False, sep='\t')
+    
+    top_genes = download_result_df.values[: run_parameters['top_beta_of_sort']]
+    update_orig_result_df = pd.DataFrame(np.in1d(gene_orig_list, top_genes).astype(int), index=gene_orig_list, columns=[drug_name])
+    update_orig_result_df.to_csv(get_output_file_name(run_parameters, drug_name, 'original'), header=True, index=True, sep='\t')
 
+    run_parameters["results_directory"] = curr_dir
 
 def get_correlation(spreadsheet, drug_response, run_parameters):
     """ correlation function definition for all run methods
@@ -511,32 +520,79 @@ def write_phenotype_data_all(run_parameters, top_n=100):
         top_n:          number of genes to rank (default=100)
 
     Returns: (writes consolodation file)
-    """
-    if 'top_beta_of_sort' in run_parameters:   top_n = run_parameters['top_beta_of_sort']
-    dirList = sorted(os.listdir(run_parameters["results_directory"]))
+    """  
+    tmp_dir = os.path.join(run_parameters["results_directory"], 'tmp')
+    dirList = sorted(os.listdir(tmp_dir))
     download_list = []
+    original_list = []
     for fileName in dirList:
-        if (fileName[0:4] != 'all_') & (fileName[-12:] == 'download.tsv'):
+        if (fileName[-12:] == 'download.tsv'):
             download_list.append(fileName)
+        if (fileName[-12:] == 'original.tsv'):
+            original_list.append(fileName)
 
-    if len(download_list) == 0:
+    if (len(download_list) == 0 or len(original_list) == 0):
         return
 
-    StartFileName = os.path.join(run_parameters["results_directory"], download_list[0])
-    src_df = pd.read_csv(StartFileName, sep='\t', header=0, index_col=None)
-    index_list = src_df['Gene ENSEMBL ID'].values
+    StartFileName = os.path.join(tmp_dir, original_list[0])
+    src_df = pd.read_csv(StartFileName, sep='\t', header=0, index_col=0)
+    index_list = src_df.index.values
 
-    all_phenotypes_df = pd.DataFrame(data=None, index=index_list)
+    all_phenotypes_download_df = pd.DataFrame(data=None, index=None)
+    all_phenotypes_original_df = pd.DataFrame(data=None, index=index_list)
+
 
     for fileName in download_list:
-        tFileName = os.path.join(run_parameters["results_directory"], fileName)
+        tFileName = os.path.join(tmp_dir, fileName)
         src_df = pd.read_csv(tFileName, sep='\t', header=0, index_col=None)
-        all_phenotypes_df.insert(all_phenotypes_df.shape[1], src_df['Response'][1], [0] * all_phenotypes_df.shape[0],
-                                 allow_duplicates=True)
-        top_n_list = src_df['Gene ENSEMBL ID'][0:top_n]
-        all_phenotypes_df[src_df['Response'][1]].loc[top_n_list] = 1
+        drug_name = src_df.columns.values[0]
+        all_phenotypes_download_df[drug_name] = src_df[drug_name]
 
-    all_phenotypes_df.to_csv(get_output_file_name(run_parameters, 'all_phenotypes', 'download'), header=True, index=True, sep='\t')
+    for fileName in original_list:
+        tFileName = os.path.join(tmp_dir, fileName)
+        src_df = pd.read_csv(tFileName, sep='\t', header=0, index_col=0)          
+        drug_name = src_df.columns.values[0]
+        all_phenotypes_original_df[drug_name] = src_df[drug_name]
+
+
+    all_phenotypes_download_df.to_csv(get_output_file_name(run_parameters, 'all_phenotypes', 'download'), header=True, index=True, sep='\t')
+    all_phenotypes_original_df.to_csv(get_output_file_name(run_parameters, 'all_phenotypes', 'original'), header=True, index=True, sep='\t')
+    kn.remove_dir(tmp_dir)
+
+# def write_phenotype_data_all(run_parameters, top_n=100):
+#     """ Post Processing: writes rows as genes, cols as drugs, data is gene in top n for the drug T or F.
+
+#     Args:
+#         run_parameters: with field: 'results_directory'
+#         top_n:          number of genes to rank (default=100)
+
+#     Returns: (writes consolodation file)
+#     """
+#     if 'top_beta_of_sort' in run_parameters:   top_n = run_parameters['top_beta_of_sort']
+#     dirList = sorted(os.listdir(run_parameters["results_directory"]))
+#     download_list = []
+#     for fileName in dirList:
+#         if (fileName[0:4] != 'all_') & (fileName[-12:] == 'download.tsv'):
+#             download_list.append(fileName)
+
+#     if len(download_list) == 0:
+#         return
+
+#     StartFileName = os.path.join(run_parameters["results_directory"], download_list[0])
+#     src_df = pd.read_csv(StartFileName, sep='\t', header=0, index_col=None)
+#     index_list = src_df['Gene_ENSEMBL_ID'].values
+
+#     all_phenotypes_df = pd.DataFrame(data=None, index=index_list)
+
+#     for fileName in download_list:
+#         tFileName = os.path.join(run_parameters["results_directory"], fileName)
+#         src_df = pd.read_csv(tFileName, sep='\t', header=0, index_col=None)
+#         all_phenotypes_df.insert(all_phenotypes_df.shape[1], src_df['Response'][1], [0] * all_phenotypes_df.shape[0],
+#                                  allow_duplicates=True)
+#         top_n_list = src_df['Gene_ENSEMBL_ID'][0:top_n]
+#         all_phenotypes_df[src_df['Response'][1]].loc[top_n_list] = 1
+
+#     all_phenotypes_df.to_csv(get_output_file_name(run_parameters, 'all_phenotypes', 'download'), header=True, index=True, sep='\t')
 
 
 def get_output_file_name(run_parameters, prefix_string, suffix_string='', type_suffix='tsv'):
