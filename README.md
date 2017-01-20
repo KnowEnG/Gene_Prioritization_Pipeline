@@ -19,12 +19,7 @@ Note: all of the correlation methods mentioned above use the Pearson correlation
 * * * 
 ## How to run this pipeline with Our data
 * * * 
-###1. Get Access to KnowEnG-Research Repository:
-Email omarsobh@illinois.edu infrastructure team (IST) lead to:
-
-* __Access__ KnowEnG-Research github repo
-
-###2. Clone the Gene_Prioritization_Pipeline Repo
+###1. Clone the Gene_Prioritization_Pipeline Repo
 ```
  git clone https://github.com/KnowEnG-Research/Gene_Prioritization_Pipeline.git
 ```
