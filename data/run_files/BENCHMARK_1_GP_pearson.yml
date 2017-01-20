@@ -10,6 +10,4 @@ spreadsheet_name_full_path: ../data/spreadsheets/CCLE_Expression_ensembl.df
 drug_response_full_path:    ../data/spreadsheets/CCLE_drug_ec50_cleaned_NAremoved.txt
 
 results_directory:          ./run_dir/results
-
-drop_method:                drop_NA
-out_filename:               correlation
+top_beta_of_sort:           100
