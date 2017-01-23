@@ -13,6 +13,5 @@ results_directory:          ./run_dir/results
 
 number_of_bootstraps:       5
 
-rows_sampling_fraction:     1.0       # 1.0 means 100% of rows    (i.e., no sampling)
 cols_sampling_fraction:     0.9       # 1.0 means 100% of columns (i.e., no sampling) 
 top_beta_of_sort:           100
