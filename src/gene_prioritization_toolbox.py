@@ -126,8 +126,7 @@ def worker_for_run_bootstrap_correlation(run_parameters, spreadsheet_df, phenoty
     gm_accumulator = np.ones(spreadsheet_df.shape[0])
     for bootstrap_number in range(0, n_bootstraps):
         sample_random, sample_permutation = sample_a_matrix_pearson(
-            spreadsheet_df_trimmed.as_matrix(), run_parameters["rows_sampling_fraction"],
-            run_parameters["cols_sampling_fraction"])
+            spreadsheet_df_trimmed.as_matrix(), 1.0, run_parameters["cols_sampling_fraction"])
         drug_response = phenotype_df_trimmed.values[0, None]
         drug_response = drug_response[0, sample_permutation]
         pc_array = get_correlation(sample_random, drug_response, run_parameters)
@@ -333,8 +332,7 @@ def worker_for_run_bootstrap_net_correlation(run_parameters, spreadsheet_df, phe
     n_bootstraps = run_parameters["number_of_bootstraps"]
     for bootstrap_number in range(0, n_bootstraps):
         sample_random, sample_permutation = sample_a_matrix_pearson(
-            sample_smooth, run_parameters["rows_sampling_fraction"],
-            run_parameters["cols_sampling_fraction"])
+            sample_smooth, 1.0, run_parameters["cols_sampling_fraction"])
 
         drug_response = phenotype_df_trimmed.values[0, None]
         drug_response = drug_response[0, sample_permutation]
@@ -583,17 +581,19 @@ def write_phenotype_data_all(run_parameters, top_n=100):
     kn.remove_dir(tmp_dir)
 
 
-def get_output_file_name(run_parameters, dir_name, prefix_string, suffix_string='', type_suffix='tsv'):
+def get_output_file_name(run_parameters, dir_name_key, prefix_string, suffix_string='', type_suffix='tsv'):
     """ get the full directory / filename for writing
     Args:
-        run_parameters: dictionary with keys: "results_directory", "method" and "correlation_measure"
+        run_parameters: dictionary with keys: dir_name_key, "method" and "correlation_measure"
+        dir_name_key:   run_parameters dictionary key for the output directory
         prefix_string:  the first letters of the ouput file name
-        suffix_string:  the last letters of the output file name before '.tsv'
+        suffix_string:  the last letters of the output file name before type_suffix
+        type_suffix:    the file type extenstion (default 'tsv') without period character
 
     Returns:
         output_file_name:   full file and directory name suitable for file writing
     """
-    output_file_name = os.path.join(run_parameters[dir_name], prefix_string + '_' +
+    output_file_name = os.path.join(run_parameters[dir_name_key], prefix_string + '_' +
                                     run_parameters['method'] + '_' + run_parameters["correlation_measure"])
 
     output_file_name = kn.create_timestamped_filename(output_file_name) + '_' + suffix_string + '.' + type_suffix
