@@ -14,7 +14,6 @@ results_directory:          ./run_dir/results
 
 number_of_bootstraps:       100
 
-rows_sampling_fraction:     1.0       # 1.0 means 100% of rows    (i.e., no sampling)
 cols_sampling_fraction:     0.8       # 1.0 means 100% of columns (i.e., no sampling) 
 
 rwr_max_iterations:         100
