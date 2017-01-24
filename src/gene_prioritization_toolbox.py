@@ -24,7 +24,7 @@ def run_correlation(run_parameters):
     Args:
         run_parameters: parameter set dictionary.
     """
-    run_parameters["results_tmp_directory"] = kn.create_dir(run_parameters["run_directory"], 'tmp')
+    run_parameters["results_tmp_directory"] = kn.create_dir(run_parameters["results_directory"], 'tmp')
 
     phenotype_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
@@ -84,7 +84,7 @@ def run_bootstrap_correlation(run_parameters):
     Args:
         run_parameters: parameter set dictionary.
     """
-    run_parameters["results_tmp_directory"] = kn.create_dir(run_parameters["run_directory"], 'tmp')
+    run_parameters["results_tmp_directory"] = kn.create_dir(run_parameters["results_directory"], 'tmp')
 
     drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
@@ -159,9 +159,10 @@ def run_net_correlation(run_parameters):
     Args:
         run_parameters: parameter set dictionary.
     """
-    run_parameters["results_tmp_directory"] = kn.create_dir(run_parameters["run_directory"], 'tmp')
+    run_parameters["results_tmp_directory"] = kn.create_dir(run_parameters["results_directory"], 'tmp')
 
     network_df = kn.get_network_df(run_parameters['gg_network_name_full_path'])
+
     node_1_names, node_2_names = kn.extract_network_node_names(network_df)
     unique_gene_names = kn.find_unique_node_names(node_1_names, node_2_names)
 
@@ -241,7 +242,7 @@ def run_bootstrap_net_correlation(run_parameters):
     Args:
         run_parameters: parameter set dictionary.
     """
-    run_parameters["results_tmp_directory"] = kn.create_dir(run_parameters["run_directory"], 'tmp')
+    run_parameters["results_tmp_directory"] = kn.create_dir(run_parameters["results_directory"], 'tmp')
 
     network_df = kn.get_network_df(run_parameters['gg_network_name_full_path'])
     node_1_names, node_2_names = kn.extract_network_node_names(network_df)
@@ -556,7 +557,6 @@ def write_phenotype_data_all(run_parameters):
         get_output_file_name(run_parameters, 'results_directory', 'all_phenotypes', 'download'), header=True, index=True, sep='\t')
     all_phenotypes_original_df.to_csv(
         get_output_file_name(run_parameters, 'results_directory', 'all_phenotypes', 'original'), header=True, index=True, sep='\t')
-    kn.remove_dir(tmp_dir)
 
 
 def get_output_file_name(run_parameters, dir_name_key, prefix_string, suffix_string='', type_suffix='tsv'):
