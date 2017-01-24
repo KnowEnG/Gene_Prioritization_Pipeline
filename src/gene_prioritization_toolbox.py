@@ -519,14 +519,11 @@ def zscore_dataframe(genes_by_sample_df):
     return zscore_df
 
 
-def write_phenotype_data_all(run_parameters, top_n=100):
+def write_phenotype_data_all(run_parameters):
     """ Post Processing: writes rows as genes, cols as drugs, data is gene in top n for the drug T or F.
 
     Args:
         run_parameters: with field: 'results_directory'
-        top_n:          number of genes to rank (default=100)
-
-    Returns: (writes consolodation file)
     """  
     tmp_dir = run_parameters["results_tmp_directory"]
     dirList = sorted(os.listdir(tmp_dir))
