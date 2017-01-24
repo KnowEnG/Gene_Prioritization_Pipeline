@@ -41,8 +41,8 @@ def main():
     run_parameters = get_run_parameters(run_directory, run_file)
     SELECT[run_parameters["method"]](run_parameters)
 
-    from gene_prioritization_toolbox import write_phenotype_data_all
-    write_phenotype_data_all(run_parameters)
+    #from gene_prioritization_toolbox import write_phenotype_data_all
+    #write_phenotype_data_all(run_parameters)
 
 if __name__ == "__main__":
     main()
