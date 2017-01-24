@@ -399,35 +399,31 @@ def generate_net_correlation_output(pearson_array, pc_array, min_max_pc, restart
         get_output_file_name(run_parameters, 'results_tmp_directory', drug_name, 'original'), header=True, index=True, sep='\t')
 
 
-def get_correlation(spreadsheet, drug_response, run_parameters):
+def get_correlation(spreadsheet_mat, drug_response, run_parameters):
     """ correlation function definition for all run methods
 
     Args:
-        spreadsheet: genes x samples
+        spreadsheet_mat: genes x samples
         drug_response: one x samples
         run_parameters: with key 'correlation_measure'
-        normalize: for lasso only
-        max_iter: for lasso only
 
     Returns:
         correlation_array: genes x one
     """
-    correlation_array = np.zeros(spreadsheet.shape[0])
+    correlation_array = np.zeros(spreadsheet_mat.shape[0])
     if 'correlation_measure' in run_parameters:
         if run_parameters['correlation_measure'] == 'pearson':
-            #linear relationship between two (normally distributed) datasets. same slope = 1, cross = 0, opposite = -1
-            spreadsheet = zscore(spreadsheet, axis=1, ddof=0)
-            for row in range(0, spreadsheet.shape[0]):
-                correlation_array[row] = pcc(spreadsheet[row, :], drug_response)[0]
+            spreadsheet_mat = zscore(spreadsheet_mat, axis=1, ddof=0)
+            for row in range(0, spreadsheet_mat.shape[0]):
+                correlation_array[row] = pcc(spreadsheet_mat[row, :], drug_response)[0]
             correlation_array[~(np.isfinite(correlation_array))] = 0
             return correlation_array
 
         if run_parameters['correlation_measure'] == 't_test':
-            #ttest_ind: two sided test for null hypothesis that 2 independent samples have identical (expected) vlaues
-            for row in range(0, spreadsheet.shape[0]):
+            for row in range(0, spreadsheet_mat.shape[0]):
                 d = np.int_(drug_response)
-                a = spreadsheet[row, d != 0]
-                b = spreadsheet[row, d == 0]
+                a = spreadsheet_mat[row, d != 0]
+                b = spreadsheet_mat[row, d == 0]
                 correlation_array[row] = np.abs(ttest_ind(a, b, axis=None, equal_var=False)[0])
 
             return correlation_array
