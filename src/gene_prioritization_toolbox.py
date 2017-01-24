@@ -28,6 +28,8 @@ def run_correlation(run_parameters):
     os.mkdir(new_dir)
     run_parameters["results_tmp_directory"] = new_dir
 
+    #run_parameters["results_tmp_directory"] = kn.create_dir(run_parameters["run_directory"], 'tmp')
+
     phenotype_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
 
@@ -35,6 +37,9 @@ def run_correlation(run_parameters):
     jobs_id = range(0, number_of_jobs)
     zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, phenotype_df, jobs_id)
     dstutil.parallelize_processes_locally(worker_for_run_correlation, zipped_arguments, number_of_jobs)
+
+    #write_phenotype_data_all(run_parameters)
+    #kn.remove_dir(run_parameters["results_tmp_directory"])
 
 
 def worker_for_run_correlation(run_parameters, spreadsheet_df, phenotype_df, job_id):
@@ -96,6 +101,8 @@ def run_bootstrap_correlation(run_parameters):
     os.mkdir(new_dir)
     run_parameters["results_tmp_directory"] = new_dir
 
+    #run_parameters["results_tmp_directory"] = kn.create_dir(run_parameters["run_directory"], 'tmp')
+
     drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
 
@@ -105,6 +112,9 @@ def run_bootstrap_correlation(run_parameters):
     jobs_id = range(0, number_of_jobs)
     zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, drug_response_df, n_bootstraps, jobs_id)
     dstutil.parallelize_processes_locally(worker_for_run_bootstrap_correlation, zipped_arguments, number_of_jobs)
+
+    #write_phenotype_data_all(run_parameters)
+    #kn.remove_dir(run_parameters["results_tmp_directory"])
 
 
 def worker_for_run_bootstrap_correlation(run_parameters, spreadsheet_df, phenotype_df, n_bootstraps, job_id):
@@ -182,6 +192,8 @@ def run_net_correlation(run_parameters):
     os.mkdir(new_dir)
     run_parameters["results_tmp_directory"] = new_dir
 
+    #run_parameters["results_tmp_directory"] = kn.create_dir(run_parameters["run_directory"], 'tmp')
+
     network_df = kn.get_network_df(run_parameters['gg_network_name_full_path'])
     node_1_names, node_2_names = kn.extract_network_node_names(network_df)
     unique_gene_names = kn.find_unique_node_names(node_1_names, node_2_names)
@@ -225,6 +237,9 @@ def run_net_correlation(run_parameters):
                                               spreadsheet_genes_as_input, baseline_array, jobs_id)
     dstutil.parallelize_processes_locally(worker_for_run_net_correlation, zipped_arguments, number_of_jobs)
 
+    #write_phenotype_data_all(run_parameters)
+    #kn.remove_dir(run_parameters["results_tmp_directory"])
+
 
 def worker_for_run_net_correlation(run_parameters, spreadsheet_df, phenotype_df, network_mat,
                                    spreadsheet_genes_as_input, baseline_array, job_id):
@@ -262,6 +277,8 @@ def run_bootstrap_net_correlation(run_parameters):
     new_dir = os.path.join(run_parameters["results_directory"], 'tmp')    
     os.mkdir(new_dir)
     run_parameters["results_tmp_directory"] = new_dir
+
+    #run_parameters["results_tmp_directory"] = kn.create_dir(run_parameters["run_directory"], 'tmp')
 
     network_df = kn.get_network_df(run_parameters['gg_network_name_full_path'])
     node_1_names, node_2_names = kn.extract_network_node_names(network_df)
@@ -301,6 +318,9 @@ def run_bootstrap_net_correlation(run_parameters):
     zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, drug_response_df, network_mat,
                                               spreadsheet_genes_as_input, baseline_array, jobs_id)
     dstutil.parallelize_processes_locally(worker_for_run_bootstrap_net_correlation, zipped_arguments, number_of_jobs)
+
+    #write_phenotype_data_all(run_parameters)
+    #kn.remove_dir(run_parameters["results_tmp_directory"])
 
 
 def worker_for_run_bootstrap_net_correlation(run_parameters, spreadsheet_df, phenotype_df, network_mat,
