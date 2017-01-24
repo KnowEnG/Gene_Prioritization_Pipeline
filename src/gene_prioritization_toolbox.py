@@ -499,7 +499,9 @@ def trim_to_top_beta(corr_arr, Beta):
         corr_arr: the correlation array as binary with ones int the top Beta percent
     """
     Beta = max(min(corr_arr.size, Beta) - 1, 0)
-    corr_arr[np.abs(corr_arr) < sorted(np.abs(corr_arr))[::-1][Beta]] = 0
+    abs_corr_arr = np.abs(corr_arr)
+    abs_corr_arr_cutoff_value = sorted(abs_corr_arr)[::-1][Beta]
+    corr_arr[abs_corr_arr < abs_corr_arr_cutoff_value] = 0
     return corr_arr
 
 
