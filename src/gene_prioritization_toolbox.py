@@ -399,35 +399,31 @@ def generate_net_correlation_output(pearson_array, pc_array, min_max_pc, restart
         get_output_file_name(run_parameters, 'results_tmp_directory', drug_name, 'original'), header=True, index=True, sep='\t')
 
 
-def get_correlation(spreadsheet, drug_response, run_parameters):
+def get_correlation(spreadsheet_mat, drug_response, run_parameters):
     """ correlation function definition for all run methods
 
     Args:
-        spreadsheet: genes x samples
+        spreadsheet_mat: genes x samples
         drug_response: one x samples
         run_parameters: with key 'correlation_measure'
-        normalize: for lasso only
-        max_iter: for lasso only
 
     Returns:
         correlation_array: genes x one
     """
-    correlation_array = np.zeros(spreadsheet.shape[0])
+    correlation_array = np.zeros(spreadsheet_mat.shape[0])
     if 'correlation_measure' in run_parameters:
         if run_parameters['correlation_measure'] == 'pearson':
-            #linear relationship between two (normally distributed) datasets. same slope = 1, cross = 0, opposite = -1
-            spreadsheet = zscore(spreadsheet, axis=1, ddof=0)
-            for row in range(0, spreadsheet.shape[0]):
-                correlation_array[row] = pcc(spreadsheet[row, :], drug_response)[0]
+            spreadsheet_mat = zscore(spreadsheet_mat, axis=1, ddof=0)
+            for row in range(0, spreadsheet_mat.shape[0]):
+                correlation_array[row] = pcc(spreadsheet_mat[row, :], drug_response)[0]
             correlation_array[~(np.isfinite(correlation_array))] = 0
             return correlation_array
 
         if run_parameters['correlation_measure'] == 't_test':
-            #ttest_ind: two sided test for null hypothesis that 2 independent samples have identical (expected) vlaues
-            for row in range(0, spreadsheet.shape[0]):
+            for row in range(0, spreadsheet_mat.shape[0]):
                 d = np.int_(drug_response)
-                a = spreadsheet[row, d != 0]
-                b = spreadsheet[row, d == 0]
+                a = spreadsheet_mat[row, d != 0]
+                b = spreadsheet_mat[row, d == 0]
                 correlation_array[row] = np.abs(ttest_ind(a, b, axis=None, equal_var=False)[0])
 
             return correlation_array
@@ -467,19 +463,6 @@ def sum_array_ranking_to_borda_count(borda_count, corr_array):
     return borda_count + borda_add
 
 
-def write_results_dataframe(result_df, run_dir, write_file_name):
-    """ Writes a dataframe with a header and row names to a tab separated text file
-
-    Args:
-        result_df:          a dataframe with row and column names
-        run_dir:            the directory to write in
-        write_file_name:    the file name to join with the directory
-    """
-    target_file_base_name = os.path.join(run_dir, write_file_name)
-    file_name = kn.create_timestamped_filename(target_file_base_name) + '.txt'
-    result_df.to_csv(file_name, header=True, index=True, sep='\t')
-
-
 def sample_a_matrix_pearson(spreadsheet_mat, rows_fraction, cols_fraction):
     """ percent_sample x percent_sample random sample, from spreadsheet_mat.
 
@@ -516,29 +499,31 @@ def trim_to_top_beta(corr_arr, Beta):
         corr_arr: the correlation array as binary with ones int the top Beta percent
     """
     Beta = max(min(corr_arr.size, Beta) - 1, 0)
-    corr_arr[np.abs(corr_arr) < sorted(np.abs(corr_arr))[::-1][Beta]] = 0
+    abs_corr_arr = np.abs(corr_arr)
+    abs_corr_arr_cutoff_value = sorted(abs_corr_arr)[::-1][Beta]
+    corr_arr[abs_corr_arr < abs_corr_arr_cutoff_value] = 0
     return corr_arr
 
 
-def zscore_dataframe(gxs_df):
+def zscore_dataframe(genes_by_sample_df):
     """ zscore by rows for genes x samples dataframe
+
     Args:
-        spreads_df
+        genes_by_sample_df: zscore along rows for genes x phenotypes dataframe
+
     Returns:
         spreadsheet_df: rows add up to zero, normalized to the mean and std deveiation
     """
-    zscore_df = (gxs_df.sub(gxs_df.mean(axis=1), axis=0)).truediv(np.maximum(gxs_df.std(axis=1), 1e-12), axis=0)
+    zscore_df = (genes_by_sample_df.sub(genes_by_sample_df.mean(axis=1), axis=0)).truediv(
+                    np.maximum(genes_by_sample_df.std(axis=1), 1e-12), axis=0)
     return zscore_df
 
 
-def write_phenotype_data_all(run_parameters, top_n=100):
+def write_phenotype_data_all(run_parameters):
     """ Post Processing: writes rows as genes, cols as drugs, data is gene in top n for the drug T or F.
 
     Args:
         run_parameters: with field: 'results_directory'
-        top_n:          number of genes to rank (default=100)
-
-    Returns: (writes consolodation file)
     """  
     tmp_dir = run_parameters["results_tmp_directory"]
     dirList = sorted(os.listdir(tmp_dir))
