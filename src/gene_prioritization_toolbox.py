@@ -505,14 +505,17 @@ def trim_to_top_beta(corr_arr, Beta):
     return corr_arr
 
 
-def zscore_dataframe(gxs_df):
+def zscore_dataframe(genes_by_sample_df):
     """ zscore by rows for genes x samples dataframe
+
     Args:
-        spreads_df
+        genes_by_sample_df: zscore along rows for genes x phenotypes dataframe
+
     Returns:
         spreadsheet_df: rows add up to zero, normalized to the mean and std deveiation
     """
-    zscore_df = (gxs_df.sub(gxs_df.mean(axis=1), axis=0)).truediv(np.maximum(gxs_df.std(axis=1), 1e-12), axis=0)
+    zscore_df = (genes_by_sample_df.sub(genes_by_sample_df.mean(axis=1), axis=0)).truediv(
+                    np.maximum(genes_by_sample_df.std(axis=1), 1e-12), axis=0)
     return zscore_df
 
 
