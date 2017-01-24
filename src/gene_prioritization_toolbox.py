@@ -463,19 +463,6 @@ def sum_array_ranking_to_borda_count(borda_count, corr_array):
     return borda_count + borda_add
 
 
-def write_results_dataframe(result_df, run_dir, write_file_name):
-    """ Writes a dataframe with a header and row names to a tab separated text file
-
-    Args:
-        result_df:          a dataframe with row and column names
-        run_dir:            the directory to write in
-        write_file_name:    the file name to join with the directory
-    """
-    target_file_base_name = os.path.join(run_dir, write_file_name)
-    file_name = kn.create_timestamped_filename(target_file_base_name) + '.txt'
-    result_df.to_csv(file_name, header=True, index=True, sep='\t')
-
-
 def sample_a_matrix_pearson(spreadsheet_mat, rows_fraction, cols_fraction):
     """ percent_sample x percent_sample random sample, from spreadsheet_mat.
 
