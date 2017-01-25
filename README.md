@@ -110,3 +110,56 @@ set the spreadsheet, network and drug_response (phenotype data) file names to po
    ```
   python3 ../src/gene_prioritization.py -run_directory ./ -run_file run_parameters_template.yml
    ```
+
+* * * 
+## Description of "run_parameters" file
+* * * 
+
+| **Key**                   | **Value** | **Comments** |
+| ------------------------- | --------- | ------------ |
+| method                    | correlation or net_correlation or bootstrap_correlation or bootstrap_net_correlation | Choose gene prioritization method |
+| correlation_measure       | pearson or t_test | Choose correlation measure method |
+| gg_network_name_full_path | directory+gg_network_name |Path and file name of the 4 col network file|
+| spreadsheet_name_full_path | directory+spreadsheet_name|  Path and file name of user supplied gene sets |
+| drug_response_full_path | directory+drug_response_full_path| Path and file name of user supplied drug response file |
+| results_directory | directory | Directory to save the output files |
+| number_of_bootstraps | 5 | Number of bootstraps |
+| cols_sampling_fraction | 0.9 | Select 90% of spreadsheet columns |
+| rwr_max_iterations | 100| Maximum number of iterations without convergence in random walk with restart |
+| rwr_convergence_tolerence | 1.0e-2 | Frobenius norm tolerence of spreadsheet vector in random walk|
+| rwr_restart_probability | 0.5 | alpha in `V_(n+1) = alpha * N * Vn + (1-alpha) * Vo` |
+| top_beta_of_sort| 100| Number of top genes selected 
+gg_network_name_full_path = STRING_experimental_gene_gene.edge</br>
+spreadsheet_name = CCLE_Expression_ensembl.df</br>
+drug_response_full_path = CCLE_drug_ec50_cleaned_NAremoved.txt
+
+* * * 
+## Description of Output files saved in results directory
+* * * 
+
+* Output files of all four methods save separate files per phenotype with name {phenotype}\_{method}\_{correlation_measure}\_{timestamp}.tsv. Genes are sorted in descending order based on `quantitative_sorting_score`. </br>  
+
+ | **Response** | **Gene_ENSEMBL_ID** | **quantitative_sorting_score** | **visualization_score** | **baseline_score** |
+ |:-------------:|:------------:|:---------:|:--------------:|:--------------:|
+ |   phenotype 1      |   gene 1     |    float    |    float         |   float          | 
+ |    ...      |   ...     |    ...    |    ...         |   ...          | 
+ |   phenotype 1      |   gene n     |    float    |    float         |   float          | 
+
+
+* Output files of all four methods save sorted genes for each phenotype with name all_phenotypes\_{method}\_{correlation_measure}\_{timestamp}_download.tsv.
+
+ | **phenotype 1** |**phenotype 2**|**...**|**phenotype n**|
+ | :--------------------: |:--------------------:|---|:--------------------:|
+ | gene </br> (most significant) |gene </br> (most significant)|...|gene </br> (most significant)|
+ |...| ... |...|...|...|
+ |gene </br> (least significant) |gene </br> (least significant)|...|gene </br> (least significant)|
+ 
+ 
+ 
+* Output files of all four methods save spreadsheet with top ranked genes per phenotype with name  all_phenotypes\_{method}\_{correlation_measure}\_{timestamp}\_original.tsv.
+
+ |**Genes**| **phenotype 1**|**...**|**phenotype n**|
+ | :--------------------: |:--------------------:|---|:--------------------:|
+ | gene 1 |1/0 |...|1/0|
+ | ... |...|...|...|
+ | gene n | 1/0|...|1/0|
