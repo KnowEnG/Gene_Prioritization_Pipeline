@@ -124,7 +124,7 @@ set the spreadsheet, network and drug_response (phenotype data) file names to po
 | ------------------------- | --------- | ------------ |
 | method                    | correlation or net_correlation or bootstrap_correlation or bootstrap_net_correlation | Choose gene prioritization method |
 | correlation_measure       | pearson or t_test | Choose correlation measure method |
-| gg_network_name_full_path | directory+gg_network_name |Path and file name of the 4 col network file(only needed in DRaWR) |
+| gg_network_name_full_path | directory+gg_network_name |Path and file name of the 4 col network file|
 | spreadsheet_name_full_path | directory+spreadsheet_name|  Path and file name of user supplied gene sets |
 | drug_response_full_path | directory+drug_response_full_path| Path and file name of user supplied drug response file |
 | results_directory | directory | Directory to save the output files |
@@ -132,7 +132,7 @@ set the spreadsheet, network and drug_response (phenotype data) file names to po
 | cols_sampling_fraction | 0.9 | Select 90% of spreadsheet columns |
 | rwr_max_iterations | 100| Maximum number of iterations without convergence in random walk with restart |
 | rwr_convergence_tolerence | 1.0e-2 | Frobenius norm tolerence of spreadsheet vector in random walk|
-| rwr_restart_probability | 0.5 | alpha in `V_(n+1) = alpha * N * Vn + (1-alpha) * Vo` (needed in DRaWR or Net Path) |
+| rwr_restart_probability | 0.5 | alpha in `V_(n+1) = alpha * N * Vn + (1-alpha) * Vo` |
 | top_beta_of_sort| 100| Number of top genes selected 
 gg_network_name_full_path = STRING_experimental_gene_gene.edge</br>
 spreadsheet_name = CCLE_Expression_ensembl.df</br>
