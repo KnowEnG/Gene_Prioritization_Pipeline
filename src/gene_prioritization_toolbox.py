@@ -554,9 +554,9 @@ def write_phenotype_data_all(run_parameters):
 
     all_phenotypes_download_df.index = range(1, all_phenotypes_download_df.shape[0]+1)
     all_phenotypes_download_df.to_csv(
-        get_output_file_name(run_parameters, 'results_directory', 'all_phenotypes', 'download'), header=True, index=True, sep='\t')
+        get_output_file_name(run_parameters, 'results_directory', 'ranked_genes_per_phenotype', 'download'), header=True, index=True, sep='\t')
     all_phenotypes_original_df.to_csv(
-        get_output_file_name(run_parameters, 'results_directory', 'all_phenotypes', 'original'), header=True, index=True, sep='\t')
+        get_output_file_name(run_parameters, 'results_directory', 'top_genes_per_phenotype', 'original'), header=True, index=True, sep='\t')
 
 
 def get_output_file_name(run_parameters, dir_name_key, prefix_string, suffix_string='', type_suffix='tsv'):
