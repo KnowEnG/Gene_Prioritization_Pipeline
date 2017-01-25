@@ -137,7 +137,7 @@ drug_response_full_path = CCLE_drug_ec50_cleaned_NAremoved.txt
 ## Description of Output files saved in results directory
 * * * 
 
-* Output files of all four methods save separate files per phenotype with name {phenotype}\_{method}\_{correlation_measure}\_{timestamp}.tsv. Genes are sorted in descending order based on `quantitative_sorting_score`. </br>  
+* Any method saves separate files per phenotype with name {phenotype}\_{method}\_{correlation_measure}\_{timestamp}.tsv. Genes are sorted in descending order based on `quantitative_sorting_score`. </br>  
 
  | **Response** | **Gene_ENSEMBL_ID** | **quantitative_sorting_score** | **visualization_score** | **baseline_score** |
  |:-------------:|:------------:|:---------:|:--------------:|:--------------:|
@@ -146,17 +146,17 @@ drug_response_full_path = CCLE_drug_ec50_cleaned_NAremoved.txt
  |   phenotype 1      |   gene n     |    float    |    float         |   float          | 
 
 
-* Output files of all four methods save sorted genes for each phenotype with name all_phenotypes\_{method}\_{correlation_measure}\_{timestamp}_download.tsv.
+* Any method saves sorted genes for each phenotype with name ranked_genes_per_phenotype\_{method}\_{correlation_measure}\_{timestamp}\_download.tsv.
 
- | **phenotype 1** |**phenotype 2**|**...**|**phenotype n**|
- | :--------------------: |:--------------------:|---|:--------------------:|
- | gene </br> (most significant) |gene </br> (most significant)|...|gene </br> (most significant)|
- |...| ... |...|...|...|
- |gene </br> (least significant) |gene </br> (least significant)|...|gene </br> (least significant)|
+ |**Ranking**| **phenotype 1** |**phenotype 2**|**...**|**phenotype n**|
+ |:----:| :--------------------: |:--------------------:|---|:--------------------:|
+ |1| gene </br> (most significant) |gene </br> (most significant)|...|gene </br> (most significant)|
+ |...|...| ... |...|...|...|
+ |n|gene </br> (least significant) |gene </br> (least significant)|...|gene </br> (least significant)|
  
  
  
-* Output files of all four methods save spreadsheet with top ranked genes per phenotype with name  all_phenotypes\_{method}\_{correlation_measure}\_{timestamp}\_original.tsv.
+* Any method saves spreadsheet with top ranked genes per phenotype with name  top_genes_per_phenotype\_{method}\_{correlation_measure}\_{timestamp}\_download.tsv.
 
  |**Genes**| **phenotype 1**|**...**|**phenotype n**|
  | :--------------------: |:--------------------:|---|:--------------------:|
