@@ -122,8 +122,7 @@ set the spreadsheet, network and drug_response (phenotype data) file names to po
 
 | **Key**                   | **Value** | **Comments** |
 | ------------------------- | --------- | ------------ |
-| method                    | correlation or net_correlation or bootstrap_correlation or bootstrap_net_correlation | Choose gene
-prioritization method |
+| method                    | correlation or net_correlation or bootstrap_correlation or bootstrap_net_correlation | Choose gene prioritization method |
 | correlation_measure       | pearson or t_test | Choose correlation measure method |
 | gg_network_name_full_path | directory+gg_network_name |Path and file name of the 4 col network file(only needed in DRaWR) |
 | spreadsheet_name_full_path | directory+spreadsheet_name|  Path and file name of user supplied gene sets |
@@ -143,32 +142,29 @@ drug_response_full_path = CCLE_drug_ec50_cleaned_NAremoved.txt
 ## Description of Output files saved in results directory
 * * * 
 
-* Output files of all three methods save sorted properties for each gene set with name {method}_ranked_by_property{timestamp}.df.</br>
+* Output files of all four methods save separate files per phenotype with name {phenotype}\_{method}\_{correlation_measure}\_{timestamp}.tsv. Genes are sorted in descending order based on `quantitative_sorting_score`. </br>  
 
- | **user gene set name1** |**user gene set name2**|**...**|**user gene set name n**|
+ | **Response** | **Gene_ENSEMBL_ID** | **quantitative_sorting_score** | **visualization_score** | **baseline_score** |
+ |:-------------:|:------------:|:---------:|:--------------:|:--------------:|
+ |   phenotype 1      |   gene 1     |    float    |    float         |   float          | 
+ |    ...      |   ...     |    ...    |    ...         |   ...          | 
+ |   phenotype 1      |   gene n     |    float    |    float         |   float          | 
+
+
+* Output files of all four methods save sorted genes for each phenotype with name all_phenotypes\_{method}\_{correlation_measure}\_{timestamp}_download.tsv.
+
+ | **phenotype 1** |**phenotype 2**|**...**|**phenotype n**|
  | :--------------------: |:--------------------:|---|:--------------------:|
- | property name (string)</br> (most significant) |property name (string)</br> (most significant)|...|property name (string)</br> (most significant)|
- | ... |...|...|...|
- | property name (string)</br> (least significant) |property name (string)</br> (least significant)|...|property name (string)</br> (least significant)|
-* Fisher method saves one output file with seven columns and it is sorted in ascending order based on `pval`. The name of the file is fisher_sorted_by_property_score_{timestamp}.df. 
-
- | **user_gene_set** | **property_gene_set** | **pval** | **universe_count** | **user_count** | **property_count** | **overlap_count** |
- |:-------------:|:------------:|:---------:|:--------------:|:--------------:|:-----------:|:--------:|
- |   string      |   string     |    float    |    int         |   int          |   int       |   int  |
-
-* DRaWR method saves two output file with five columns and it is sorted in ascending order based on `difference_score`. The files are DRaWR_sorted_by_gene_score_{timestamp}.df and DRaWR_sorted_by_property_score_{timestamp}.df
-
- | **user_gene_set** | **gene_node_id** | **difference_score** | **query_score** | **baseline_score** |
- |:-------------:|:------------:|:---------:|:--------------:|:--------------:|
- |   string      |   string     |    float    |    float         |   float          |
-
- | **user_gene_set** | **property_gene_set** | **difference_score** | **query_score** | **baseline_score** |
- |:-------------:|:------------:|:---------:|:--------------:|:--------------:|
- |   string      |   string     |    float    |    float         |   float          |
+ | gene </br> (most significant) |gene </br> (most significant)|...|gene </br> (most significant)|
+ |...| ... |...|...|...|
+ |gene </br> (least significant) |gene </br> (least significant)|...|gene </br> (least significant)|
  
-* Net Path method saves one output file with three columns and it is sorted in ascending order based on `cosine_sum`. The name of the file is net_path_sorted_by_property_score_{timestamp}.df. 
+ 
+ 
+* Output files of all four methods save spreadsheet with top ranked genes per phenotype with name  all_phenotypes\_{method}\_{correlation_measure}\_{timestamp}\_original.tsv.
 
- | **user_gene_set** | **property_gene_set** | **cosine_sum** |
- |:-------------:|:------------:|:---------:|
- |   string      |   string     |    float    
-
+ |**Genes**| **phenotype 1**|**...**|**phenotype n**|
+ | :--------------------: |:--------------------:|---|:--------------------:|
+ | gene 1 |1/0 |...|1/0|
+ | ... |...|...|...|
+ | gene n | 1/0|...|1/0|
