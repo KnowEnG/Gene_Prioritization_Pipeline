@@ -115,3 +115,60 @@ set the spreadsheet, network and drug_response (phenotype data) file names to po
    ```
   python3 ../src/gene_prioritization.py -run_directory ./ -run_file run_parameters_template.yml
    ```
+
+* * * 
+## Description of "run_parameters" file
+* * * 
+
+| **Key**                   | **Value** | **Comments** |
+| ------------------------- | --------- | ------------ |
+| method                    | correlation or net_correlation or bootstrap_correlation or bootstrap_net_correlation | Choose gene
+prioritization method |
+| correlation_measure       | pearson or t_test | Choose correlation measure method |
+| gg_network_name_full_path | directory+gg_network_name |Path and file name of the 4 col network file(only needed in DRaWR) |
+| spreadsheet_name_full_path | directory+spreadsheet_name|  Path and file name of user supplied gene sets |
+| drug_response_full_path | directory+drug_response_full_path| Path and file name of user supplied drug response file |
+| results_directory | directory | Directory to save the output files |
+| number_of_bootstraps | 5 | Number of bootstraps |
+| cols_sampling_fraction | 0.9 | Select 90% of spreadsheet columns |
+| rwr_max_iterations | 100| Maximum number of iterations without convergence in random walk with restart |
+| rwr_convergence_tolerence | 1.0e-2 | Frobenius norm tolerence of spreadsheet vector in random walk|
+| rwr_restart_probability | 0.5 | alpha in `V_(n+1) = alpha * N * Vn + (1-alpha) * Vo` (needed in DRaWR or Net Path) |
+| top_beta_of_sort| 100| Number of top genes selected 
+gg_network_name_full_path = STRING_experimental_gene_gene.edge</br>
+spreadsheet_name = CCLE_Expression_ensembl.df</br>
+drug_response_full_path = CCLE_drug_ec50_cleaned_NAremoved.txt
+
+* * * 
+## Description of Output files saved in results directory
+* * * 
+
+* Output files of all three methods save sorted properties for each gene set with name {method}_ranked_by_property{timestamp}.df.</br>
+
+ | **user gene set name1** |**user gene set name2**|**...**|**user gene set name n**|
+ | :--------------------: |:--------------------:|---|:--------------------:|
+ | property name (string)</br> (most significant) |property name (string)</br> (most significant)|...|property name (string)</br> (most significant)|
+ | ... |...|...|...|
+ | property name (string)</br> (least significant) |property name (string)</br> (least significant)|...|property name (string)</br> (least significant)|
+* Fisher method saves one output file with seven columns and it is sorted in ascending order based on `pval`. The name of the file is fisher_sorted_by_property_score_{timestamp}.df. 
+
+ | **user_gene_set** | **property_gene_set** | **pval** | **universe_count** | **user_count** | **property_count** | **overlap_count** |
+ |:-------------:|:------------:|:---------:|:--------------:|:--------------:|:-----------:|:--------:|
+ |   string      |   string     |    float    |    int         |   int          |   int       |   int  |
+
+* DRaWR method saves two output file with five columns and it is sorted in ascending order based on `difference_score`. The files are DRaWR_sorted_by_gene_score_{timestamp}.df and DRaWR_sorted_by_property_score_{timestamp}.df
+
+ | **user_gene_set** | **gene_node_id** | **difference_score** | **query_score** | **baseline_score** |
+ |:-------------:|:------------:|:---------:|:--------------:|:--------------:|
+ |   string      |   string     |    float    |    float         |   float          |
+
+ | **user_gene_set** | **property_gene_set** | **difference_score** | **query_score** | **baseline_score** |
+ |:-------------:|:------------:|:---------:|:--------------:|:--------------:|
+ |   string      |   string     |    float    |    float         |   float          |
+ 
+* Net Path method saves one output file with three columns and it is sorted in ascending order based on `cosine_sum`. The name of the file is net_path_sorted_by_property_score_{timestamp}.df. 
+
+ | **user_gene_set** | **property_gene_set** | **cosine_sum** |
+ |:-------------:|:------------:|:---------:|
+ |   string      |   string     |    float    
+
