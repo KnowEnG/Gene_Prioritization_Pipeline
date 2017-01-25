@@ -12,8 +12,6 @@ drug_response_full_path:    ../data/spreadsheets/TEST_1_response.tsv
 
 results_directory:          ../test/run_dir/results
 
-cols_sampling_fraction:     1.0       # 1.0 means 100% of columns (i.e., no sampling) 
-
 rwr_max_iterations:         100
 rwr_convergence_tolerence:  1.0e-2
 rwr_restart_probability:    0.5       # Vn+1 = alpha * N * Vn + (1-alpha) * Vo
