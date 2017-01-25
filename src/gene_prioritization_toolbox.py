@@ -24,9 +24,7 @@ def run_correlation(run_parameters):
     Args:
         run_parameters: parameter set dictionary.
     """
-    new_dir = os.path.join(run_parameters["results_directory"], 'tmp')    
-    os.mkdir(new_dir)
-    run_parameters["results_tmp_directory"] = new_dir
+    run_parameters["results_tmp_directory"] = kn.create_dir(run_parameters["results_directory"], 'tmp')
 
     phenotype_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
@@ -35,6 +33,9 @@ def run_correlation(run_parameters):
     jobs_id = range(0, number_of_jobs)
     zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, phenotype_df, jobs_id)
     dstutil.parallelize_processes_locally(worker_for_run_correlation, zipped_arguments, number_of_jobs)
+
+    write_phenotype_data_all(run_parameters)
+    kn.remove_dir(run_parameters["results_tmp_directory"])
 
 
 def worker_for_run_correlation(run_parameters, spreadsheet_df, phenotype_df, job_id):
@@ -73,17 +74,8 @@ def generate_correlation_output(pc_array, drug_name, gene_name_list, run_paramet
     df_header = ['Response', 'Gene_ENSEMBL_ID', 'quantitative_sorting_score', 'visualization_score', 'baseline_score']
     result_df = pd.DataFrame(output_val, columns=df_header).sort_values("visualization_score", ascending=0)
     result_df.index = range(result_df.shape[0])
-    result_df.to_csv(get_output_file_name(run_parameters, "results_directory", drug_name), header=True, index=False, sep='\t')
 
-    download_result_df = pd.DataFrame(data=None, index=None, columns=[drug_name])
-    download_result_df[drug_name] = result_df['Gene_ENSEMBL_ID']
-    download_result_df.to_csv(
-        get_output_file_name(run_parameters, "results_tmp_directory", drug_name, 'download'), header=True, index=False, sep='\t')
-    
-    top_genes = download_result_df.values[: run_parameters['top_beta_of_sort']]
-    update_orig_result_df = pd.DataFrame(np.in1d(gene_name_list, top_genes).astype(int), index=gene_name_list, columns=[drug_name])
-    update_orig_result_df.to_csv(
-        get_output_file_name(run_parameters, "results_tmp_directory", drug_name, 'original'), header=True, index=True, sep='\t')
+    write_one_phenotype(result_df, drug_name, gene_name_list, run_parameters)
 
 
 def run_bootstrap_correlation(run_parameters):
@@ -92,9 +84,7 @@ def run_bootstrap_correlation(run_parameters):
     Args:
         run_parameters: parameter set dictionary.
     """
-    new_dir = os.path.join(run_parameters["results_directory"], 'tmp')    
-    os.mkdir(new_dir)
-    run_parameters["results_tmp_directory"] = new_dir
+    run_parameters["results_tmp_directory"] = kn.create_dir(run_parameters["results_directory"], 'tmp')
 
     drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
@@ -105,6 +95,9 @@ def run_bootstrap_correlation(run_parameters):
     jobs_id = range(0, number_of_jobs)
     zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, drug_response_df, n_bootstraps, jobs_id)
     dstutil.parallelize_processes_locally(worker_for_run_bootstrap_correlation, zipped_arguments, number_of_jobs)
+
+    write_phenotype_data_all(run_parameters)
+    kn.remove_dir(run_parameters["results_tmp_directory"])
 
 
 def worker_for_run_bootstrap_correlation(run_parameters, spreadsheet_df, phenotype_df, n_bootstraps, job_id):
@@ -157,19 +150,7 @@ def generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pc_array, d
     result_df = pd.DataFrame(output_val, columns=df_header).sort_values("quantitative_sorting_score", ascending=0)
     result_df.index = range(result_df.shape[0])
 
-    result_df.to_csv(
-        get_output_file_name(run_parameters, 'results_directory', drug_name), header=True, index=False, sep='\t')
-
-    download_result_df = pd.DataFrame(data=None, index=None, columns=[drug_name])
-    download_result_df[drug_name] = result_df['Gene_ENSEMBL_ID']
-    download_result_df.to_csv(
-        get_output_file_name(run_parameters, 'results_tmp_directory', drug_name, 'download'), header=True, index=False, sep='\t')
-    
-    top_genes = download_result_df.values[: run_parameters['top_beta_of_sort']]
-    update_orig_result_df = pd.DataFrame(np.in1d(gene_name_list, top_genes).astype(int), index=gene_name_list, columns=[drug_name])
-    update_orig_result_df.to_csv(
-        get_output_file_name(run_parameters, 'results_tmp_directory', drug_name, 'original'), header=True, index=True, sep='\t')
-
+    write_one_phenotype(result_df, drug_name, gene_name_list, run_parameters)
 
 
 def run_net_correlation(run_parameters):
@@ -178,11 +159,10 @@ def run_net_correlation(run_parameters):
     Args:
         run_parameters: parameter set dictionary.
     """
-    new_dir = os.path.join(run_parameters["results_directory"], 'tmp')    
-    os.mkdir(new_dir)
-    run_parameters["results_tmp_directory"] = new_dir
+    run_parameters["results_tmp_directory"] = kn.create_dir(run_parameters["results_directory"], 'tmp')
 
     network_df = kn.get_network_df(run_parameters['gg_network_name_full_path'])
+
     node_1_names, node_2_names = kn.extract_network_node_names(network_df)
     unique_gene_names = kn.find_unique_node_names(node_1_names, node_2_names)
 
@@ -225,6 +205,9 @@ def run_net_correlation(run_parameters):
                                               spreadsheet_genes_as_input, baseline_array, jobs_id)
     dstutil.parallelize_processes_locally(worker_for_run_net_correlation, zipped_arguments, number_of_jobs)
 
+    write_phenotype_data_all(run_parameters)
+    kn.remove_dir(run_parameters["results_tmp_directory"])
+
 
 def worker_for_run_net_correlation(run_parameters, spreadsheet_df, phenotype_df, network_mat,
                                    spreadsheet_genes_as_input, baseline_array, job_id):
@@ -259,9 +242,7 @@ def run_bootstrap_net_correlation(run_parameters):
     Args:
         run_parameters: parameter set dictionary.
     """
-    new_dir = os.path.join(run_parameters["results_directory"], 'tmp')    
-    os.mkdir(new_dir)
-    run_parameters["results_tmp_directory"] = new_dir
+    run_parameters["results_tmp_directory"] = kn.create_dir(run_parameters["results_directory"], 'tmp')
 
     network_df = kn.get_network_df(run_parameters['gg_network_name_full_path'])
     node_1_names, node_2_names = kn.extract_network_node_names(network_df)
@@ -301,6 +282,9 @@ def run_bootstrap_net_correlation(run_parameters):
     zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, drug_response_df, network_mat,
                                               spreadsheet_genes_as_input, baseline_array, jobs_id)
     dstutil.parallelize_processes_locally(worker_for_run_bootstrap_net_correlation, zipped_arguments, number_of_jobs)
+
+    write_phenotype_data_all(run_parameters)
+    kn.remove_dir(run_parameters["results_tmp_directory"])
 
 
 def worker_for_run_bootstrap_net_correlation(run_parameters, spreadsheet_df, phenotype_df, network_mat,
@@ -384,19 +368,7 @@ def generate_net_correlation_output(pearson_array, pc_array, min_max_pc, restart
                  'baseline_score', 'Percent_appearing_in_restart_set']
     result_df = pd.DataFrame(output_val, columns=df_header).sort_values('quantitative_sorting_score', ascending=0)
 
-    result_df.to_csv(
-        get_output_file_name(run_parameters, 'results_directory', drug_name), header=True, index=False, sep='\t')
-
-
-    download_result_df = pd.DataFrame(data=None, index=None, columns=[drug_name])
-    download_result_df[drug_name] = result_df['Gene_ENSEMBL_ID']
-    download_result_df.to_csv(
-        get_output_file_name(run_parameters, 'results_tmp_directory', drug_name, 'download'), header=True, index=False, sep='\t')
-    
-    top_genes = download_result_df.values[: run_parameters['top_beta_of_sort']]
-    update_orig_result_df = pd.DataFrame(np.in1d(gene_orig_list, top_genes).astype(int), index=gene_orig_list, columns=[drug_name])
-    update_orig_result_df.to_csv(
-        get_output_file_name(run_parameters, 'results_tmp_directory', drug_name, 'original'), header=True, index=True, sep='\t')
+    write_one_phenotype(result_df, drug_name, gene_orig_list, run_parameters)
 
 
 def get_correlation(spreadsheet_mat, drug_response, run_parameters):
@@ -519,6 +491,28 @@ def zscore_dataframe(genes_by_sample_df):
     return zscore_df
 
 
+def write_one_phenotype(result_df, drug_name, gene_name_list, run_parameters):
+    """ write the phenotype output file to the results directory and the temporary directory files
+
+    Args:
+        result_df:
+        drug_name:
+        gene_name_list:
+        run_parameters:
+    """
+    result_df.to_csv(get_output_file_name(run_parameters, 'results_directory', drug_name), header=True, index=False, sep='\t')
+
+    download_result_df = pd.DataFrame(data=None, index=None, columns=[drug_name])
+    download_result_df[drug_name] = result_df['Gene_ENSEMBL_ID']
+    download_result_df.to_csv(
+        get_output_file_name(run_parameters, 'results_tmp_directory', drug_name, 'download'), header=True, index=False, sep='\t')
+
+    top_genes = download_result_df.values[: run_parameters['top_beta_of_sort']]
+    update_orig_result_df = pd.DataFrame(np.in1d(gene_name_list, top_genes).astype(int), index=gene_name_list, columns=[drug_name])
+    update_orig_result_df.to_csv(
+        get_output_file_name(run_parameters, 'results_tmp_directory', drug_name, 'original'), header=True, index=True, sep='\t')
+
+
 def write_phenotype_data_all(run_parameters):
     """ Post Processing: writes rows as genes, cols as drugs, data is gene in top n for the drug T or F.
 
@@ -563,7 +557,6 @@ def write_phenotype_data_all(run_parameters):
         get_output_file_name(run_parameters, 'results_directory', 'all_phenotypes', 'download'), header=True, index=True, sep='\t')
     all_phenotypes_original_df.to_csv(
         get_output_file_name(run_parameters, 'results_directory', 'all_phenotypes', 'original'), header=True, index=True, sep='\t')
-    kn.remove_dir(tmp_dir)
 
 
 def get_output_file_name(run_parameters, dir_name_key, prefix_string, suffix_string='', type_suffix='tsv'):
