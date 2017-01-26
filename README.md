@@ -129,9 +129,9 @@ set the spreadsheet, network and drug_response (phenotype data) file names to po
 | rwr_convergence_tolerence | 1.0e-2 | Frobenius norm tolerence of spreadsheet vector in random walk|
 | rwr_restart_probability | 0.5 | alpha in `V_(n+1) = alpha * N * Vn + (1-alpha) * Vo` |
 | top_beta_of_sort| 100| Number of top genes selected 
-gg_network_name_full_path = STRING_experimental_gene_gene.edge</br>
-spreadsheet_name_full_path = CCLE_Expression_ensembl.df</br>
-drug_response_full_path = CCLE_drug_ec50_cleaned_NAremoved.txt
+gg_network_name = STRING_experimental_gene_gene.edge</br>
+spreadsheet_name = CCLE_Expression_ensembl.df</br>
+drug_response = CCLE_drug_ec50_cleaned_NAremoved.txt
 
 * * * 
 ## Description of Output files saved in results directory
