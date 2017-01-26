@@ -9,12 +9,12 @@ There are four prioritization methods that one can choose from:
 | **Options**                                        | **Method**                           | **Parameters**            |
 | -------------------------------------------------- | -------------------------------------| ------------------------- |
 | Correlation                                        | correlation                          | correlation               |
-| Bootstrap Correlation                              | bootstrap sampling correlation       | net_correlation           |
-| Correlation with network regularization            | network-based correlation            | bootstrap_correlation     |
+| Bootstrap Correlation                              | bootstrap sampling correlation       | bootstrap_correlation     |
+| Correlation with network regularization            | network-based correlation            | net_correlation     |
 | Bootstrap Correlation with network regularization  | bootstrapping w network correlation  | bootstrap_net_correlation |
 
 
-Note: all of the correlation methods mentioned above use the Pearson correlation coefficient.
+Note: all of the correlation methods mentioned above use the Pearson or t-test correlation measure method.
 
 * * * 
 ## How to run this pipeline with Our data
@@ -61,8 +61,8 @@ make env_setup
 | **Command**                        | **Option**                                        | 
 |:---------------------------------- |:------------------------------------------------- | 
 | make run_correlation          | correlation                                       |
-| make run_net_correlation           | bootstrap sampling correlation                    |
-| make run_bootstrap_correlation     | correlation with network regularization           |
+| make run_bootstrap_correlation | bootstrap sampling correlation                    |
+| make run_net_correlation     | correlation with network regularization           |
 | make run_bootstrap_net_correlation | bootstrap correlation with network regularization |
 
  
@@ -123,14 +123,14 @@ set the spreadsheet, network and drug_response (phenotype data) file names to po
 | spreadsheet_name_full_path | directory+spreadsheet_name|  Path and file name of user supplied gene sets |
 | drug_response_full_path | directory+drug_response_full_path| Path and file name of user supplied drug response file |
 | results_directory | directory | Directory to save the output files |
-| number_of_bootstraps | 5 | Number of bootstraps |
+| number_of_bootstraps | 5 | Number of random samplings |
 | cols_sampling_fraction | 0.9 | Select 90% of spreadsheet columns |
 | rwr_max_iterations | 100| Maximum number of iterations without convergence in random walk with restart |
 | rwr_convergence_tolerence | 1.0e-2 | Frobenius norm tolerence of spreadsheet vector in random walk|
 | rwr_restart_probability | 0.5 | alpha in `V_(n+1) = alpha * N * Vn + (1-alpha) * Vo` |
 | top_beta_of_sort| 100| Number of top genes selected 
 gg_network_name_full_path = STRING_experimental_gene_gene.edge</br>
-spreadsheet_name = CCLE_Expression_ensembl.df</br>
+spreadsheet_name_full_path = CCLE_Expression_ensembl.df</br>
 drug_response_full_path = CCLE_drug_ec50_cleaned_NAremoved.txt
 
 * * * 
