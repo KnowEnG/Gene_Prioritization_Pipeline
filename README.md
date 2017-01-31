@@ -137,7 +137,7 @@ drug_response = CCLE_drug_ec50_cleaned_NAremoved.txt
 ## Description of Output files saved in results directory
 * * * 
 
-* Any method saves separate files per phenotype with name {phenotype}\_{method}\_{correlation_measure}\_{timestamp}.tsv. Genes are sorted in descending order based on `quantitative_sorting_score`. </br>  
+* Any method saves separate files per phenotype with name {phenotype}\_{method}\_{correlation_measure}\_{timestamp}\_viz.tsv. Genes are sorted in descending order based on `quantitative_sorting_score`. </br>  
 
  | **Response** | **Gene_ENSEMBL_ID** | **quantitative_sorting_score** | **visualization_score** | **baseline_score** |
  |:-------------:|:------------:|:---------:|:--------------:|:--------------:|
