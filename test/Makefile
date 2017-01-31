@@ -43,10 +43,12 @@ create_run_dir:
 copy_run_files:
 	cp $(RUN_FILES)/*.yml $(RUN_DIR) 
 
+run_all_methods: run_all_small run_all_pearson run_all_t_test
 # ----------------------------------------------------------------
 # Large Benchmarks RUN Section                                   -
 # ----------------------------------------------------------------
-# pearson
+run_all_pearson: run_pearson run_bootstrap_pearson run_net_pearson run_bootstrap_net_pearson
+
 run_pearson:
 	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_1_GP_pearson.yml
 
@@ -60,7 +62,7 @@ run_bootstrap_net_pearson:
 	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_4_GP_bootstrap_net_pearson.yml
 
 # ----------------------------------------------------------------
-# t_test
+run_all_t_test: run_t_test run_bootstrap_t_test run_net_t_test run_bootstrap_net_t_test
 
 run_t_test:
 	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_5_GP_t_test.yml
@@ -77,6 +79,8 @@ run_bootstrap_net_t_test:
 # ----------------------------------------------------------------
 # Small Benchmarks RUN Section                                   -
 # ----------------------------------------------------------------
+run_all_small: run_single_drug_pearson run_multidrug_pearson run_single_drug_t_test run_multidrug_t_test
+
 run_single_drug_pearson:
 	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file TEST_1_GP_single_drug_pearson.yml
 
