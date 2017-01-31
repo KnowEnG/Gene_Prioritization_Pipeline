@@ -32,13 +32,13 @@ def run_correlation(run_parameters):
     number_of_jobs = len(phenotype_df.index)
     jobs_id = range(0, number_of_jobs)
     zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, phenotype_df, jobs_id)
-    dstutil.parallelize_processes_locally(worker_for_run_correlation, zipped_arguments, number_of_jobs)
+    dstutil.parallelize_processes_locally(run_correlation_worker, zipped_arguments, number_of_jobs)
 
     write_phenotype_data_all(run_parameters)
     kn.remove_dir(run_parameters["results_tmp_directory"])
 
 
-def worker_for_run_correlation(run_parameters, spreadsheet_df, phenotype_df, job_id):
+def run_correlation_worker(run_parameters, spreadsheet_df, phenotype_df, job_id):
     """ core function for parallel run_correlation
 
     Args:
@@ -48,6 +48,9 @@ def worker_for_run_correlation(run_parameters, spreadsheet_df, phenotype_df, job
         job_id:          parallel iteration number
     """
     # selects the ith row in phenotype_df
+
+    np.random.seed(job_id)
+
     phenotype_df = phenotype_df.iloc[[job_id], :]
 
     spreadsheet_df_trimmed, phenotype_df_trimmed, err_msg = datacln.check_input_value_for_gene_prioritazion(
@@ -94,13 +97,13 @@ def run_bootstrap_correlation(run_parameters):
     number_of_jobs = len(drug_response_df.index)
     jobs_id = range(0, number_of_jobs)
     zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, drug_response_df, n_bootstraps, jobs_id)
-    dstutil.parallelize_processes_locally(worker_for_run_bootstrap_correlation, zipped_arguments, number_of_jobs)
+    dstutil.parallelize_processes_locally(run_bootstrap_correlation_worker, zipped_arguments, number_of_jobs)
 
     write_phenotype_data_all(run_parameters)
     kn.remove_dir(run_parameters["results_tmp_directory"])
 
 
-def worker_for_run_bootstrap_correlation(run_parameters, spreadsheet_df, phenotype_df, n_bootstraps, job_id):
+def run_bootstrap_correlation_worker(run_parameters, spreadsheet_df, phenotype_df, n_bootstraps, job_id):
     """  core function for parallel run_bootstrap_correlation
 
     Args:
@@ -110,6 +113,9 @@ def worker_for_run_bootstrap_correlation(run_parameters, spreadsheet_df, phenoty
         n_bootstraps:    number of bootstrap samples to use
         job_id:          parallel iteration number
     """
+
+    np.random.seed(job_id)
+
     phenotype_df = phenotype_df.iloc[[job_id], :]
     spreadsheet_df_trimmed, phenotype_df_trimmed, ret_msg = datacln.check_input_value_for_gene_prioritazion(
         spreadsheet_df, phenotype_df)
@@ -203,13 +209,13 @@ def run_net_correlation(run_parameters):
     jobs_id = range(0, number_of_jobs)
     zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, drug_response_df, network_mat,
                                               spreadsheet_genes_as_input, baseline_array, jobs_id)
-    dstutil.parallelize_processes_locally(worker_for_run_net_correlation, zipped_arguments, number_of_jobs)
+    dstutil.parallelize_processes_locally(run_net_correlation_worker, zipped_arguments, number_of_jobs)
 
     write_phenotype_data_all(run_parameters)
     kn.remove_dir(run_parameters["results_tmp_directory"])
 
 
-def worker_for_run_net_correlation(run_parameters, spreadsheet_df, phenotype_df, network_mat,
+def run_net_correlation_worker(run_parameters, spreadsheet_df, phenotype_df, network_mat,
                                    spreadsheet_genes_as_input, baseline_array, job_id):
     """  core function for parallel run_net_correlation
 
@@ -222,6 +228,9 @@ def worker_for_run_net_correlation(run_parameters, spreadsheet_df, phenotype_df,
         baseline_array:  network smooted baseline array
         job_id:          parallel iteration number
     """
+
+    np.random.seed(job_id)
+
     phenotype_df = phenotype_df.iloc[[job_id], :]
     spreadsheet_df_trimmed, phenotype_df_trimmed, ret_msg = datacln.check_input_value_for_gene_prioritazion(
         spreadsheet_df, phenotype_df)
@@ -291,13 +300,13 @@ def run_bootstrap_net_correlation(run_parameters):
     jobs_id = range(0, number_of_jobs)
     zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, drug_response_df, network_mat,
                                               spreadsheet_genes_as_input, baseline_array, jobs_id)
-    dstutil.parallelize_processes_locally(worker_for_run_bootstrap_net_correlation, zipped_arguments, number_of_jobs)
+    dstutil.parallelize_processes_locally(run_bootstrap_net_correlation_worker, zipped_arguments, number_of_jobs)
 
     write_phenotype_data_all(run_parameters)
     kn.remove_dir(run_parameters["results_tmp_directory"])
 
 
-def worker_for_run_bootstrap_net_correlation(run_parameters, spreadsheet_df, phenotype_df, network_mat,
+def run_bootstrap_net_correlation_worker(run_parameters, spreadsheet_df, phenotype_df, network_mat,
                                              spreadsheet_genes_as_input, baseline_array, job_id):
     """ worker for bootstrap network parallelization.
 
@@ -310,6 +319,9 @@ def worker_for_run_bootstrap_net_correlation(run_parameters, spreadsheet_df, phe
         baseline_array:  network smooted baseline array
         job_id:          parallel iteration number
     """
+
+    np.random.seed(job_id)
+
     restart_accumulator = np.zeros(network_mat.shape[0])
     gm_accumulator = np.ones(network_mat.shape[0])
     borda_count = np.zeros(network_mat.shape[0])
