@@ -499,6 +499,9 @@ def write_one_phenotype(result_df, drug_name, gene_name_list, run_parameters):
         drug_name:
         gene_name_list:
         run_parameters:
+        
+    Output:
+        {phenotype}_{method}_{correlation_measure}_{timestamp}_viz.tsv
     """
     result_df.to_csv(get_output_file_name(run_parameters, 'results_directory', drug_name, 'viz'), header=True, index=False, sep='\t')
 
@@ -518,6 +521,10 @@ def write_phenotype_data_all(run_parameters):
 
     Args:
         run_parameters: with field: 'results_directory'
+        
+    Output:
+        ranked_genes_per_phenotype_{method}_{correlation_measure}_{timestamp}_download.tsv
+        top_genes_per_phenotype_{method}_{correlation_measure}_{timestamp}_download.tsv
     """  
     tmp_dir = run_parameters["results_tmp_directory"]
     dirList = sorted(os.listdir(tmp_dir))
