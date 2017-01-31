@@ -7,7 +7,7 @@ method:                     bootstrap_correlation
 correlation_measure:         pearson
 
 spreadsheet_name_full_path: ../data/spreadsheets/CCLE_Expression_ensembl.df
-drug_response_full_path:    ../data/spreadsheets/CCLE_drug_ec50_cleaned_NAremoved.txt
+drug_response_full_path:    ../data/spreadsheets/CCLE_drug_ec50_cleaned_NAremoved_pearson.txt
 
 results_directory:          ./run_dir/results
 

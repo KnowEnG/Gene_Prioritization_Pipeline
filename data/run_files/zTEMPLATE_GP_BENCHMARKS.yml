@@ -15,7 +15,7 @@ correlation_measure: pearson
 # --------------------------------------------------------------------
 gg_network_name_full_path:  ../data/networks/TEST_1_gene_gene.edge
 spreadsheet_name_full_path: ../data/spreadsheets/TEST_1_gene_sample.tsv
-drug_response_full_path:    ../data/spreadsheets/TEST_multi_drug_response.txt
+drug_response_full_path:    ../data/spreadsheets/TEST_multi_drug_response_pearson.txt
 
 # --------------------------------------------------------------------
 # - directory where the result and temporary files will be written   -
