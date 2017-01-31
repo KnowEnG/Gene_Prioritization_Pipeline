@@ -211,7 +211,17 @@ def run_net_correlation(run_parameters):
 
 def worker_for_run_net_correlation(run_parameters, spreadsheet_df, phenotype_df, network_mat,
                                    spreadsheet_genes_as_input, baseline_array, job_id):
+    """  core function for parallel run_net_correlation
 
+    Args:
+        run_parameters:  dict of parameters
+        spreadsheet_df:  spreadsheet data frame
+        phenotype_df:    phenotype data frame
+        network_mat:     adjacency matrix
+        spreadsheet_genes_as_input: list of genes 
+        baseline_array:  network smooted baseline array
+        job_id:          parallel iteration number
+    """
     phenotype_df = phenotype_df.iloc[[job_id], :]
     spreadsheet_df_trimmed, phenotype_df_trimmed, ret_msg = datacln.check_input_value_for_gene_prioritazion(
         spreadsheet_df, phenotype_df)
@@ -289,18 +299,16 @@ def run_bootstrap_net_correlation(run_parameters):
 
 def worker_for_run_bootstrap_net_correlation(run_parameters, spreadsheet_df, phenotype_df, network_mat,
                                              spreadsheet_genes_as_input, baseline_array, job_id):
-    """ worker for drug level parallelization.
+    """ worker for bootstrap network parallelization.
 
     Args:
-        run_parameters:
-        spreadsheet_df:
-        phenotype_df:
-        network_mat:
-        baseline_array:
-        job_id:
-
-    Returns:
-
+        run_parameters:  dict of parameters
+        spreadsheet_df:  spreadsheet data frame
+        phenotype_df:    phenotype data frame
+        network_mat:     adjacency matrix
+        spreadsheet_genes_as_input: list of genes 
+        baseline_array:  network smooted baseline array
+        job_id:          parallel iteration number
     """
     restart_accumulator = np.zeros(network_mat.shape[0])
     gm_accumulator = np.ones(network_mat.shape[0])
