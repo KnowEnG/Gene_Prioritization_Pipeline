@@ -500,7 +500,7 @@ def write_one_phenotype(result_df, drug_name, gene_name_list, run_parameters):
         gene_name_list:
         run_parameters:
     """
-    result_df.to_csv(get_output_file_name(run_parameters, 'results_directory', drug_name), header=True, index=False, sep='\t')
+    result_df.to_csv(get_output_file_name(run_parameters, 'results_directory', drug_name, 'viz'), header=True, index=False, sep='\t')
 
     download_result_df = pd.DataFrame(data=None, index=None, columns=[drug_name])
     download_result_df[drug_name] = result_df['Gene_ENSEMBL_ID']
