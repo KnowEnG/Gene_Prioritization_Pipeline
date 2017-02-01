@@ -244,7 +244,7 @@ def run_net_correlation_worker(run_parameters, spreadsheet_df, phenotype_df, net
     restart_accumulator = pc_array.copy()
     restart_accumulator[restart_accumulator != 0] = 1
 
-    pc_array = pc_array / sum(pc_array)
+    pc_array = pc_array / max(sum(pc_array), EPSILON_0)
     pc_array = kn.smooth_matrix_with_rwr(pc_array, network_mat, run_parameters)[0]
 
     pc_array = pc_array - baseline_array
@@ -341,11 +341,12 @@ def run_bootstrap_net_correlation_worker(run_parameters, spreadsheet_df, phenoty
         drug_response = phenotype_df_trimmed.values[0, None]
         drug_response = drug_response[0, sample_permutation]
         pc_array = get_correlation(sample_random, drug_response, run_parameters)
+
         pc_array[~np.in1d(spreadsheet_df_trimmed.index, spreadsheet_genes_as_input)] = 0.0
         pc_array = np.abs(trim_to_top_beta(pc_array, run_parameters["top_beta_of_sort"]))
         restart_accumulator[pc_array != 0] += 1.0
 
-        pc_array = pc_array / sum(pc_array)
+        pc_array = pc_array / max(sum(pc_array), EPSILON_0)
         pc_array = kn.smooth_matrix_with_rwr(pc_array, network_mat, run_parameters)[0]
         pc_array = pc_array - baseline_array
 
@@ -383,7 +384,7 @@ def generate_net_correlation_output(pearson_array, pc_array, min_max_pc, restart
 
     output_val = np.column_stack(
         (drug_name_list, gene_name_list, pc_array, min_max_pc, pearson_array, restart_accumulator))
-
+    
     df_header = ['Response', 'Gene_ENSEMBL_ID', 'quantitative_sorting_score', 'visualization_score',
                  'baseline_score', 'Percent_appearing_in_restart_set']
     result_df = pd.DataFrame(output_val, columns=df_header).sort_values('quantitative_sorting_score', ascending=0)
@@ -405,18 +406,29 @@ def get_correlation(spreadsheet_mat, drug_response, run_parameters):
     correlation_array = np.zeros(spreadsheet_mat.shape[0])
     if 'correlation_measure' in run_parameters:
         if run_parameters['correlation_measure'] == 'pearson':
-            spreadsheet_mat = zscore(spreadsheet_mat, axis=1, ddof=0)
-            for row in range(0, spreadsheet_mat.shape[0]):
-                correlation_array[row] = pcc(spreadsheet_mat[row, :], drug_response)[0]
-            correlation_array[~(np.isfinite(correlation_array))] = 0
+
+            spreadsheet_mat = spreadsheet_mat - spreadsheet_mat.mean(axis=1).reshape((-1, 1))
+            drug_response = drug_response - drug_response.mean()
+            spreadsheet_mat_var = np.std(spreadsheet_mat, axis=1)
+            drug_response_var = np.std(drug_response)
+            numerator = spreadsheet_mat.dot(drug_response)
+            denominator = spreadsheet_mat_var * drug_response_var * spreadsheet_mat.shape[1]
+            with np.errstate(divide='ignore', invalid='ignore'):
+                correlation_array = np.true_divide(numerator, denominator)
+                correlation_array[denominator==0] = 0
+
             return correlation_array
 
         if run_parameters['correlation_measure'] == 't_test':
-            for row in range(0, spreadsheet_mat.shape[0]):
-                d = np.int_(drug_response)
-                a = spreadsheet_mat[row, d != 0]
-                b = spreadsheet_mat[row, d == 0]
-                correlation_array[row] = np.abs(ttest_ind(a, b, axis=None, equal_var=False)[0])
+        
+            a = spreadsheet_mat[:, drug_response!=0]
+            b = spreadsheet_mat[:, drug_response==0]
+            d = np.mean(a, axis=1) - np.mean(b, axis=1)
+            denom = np.sqrt(np.var(a, axis=1, ddof=1)/a.shape[1] + np.var(b, axis=1, ddof=1)/b.shape[1])
+            with np.errstate(divide='ignore', invalid='ignore'):
+                correlation_array = np.divide(d, denom)
+                correlation_array[np.isnan(denom)] = 0
+            correlation_array = np.abs(correlation_array)
 
             return correlation_array
 
