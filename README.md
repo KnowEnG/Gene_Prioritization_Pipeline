@@ -3,7 +3,7 @@ This is the Knowledge Engine for Genomics (KnowEnG), an NIH, BD2K Center of Exce
 
 This pipeline **ranks** the rows of a given spreadsheet, where spreadsheet's rows correspond to gene-labels and columns correspond to sample-labels. The ranking is based on correlating gene expression data (network smoothed) against pheno-type data.
 
-There are four prioritization methods that one can choose from:
+There are four prioritization methods, using either pearson or t-test as the measure of correlation:
 
 
 | **Options**                                        | **Method**                           | **Parameters**            |
@@ -60,10 +60,14 @@ make env_setup
 
 | **Command**                        | **Option**                                        | 
 |:---------------------------------- |:------------------------------------------------- | 
-| make run_correlation          | correlation                                       |
-| make run_bootstrap_correlation | bootstrap sampling correlation                    |
-| make run_net_correlation     | correlation with network regularization           |
-| make run_bootstrap_net_correlation | bootstrap correlation with network regularization |
+| make run_pearson          | correlation                                       |
+| make run_bootstrap_pearson | bootstrap sampling correlation                    |
+| make run_net_pearson     | correlation with network regularization           |
+| make run_bootstrap_net_pearson | bootstrap correlation with network regularization |
+| make run_t_test          | correlation                                       |
+| make run_bootstrap_t_test | bootstrap sampling correlation                    |
+| make run_net_t_test     | correlation with network regularization           |
+| make run_bootstrap_net_t_test | bootstrap correlation with network regularization |
 
  
 * * * 
