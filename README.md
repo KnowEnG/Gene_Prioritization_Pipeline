@@ -8,7 +8,7 @@ There are four prioritization methods, using either pearson or t-test as the mea
 
 | **Options**                                        | **Method**                           | **Parameters**            |
 | -------------------------------------------------- | -------------------------------------| ------------------------- |
-| Correlation                                        | correlation                          | correlation               |
+| Simple Correlation                                 | correlation                          | correlation               |
 | Bootstrap Correlation                              | bootstrap sampling correlation       | bootstrap_correlation     |
 | Correlation with network regularization            | network-based correlation            | net_correlation     |
 | Bootstrap Correlation with network regularization  | bootstrapping w network correlation  | bootstrap_net_correlation |
