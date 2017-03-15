@@ -125,7 +125,7 @@ set the spreadsheet, network and phenotype data file names to point to your data
 | correlation_measure       | pearson or t_test | Choose correlation measure method |
 | gg_network_name_full_path | directory+gg_network_name |Path and file name of the 4 col network file|
 | spreadsheet_name_full_path | directory+spreadsheet_name|  Path and file name of user supplied gene sets |
-| phenotype_name_full_path | directory+phenotype_response| Path and file name of user supplied drug response file |
+| phenotype_name_full_path | directory+phenotype_response| Path and file name of user supplied phenotype response file |
 | results_directory | directory | Directory to save the output files |
 | number_of_bootstraps | 5 | Number of random samplings |
 | cols_sampling_fraction | 0.9 | Select 90% of spreadsheet columns |
