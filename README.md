@@ -100,7 +100,7 @@ Look for examples of run_parameters in ./Gene_Prioritization_Pipeline/data/run_f
  ```
 ### * Modify run_paramters file  (YAML Format)
 ```
-set the spreadsheet, network and drug_response (phenotype data) file names to point to your data
+set the spreadsheet, network and phenotype data file names to point to your data
 ```
 
 ### * Run the Samples Clustering Pipeline:
@@ -125,7 +125,7 @@ set the spreadsheet, network and drug_response (phenotype data) file names to po
 | correlation_measure       | pearson or t_test | Choose correlation measure method |
 | gg_network_name_full_path | directory+gg_network_name |Path and file name of the 4 col network file|
 | spreadsheet_name_full_path | directory+spreadsheet_name|  Path and file name of user supplied gene sets |
-| drug_response_full_path | directory+drug_response| Path and file name of user supplied drug response file |
+| phenotype_name_full_path | directory+phenotype_response| Path and file name of user supplied drug response file |
 | results_directory | directory | Directory to save the output files |
 | number_of_bootstraps | 5 | Number of random samplings |
 | cols_sampling_fraction | 0.9 | Select 90% of spreadsheet columns |
@@ -135,7 +135,7 @@ set the spreadsheet, network and drug_response (phenotype data) file names to po
 | top_beta_of_sort| 100| Number of top genes selected 
 gg_network_name = STRING_experimental_gene_gene.edge</br>
 spreadsheet_name = CCLE_Expression_ensembl.df</br>
-drug_response = CCLE_drug_ec50_cleaned_NAremoved.txt
+phenotype_name = CCLE_drug_ec50_cleaned_NAremoved.txt
 
 * * * 
 ## Description of Output files saved in results directory
