@@ -7,7 +7,7 @@ method:                     correlation
 correlation_measure:         t_test
 
 spreadsheet_name_full_path: ../data/spreadsheets/CCLE_Expression_ensembl.df
-drug_response_full_path:    ../data/spreadsheets/CCLE_drug_ec50_cleaned_NAremoved_t_test.txt
+phenotype_name_full_path:    ../data/spreadsheets/CCLE_drug_ec50_cleaned_NAremoved_t_test.txt
 
 results_directory:          ./run_dir/results
 top_beta_of_sort:           100
