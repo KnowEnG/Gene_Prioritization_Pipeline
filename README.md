@@ -96,7 +96,7 @@ __***Follow steps 1-3 above then do the following:***__
  
 ### * Create run_paramters file  (YAML Format)
  ``` 
-Look for examples of run_parameters in ./Gene_Prioritization_Pipeline/data/run_files/run_parameters_template.yml
+Look for examples of run_parameters in ./Gene_Prioritization_Pipeline/data/run_files/zTEMPLATE_GP_BENCHMARKS.yml
  ```
 ### * Modify run_paramters file  (YAML Format)
 ```
@@ -112,7 +112,7 @@ set the spreadsheet, network and phenotype data file names to point to your data
    
   * Run
    ```
-  python3 ../src/gene_prioritization.py -run_directory ./ -run_file run_parameters_template.yml
+  python3 ../src/gene_prioritization.py -run_directory ./ -run_file zTEMPLATE_GP_BENCHMARKS.yml
    ```
 
 * * * 
