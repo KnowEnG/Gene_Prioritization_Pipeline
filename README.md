@@ -3,12 +3,12 @@ This is the Knowledge Engine for Genomics (KnowEnG), an NIH, BD2K Center of Exce
 
 This pipeline **ranks** the rows of a given spreadsheet, where spreadsheet's rows correspond to gene-labels and columns correspond to sample-labels. The ranking is based on correlating gene expression data (network smoothed) against pheno-type data.
 
-There are four prioritization methods that one can choose from:
+There are four prioritization methods, using either pearson or t-test as the measure of correlation:
 
 
 | **Options**                                        | **Method**                           | **Parameters**            |
 | -------------------------------------------------- | -------------------------------------| ------------------------- |
-| Correlation                                        | correlation                          | correlation               |
+| Simple Correlation                                 | simple correlation                          | correlation               |
 | Bootstrap Correlation                              | bootstrap sampling correlation       | bootstrap_correlation     |
 | Correlation with network regularization            | network-based correlation            | net_correlation     |
 | Bootstrap Correlation with network regularization  | bootstrapping w network correlation  | bootstrap_net_correlation |
@@ -60,10 +60,14 @@ make env_setup
 
 | **Command**                        | **Option**                                        | 
 |:---------------------------------- |:------------------------------------------------- | 
-| make run_correlation          | correlation                                       |
-| make run_bootstrap_correlation | bootstrap sampling correlation                    |
-| make run_net_correlation     | correlation with network regularization           |
-| make run_bootstrap_net_correlation | bootstrap correlation with network regularization |
+| make run_pearson          | pearson correlation                                       |
+| make run_bootstrap_pearson | bootstrap sampling with pearson correlation                    |
+| make run_net_pearson     | pearson correlation with network regularization           |
+| make run_bootstrap_net_pearson | bootstrap pearson correlation with network regularization |
+| make run_t_test          | t-test correlation                                       |
+| make run_bootstrap_t_test | bootstrap sampling with t-test correlation                    |
+| make run_net_t_test     | t-test correlation with network regularization           |
+| make run_bootstrap_net_t_test | bootstrap t-test correlation with network regularization |
 
  
 * * * 
@@ -92,14 +96,14 @@ __***Follow steps 1-3 above then do the following:***__
  
 ### * Create run_paramters file  (YAML Format)
  ``` 
-Look for examples of run_parameters in ./Gene_Prioritization_Pipeline/data/run_files/run_parameters_template.yml
+Look for examples of run_parameters in ./Gene_Prioritization_Pipeline/data/run_files/zTEMPLATE_GP_BENCHMARKS.yml
  ```
 ### * Modify run_paramters file  (YAML Format)
 ```
-set the spreadsheet, network and drug_response (phenotype data) file names to point to your data
+set the spreadsheet, network and phenotype data file names to point to your data
 ```
 
-### * Run the Samples Clustering Pipeline:
+### * Run the Gene Prioritization Pipeline:
 
   * Update PYTHONPATH enviroment variable
    ``` 
@@ -108,7 +112,7 @@ set the spreadsheet, network and drug_response (phenotype data) file names to po
    
   * Run
    ```
-  python3 ../src/gene_prioritization.py -run_directory ./ -run_file run_parameters_template.yml
+  python3 ../src/gene_prioritization.py -run_directory ./ -run_file zTEMPLATE_GP_BENCHMARKS.yml
    ```
 
 * * * 
@@ -121,17 +125,18 @@ set the spreadsheet, network and drug_response (phenotype data) file names to po
 | correlation_measure       | pearson or t_test | Choose correlation measure method |
 | gg_network_name_full_path | directory+gg_network_name |Path and file name of the 4 col network file|
 | spreadsheet_name_full_path | directory+spreadsheet_name|  Path and file name of user supplied gene sets |
-| drug_response_full_path | directory+drug_response| Path and file name of user supplied drug response file |
+| phenotype_name_full_path | directory+phenotype_response| Path and file name of user supplied phenotype response file |
 | results_directory | directory | Directory to save the output files |
 | number_of_bootstraps | 5 | Number of random samplings |
 | cols_sampling_fraction | 0.9 | Select 90% of spreadsheet columns |
 | rwr_max_iterations | 100| Maximum number of iterations without convergence in random walk with restart |
 | rwr_convergence_tolerence | 1.0e-2 | Frobenius norm tolerence of spreadsheet vector in random walk|
 | rwr_restart_probability | 0.5 | alpha in `V_(n+1) = alpha * N * Vn + (1-alpha) * Vo` |
-| top_beta_of_sort| 100| Number of top genes selected 
+| top_beta_of_sort| 100| Number of top genes selected |
+
 gg_network_name = STRING_experimental_gene_gene.edge</br>
 spreadsheet_name = CCLE_Expression_ensembl.df</br>
-drug_response = CCLE_drug_ec50_cleaned_NAremoved.txt
+phenotype_name = CCLE_drug_ec50_cleaned_NAremoved.txt
 
 * * * 
 ## Description of Output files saved in results directory

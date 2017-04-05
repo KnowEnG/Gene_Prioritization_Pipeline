@@ -26,7 +26,7 @@ def run_correlation(run_parameters):
     """
     run_parameters["results_tmp_directory"] = kn.create_dir(run_parameters["results_directory"], 'tmp')
 
-    phenotype_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
+    phenotype_df = kn.get_spreadsheet_df(run_parameters["phenotype_name_full_path"])
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
 
     number_of_jobs = len(phenotype_df.index)
@@ -44,7 +44,7 @@ def run_correlation_worker(run_parameters, spreadsheet_df, phenotype_df, job_id)
     Args:
         run_parameters:  dict of parameters
         spreadsheet_df:  spreadsheet data frame
-        phenotype_df:    drug data frame
+        phenotype_df:    phenotype data frame
         job_id:          parallel iteration number
     """
     # selects the ith row in phenotype_df
@@ -61,24 +61,24 @@ def run_correlation_worker(run_parameters, spreadsheet_df, phenotype_df, job_id)
     generate_correlation_output(pc_array, phenotype_df.index.values[0], spreadsheet_df_trimmed.index, run_parameters)
 
 
-def generate_correlation_output(pc_array, drug_name, gene_name_list, run_parameters):
+def generate_correlation_output(pc_array, phenotype_name, gene_name_list, run_parameters):
     """ Save final output of correlation
     
     Args:
         pc_array: pearson correlation coefficient array
-        drug_name: name of the drug
+        phenotype_name: name of the phenotype
         gene_name_list: list of the genes correlated (size of pc_array
         run_parameters: dictionary of run parameters with key 'results_directory'
     """
-    drug_name_list = np.repeat(drug_name, len(gene_name_list))
+    phenotype_name_list = np.repeat(phenotype_name, len(gene_name_list))
     output_val = np.column_stack(
-        (drug_name_list, gene_name_list, abs(pc_array), abs(pc_array), pc_array))
+        (phenotype_name_list, gene_name_list, abs(pc_array), abs(pc_array), pc_array))
 
     df_header = ['Response', 'Gene_ENSEMBL_ID', 'quantitative_sorting_score', 'visualization_score', 'baseline_score']
     result_df = pd.DataFrame(output_val, columns=df_header).sort_values("visualization_score", ascending=0)
     result_df.index = range(result_df.shape[0])
 
-    write_one_phenotype(result_df, drug_name, gene_name_list, run_parameters)
+    write_one_phenotype(result_df, phenotype_name, gene_name_list, run_parameters)
 
 
 def run_bootstrap_correlation(run_parameters):
@@ -89,14 +89,14 @@ def run_bootstrap_correlation(run_parameters):
     """
     run_parameters["results_tmp_directory"] = kn.create_dir(run_parameters["results_directory"], 'tmp')
 
-    drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
+    phenotype_response_df = kn.get_spreadsheet_df(run_parameters["phenotype_name_full_path"])
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
 
     n_bootstraps = run_parameters["number_of_bootstraps"]
 
-    number_of_jobs = len(drug_response_df.index)
+    number_of_jobs = len(phenotype_response_df.index)
     jobs_id = range(0, number_of_jobs)
-    zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, drug_response_df, n_bootstraps, jobs_id)
+    zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, phenotype_response_df, n_bootstraps, jobs_id)
     dstutil.parallelize_processes_locally(run_bootstrap_correlation_worker, zipped_arguments, number_of_jobs)
 
     write_phenotype_data_all(run_parameters)
@@ -126,9 +126,9 @@ def run_bootstrap_correlation_worker(run_parameters, spreadsheet_df, phenotype_d
     for bootstrap_number in range(0, n_bootstraps):
         sample_random, sample_permutation = sample_a_matrix_pearson(
             spreadsheet_df_trimmed.as_matrix(), 1.0, run_parameters["cols_sampling_fraction"])
-        drug_response = phenotype_df_trimmed.values[0, None]
-        drug_response = drug_response[0, sample_permutation]
-        pc_array = get_correlation(sample_random, drug_response, run_parameters)
+        phenotype_response = phenotype_df_trimmed.values[0, None]
+        phenotype_response = phenotype_response[0, sample_permutation]
+        pc_array = get_correlation(sample_random, phenotype_response, run_parameters)
         borda_count = sum_array_ranking_to_borda_count(borda_count, np.abs(pc_array))
         gm_accumulator = (np.abs(pc_array) + EPSILON_0) * gm_accumulator
     pcc_gm_array = gm_accumulator ** (1 / n_bootstraps)
@@ -138,25 +138,25 @@ def run_bootstrap_correlation_worker(run_parameters, spreadsheet_df, phenotype_d
                                           spreadsheet_df_trimmed.index, run_parameters)
 
 
-def generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pc_array, drug_name, gene_name_list,
+def generate_bootstrap_correlation_output(borda_count, pcc_gm_array, pc_array, phenotype_name, gene_name_list,
                                           run_parameters):
     """ Save final output of correlation
 
     Args:
         pc_array: pearson correlation coefficient array
-        drug_name: name of the drug
+        phenotype_name: name of the phenotype
         gene_name_list: list of the genes correlated (size of pc_array
         run_parameters: dictionary of run parameters with key 'results_directory'
     """
-    drug_name_list = np.repeat(drug_name, len(gene_name_list))
+    phenotype_name_list = np.repeat(phenotype_name, len(gene_name_list))
     output_val = np.column_stack(
-        (drug_name_list, gene_name_list, borda_count, pcc_gm_array, pc_array))
+        (phenotype_name_list, gene_name_list, borda_count, pcc_gm_array, pc_array))
 
     df_header = ['Response', 'Gene_ENSEMBL_ID', 'quantitative_sorting_score', 'visualization_score', 'baseline_score']
     result_df = pd.DataFrame(output_val, columns=df_header).sort_values("quantitative_sorting_score", ascending=0)
     result_df.index = range(result_df.shape[0])
 
-    write_one_phenotype(result_df, drug_name, gene_name_list, run_parameters)
+    write_one_phenotype(result_df, phenotype_name, gene_name_list, run_parameters)
 
 
 def run_net_correlation(run_parameters):
@@ -192,7 +192,7 @@ def run_net_correlation(run_parameters):
     del genes_lookup_table
     gc.collect()
 
-    drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
+    phenotype_response_df = kn.get_spreadsheet_df(run_parameters["phenotype_name_full_path"])
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
     spreadsheet_genes_as_input = spreadsheet_df.index.values
 
@@ -205,9 +205,9 @@ def run_net_correlation(run_parameters):
     baseline_array = np.ones(network_mat.shape[0]) / network_mat.shape[0]
     baseline_array = kn.smooth_matrix_with_rwr(baseline_array, network_mat, run_parameters)[0]
 
-    number_of_jobs = len(drug_response_df.index)
+    number_of_jobs = len(phenotype_response_df.index)
     jobs_id = range(0, number_of_jobs)
-    zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, drug_response_df, network_mat,
+    zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, phenotype_response_df, network_mat,
                                               spreadsheet_genes_as_input, baseline_array, jobs_id)
     dstutil.parallelize_processes_locally(run_net_correlation_worker, zipped_arguments, number_of_jobs)
 
@@ -244,7 +244,7 @@ def run_net_correlation_worker(run_parameters, spreadsheet_df, phenotype_df, net
     restart_accumulator = pc_array.copy()
     restart_accumulator[restart_accumulator != 0] = 1
 
-    pc_array = pc_array / sum(pc_array)
+    pc_array = pc_array / max(sum(pc_array), EPSILON_0)
     pc_array = kn.smooth_matrix_with_rwr(pc_array, network_mat, run_parameters)[0]
 
     pc_array = pc_array - baseline_array
@@ -284,7 +284,7 @@ def run_bootstrap_net_correlation(run_parameters):
     del genes_lookup_table
     gc.collect()
 
-    drug_response_df = kn.get_spreadsheet_df(run_parameters["drug_response_full_path"])
+    phenotype_response_df = kn.get_spreadsheet_df(run_parameters["phenotype_name_full_path"])
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
     spreadsheet_genes_as_input = spreadsheet_df.index.values
 
@@ -296,9 +296,9 @@ def run_bootstrap_net_correlation(run_parameters):
     baseline_array = np.ones(network_mat.shape[0]) / network_mat.shape[0]
     baseline_array = kn.smooth_matrix_with_rwr(baseline_array, network_mat, run_parameters)[0]
 
-    number_of_jobs = len(drug_response_df.index)
+    number_of_jobs = len(phenotype_response_df.index)
     jobs_id = range(0, number_of_jobs)
-    zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, drug_response_df, network_mat,
+    zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, phenotype_response_df, network_mat,
                                               spreadsheet_genes_as_input, baseline_array, jobs_id)
     dstutil.parallelize_processes_locally(run_bootstrap_net_correlation_worker, zipped_arguments, number_of_jobs)
 
@@ -338,14 +338,15 @@ def run_bootstrap_net_correlation_worker(run_parameters, spreadsheet_df, phenoty
         sample_random, sample_permutation = sample_a_matrix_pearson(
             sample_smooth, 1.0, run_parameters["cols_sampling_fraction"])
 
-        drug_response = phenotype_df_trimmed.values[0, None]
-        drug_response = drug_response[0, sample_permutation]
-        pc_array = get_correlation(sample_random, drug_response, run_parameters)
+        phenotype_response = phenotype_df_trimmed.values[0, None]
+        phenotype_response = phenotype_response[0, sample_permutation]
+        pc_array = get_correlation(sample_random, phenotype_response, run_parameters)
+
         pc_array[~np.in1d(spreadsheet_df_trimmed.index, spreadsheet_genes_as_input)] = 0.0
         pc_array = np.abs(trim_to_top_beta(pc_array, run_parameters["top_beta_of_sort"]))
         restart_accumulator[pc_array != 0] += 1.0
 
-        pc_array = pc_array / sum(pc_array)
+        pc_array = pc_array / max(sum(pc_array), EPSILON_0)
         pc_array = kn.smooth_matrix_with_rwr(pc_array, network_mat, run_parameters)[0]
         pc_array = pc_array - baseline_array
 
@@ -362,13 +363,13 @@ def run_bootstrap_net_correlation_worker(run_parameters, spreadsheet_df, phenoty
 
 
 def generate_net_correlation_output(pearson_array, pc_array, min_max_pc, restart_accumulator,
-                                    drug_name, gene_name_list, gene_orig_list, run_parameters):
+                                    phenotype_name, gene_name_list, gene_orig_list, run_parameters):
     """ Save final output of correlation with network
 
     Args:
         pearson_array: pearson correlation coefficient array
         pc_array: correlation score used to sort genes
-        drug_name: name of the drug correlated
+        phenotype_name: name of the phenotype correlated
         gene_name_list: list of genes correlated (pc_array & all will be trimmed to these)
         gene_orig_list: original list of genes - size of pc_array
         run_parameters: with key 'results_directory'
@@ -379,24 +380,24 @@ def generate_net_correlation_output(pearson_array, pc_array, min_max_pc, restart
     min_max_pc = min_max_pc[mask]
     gene_name_list = gene_name_list[mask]
     restart_accumulator = restart_accumulator[mask]
-    drug_name_list = np.repeat(drug_name, len(gene_name_list))
+    phenotype_name_list = np.repeat(phenotype_name, len(gene_name_list))
 
     output_val = np.column_stack(
-        (drug_name_list, gene_name_list, pc_array, min_max_pc, pearson_array, restart_accumulator))
-
+        (phenotype_name_list, gene_name_list, pc_array, min_max_pc, pearson_array, restart_accumulator))
+    
     df_header = ['Response', 'Gene_ENSEMBL_ID', 'quantitative_sorting_score', 'visualization_score',
                  'baseline_score', 'Percent_appearing_in_restart_set']
     result_df = pd.DataFrame(output_val, columns=df_header).sort_values('quantitative_sorting_score', ascending=0)
 
-    write_one_phenotype(result_df, drug_name, gene_orig_list, run_parameters)
+    write_one_phenotype(result_df, phenotype_name, gene_orig_list, run_parameters)
 
 
-def get_correlation(spreadsheet_mat, drug_response, run_parameters):
+def get_correlation(spreadsheet_mat, phenotype_response, run_parameters):
     """ correlation function definition for all run methods
 
     Args:
         spreadsheet_mat: genes x samples
-        drug_response: one x samples
+        phenotype_response: one x samples
         run_parameters: with key 'correlation_measure'
 
     Returns:
@@ -405,18 +406,29 @@ def get_correlation(spreadsheet_mat, drug_response, run_parameters):
     correlation_array = np.zeros(spreadsheet_mat.shape[0])
     if 'correlation_measure' in run_parameters:
         if run_parameters['correlation_measure'] == 'pearson':
-            spreadsheet_mat = zscore(spreadsheet_mat, axis=1, ddof=0)
-            for row in range(0, spreadsheet_mat.shape[0]):
-                correlation_array[row] = pcc(spreadsheet_mat[row, :], drug_response)[0]
-            correlation_array[~(np.isfinite(correlation_array))] = 0
+
+            spreadsheet_mat = spreadsheet_mat - spreadsheet_mat.mean(axis=1).reshape((-1, 1))
+            phenotype_response = phenotype_response - phenotype_response.mean()
+            spreadsheet_mat_var = np.std(spreadsheet_mat, axis=1)
+            phenotype_response_var = np.std(phenotype_response)
+            numerator = spreadsheet_mat.dot(phenotype_response)
+            denominator = spreadsheet_mat_var * phenotype_response_var * spreadsheet_mat.shape[1]
+            with np.errstate(divide='ignore', invalid='ignore'):
+                correlation_array = np.true_divide(numerator, denominator)
+                correlation_array[denominator==0] = 0
+
             return correlation_array
 
         if run_parameters['correlation_measure'] == 't_test':
-            for row in range(0, spreadsheet_mat.shape[0]):
-                d = np.int_(drug_response)
-                a = spreadsheet_mat[row, d != 0]
-                b = spreadsheet_mat[row, d == 0]
-                correlation_array[row] = np.abs(ttest_ind(a, b, axis=None, equal_var=False)[0])
+        
+            a = spreadsheet_mat[:, phenotype_response!=0]
+            b = spreadsheet_mat[:, phenotype_response==0]
+            d = np.mean(a, axis=1) - np.mean(b, axis=1)
+            denom = np.sqrt(np.var(a, axis=1, ddof=1)/a.shape[1] + np.var(b, axis=1, ddof=1)/b.shape[1])
+            with np.errstate(divide='ignore', invalid='ignore'):
+                correlation_array = np.divide(d, denom)
+                correlation_array[np.isnan(denom)] = 0
+            correlation_array = np.abs(correlation_array)
 
             return correlation_array
 
@@ -511,33 +523,33 @@ def zscore_dataframe(genes_by_sample_df):
     return zscore_df
 
 
-def write_one_phenotype(result_df, drug_name, gene_name_list, run_parameters):
+def write_one_phenotype(result_df, phenotype_name, gene_name_list, run_parameters):
     """ write the phenotype output file to the results directory and the temporary directory files
 
     Args:
         result_df:
-        drug_name:
+        phenotype_name:
         gene_name_list:
         run_parameters:
         
     Output:
         {phenotype}_{method}_{correlation_measure}_{timestamp}_viz.tsv
     """
-    result_df.to_csv(get_output_file_name(run_parameters, 'results_directory', drug_name, 'viz'), header=True, index=False, sep='\t')
+    result_df.to_csv(get_output_file_name(run_parameters, 'results_directory', phenotype_name, 'viz'), header=True, index=False, sep='\t')
 
-    download_result_df = pd.DataFrame(data=None, index=None, columns=[drug_name])
-    download_result_df[drug_name] = result_df['Gene_ENSEMBL_ID']
+    download_result_df = pd.DataFrame(data=None, index=None, columns=[phenotype_name])
+    download_result_df[phenotype_name] = result_df['Gene_ENSEMBL_ID']
     download_result_df.to_csv(
-        get_output_file_name(run_parameters, 'results_tmp_directory', drug_name, 'download'), header=True, index=False, sep='\t')
+        get_output_file_name(run_parameters, 'results_tmp_directory', phenotype_name, 'download'), header=True, index=False, sep='\t')
 
     top_genes = download_result_df.values[: run_parameters['top_beta_of_sort']]
-    update_orig_result_df = pd.DataFrame(np.in1d(gene_name_list, top_genes).astype(int), index=gene_name_list, columns=[drug_name])
+    update_orig_result_df = pd.DataFrame(np.in1d(gene_name_list, top_genes).astype(int), index=gene_name_list, columns=[phenotype_name])
     update_orig_result_df.to_csv(
-        get_output_file_name(run_parameters, 'results_tmp_directory', drug_name, 'original'), header=True, index=True, sep='\t')
+        get_output_file_name(run_parameters, 'results_tmp_directory', phenotype_name, 'original'), header=True, index=True, sep='\t')
 
 
 def write_phenotype_data_all(run_parameters):
-    """ Post Processing: writes rows as genes, cols as drugs, data is gene in top n for the drug T or F.
+    """ Post Processing: writes rows as genes, cols as phenotypes, data is gene in top n for the phenotype T or F.
 
     Args:
         run_parameters: with field: 'results_directory'
@@ -570,14 +582,14 @@ def write_phenotype_data_all(run_parameters):
     for fileName in download_list:
         tFileName = os.path.join(tmp_dir, fileName)
         src_df = pd.read_csv(tFileName, sep='\t', header=0, index_col=None)
-        drug_name = src_df.columns.values[0]
-        all_phenotypes_download_df[drug_name] = src_df[drug_name]
+        phenotype_name = src_df.columns.values[0]
+        all_phenotypes_download_df[phenotype_name] = src_df[phenotype_name]
 
     for fileName in original_list:
         tFileName = os.path.join(tmp_dir, fileName)
         src_df = pd.read_csv(tFileName, sep='\t', header=0, index_col=0)          
-        drug_name = src_df.columns.values[0]
-        all_phenotypes_original_df[drug_name] = src_df[drug_name]
+        phenotype_name = src_df.columns.values[0]
+        all_phenotypes_original_df[phenotype_name] = src_df[phenotype_name]
 
     all_phenotypes_download_df.index = range(1, all_phenotypes_download_df.shape[0]+1)
     all_phenotypes_download_df.to_csv(
