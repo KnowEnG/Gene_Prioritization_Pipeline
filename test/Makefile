@@ -24,14 +24,6 @@ env_setup: create_run_dir copy_run_files decompress_input_data
 decompress_input_data:
 	@echo Decompress input data...
 	$(GZIP_D) $(INPUT_DATA)
- 
-compress_input_data:
-	@echo Compress input data...
-ifeq ($(filter .gz, $(INPUT_DATA_SUFFIX)),)
-	$(GZIP) $(INPUT_DATA)
-else
-	@echo Target file in already in gzip format. Aborting compressing input data...
-endif
 
 create_run_dir:
 	$(MKDIR_P) $(RESULTS_DIR) 
