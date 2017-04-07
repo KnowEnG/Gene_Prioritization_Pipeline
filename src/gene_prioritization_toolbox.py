@@ -28,7 +28,8 @@ def run_correlation(run_parameters):
 
     phenotype_df = kn.get_spreadsheet_df(run_parameters["phenotype_name_full_path"])
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
-
+    phenotype_df = phenotype_df.T
+    
     number_of_jobs = len(phenotype_df.index)
     jobs_id = range(0, number_of_jobs)
     zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, phenotype_df, jobs_id)
@@ -91,7 +92,7 @@ def run_bootstrap_correlation(run_parameters):
 
     phenotype_response_df = kn.get_spreadsheet_df(run_parameters["phenotype_name_full_path"])
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
-
+    phenotype_response_df = phenotype_response_df.T
     n_bootstraps = run_parameters["number_of_bootstraps"]
 
     number_of_jobs = len(phenotype_response_df.index)
@@ -195,6 +196,7 @@ def run_net_correlation(run_parameters):
     phenotype_response_df = kn.get_spreadsheet_df(run_parameters["phenotype_name_full_path"])
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
     spreadsheet_genes_as_input = spreadsheet_df.index.values
+    phenotype_response_df = phenotype_response_df.T
 
     spreadsheet_df = kn.update_spreadsheet_df(spreadsheet_df, unique_gene_names)
     spreadsheet_df = zscore_dataframe(spreadsheet_df)
@@ -287,6 +289,7 @@ def run_bootstrap_net_correlation(run_parameters):
     phenotype_response_df = kn.get_spreadsheet_df(run_parameters["phenotype_name_full_path"])
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
     spreadsheet_genes_as_input = spreadsheet_df.index.values
+    phenotype_response_df = phenotype_response_df.T
 
     spreadsheet_df = kn.update_spreadsheet_df(spreadsheet_df, unique_gene_names)
     spreadsheet_df = zscore_dataframe(spreadsheet_df)
