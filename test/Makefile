@@ -8,7 +8,7 @@ RESULTS_DIR =        $(RUN_DIR)/results
 INPUT_DATA_DIR =     ./data
 UNIT_TEST_TEMP_DIR = ./unit/tmp
 DATA_DIR =           ../data/networks ../data/spreadsheets
-INPUT_DATA =         $(foreach dir,$(DATA_DIR),$(wildcard $(dir)/*))
+INPUT_DATA =         $(foreach dir,$(DATA_DIR),$(wildcard $(dir)/*.gz))
 INPUT_DATA_SUFFIX =  $(suffix $(INPUT_DATA))
 
 RMR =                rm -rf
@@ -23,19 +23,7 @@ env_setup: create_run_dir copy_run_files decompress_input_data
 
 decompress_input_data:
 	@echo Decompress input data...
-ifeq ($(filter-out .gz, $(INPUT_DATA_SUFFIX)),)
 	$(GZIP_D) $(INPUT_DATA)
-else
-	@echo No gzip file needs to be decompressed.
-endif	
- 
-compress_input_data:
-	@echo Compress input data...
-ifeq ($(filter .gz, $(INPUT_DATA_SUFFIX)),)
-	$(GZIP) $(INPUT_DATA)
-else
-	@echo Target file in already in gzip format. Aborting compressing input data...
-endif
 
 create_run_dir:
 	$(MKDIR_P) $(RESULTS_DIR) 
@@ -105,7 +93,7 @@ unit_tests:
 # ----------------------------------------------------------------
 # - CLEAN UP SECTION                                             -
 # ----------------------------------------------------------------	
-final_clean: clean_dir_recursively compress_input_data
+final_clean: clean_dir_recursively 
 
 clean_dir_recursively:
 	$(RMR) $(RUN_DIR)	
