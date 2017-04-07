@@ -101,7 +101,7 @@ unit_tests:
 # ----------------------------------------------------------------
 # - CLEAN UP SECTION                                             -
 # ----------------------------------------------------------------	
-final_clean: clean_dir_recursively compress_input_data
+final_clean: clean_dir_recursively 
 
 clean_dir_recursively:
 	$(RMR) $(RUN_DIR)	
