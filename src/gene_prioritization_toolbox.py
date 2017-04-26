@@ -79,7 +79,8 @@ def generate_correlation_output(pc_array, phenotype_name, gene_name_list, run_pa
     viz_score = (pc_array - min(pc_array)) / (max(pc_array) - min(pc_array))
     pc_array = np.round(pc_array, 8)
     viz_score = np.round(viz_score, 8)
-
+    baseline_score = np.round(baseline_score, 8)
+    
     output_val = np.column_stack(
         (phenotype_name_list, gene_name_list, pc_array, viz_score, baseline_score))
 
