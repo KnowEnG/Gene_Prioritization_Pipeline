@@ -131,13 +131,13 @@ set the spreadsheet, network and phenotype data file names to point to your data
 
 gg_network_name = STRING_experimental_gene_gene.edge</br>
 spreadsheet_name = CCLE_Expression_ensembl.df</br>
-phenotype_name = CCLE_drug_ec50_cleaned_NAremoved.txt
+phenotype_name = CCLE_drug_ec50_cleaned_NAremoved_pearson.txt
 
 * * * 
 ## Description of Output files saved in results directory
 * * * 
 
-* Any method saves separate files per phenotype with name {phenotype}\_{method}\_{correlation_measure}\_{timestamp}\_viz.tsv. Genes are sorted in descending order based on `quantitative_sorting_score`. </br>  
+* Any method saves separate files per phenotype with name {phenotype}\_{method}\_{correlation_measure}\_{timestamp}\_viz.tsv. Genes are sorted in descending order based on `visualization_score`. </br>  
 
  | **Response** | **Gene_ENSEMBL_ID** | **quantitative_sorting_score** | **visualization_score** | **baseline_score** |
  |:-------------:|:------------:|:---------:|:--------------:|:--------------:|
