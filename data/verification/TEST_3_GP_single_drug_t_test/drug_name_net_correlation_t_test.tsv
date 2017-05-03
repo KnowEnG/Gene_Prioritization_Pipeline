@@ -1,0 +1,8 @@
+Response	Gene_ENSEMBL_ID	quantitative_sorting_score	visualization_score	baseline_score	Percent_appearing_in_restart_set
+drug_name	g6	0.1763907	1.0	9.88291218	1.0
+drug_name	g2	0.10484524	0.73623084	7.93379087	1.0
+drug_name	g5	-0.02513143	0.2570413	1.43480624	0.0
+drug_name	g7	-0.02513143	0.2570413	1.65345906	0.0
+drug_name	g1	-0.04459804	0.18527308	1.60212185	0.0
+drug_name	g3	-0.09152304	0.01227304	0.9773483	0.0
+drug_name	g4	-0.09485201	0.0	0.02521062	0.0
