@@ -82,6 +82,12 @@ run_multidrug_t_test:
 	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file TEST_4_GP_many_drugs_t_test.yml
 
 # ----------------------------------------------------------------
+# - VERIFICATION TESTS RUN SECTION                               -
+# ----------------------------------------------------------------
+verification_tests:
+	python3 ./integration/verify_benchmarks.py
+
+# ----------------------------------------------------------------
 # - UNIT TESTS RUN SECTION                                       -
 # ----------------------------------------------------------------
 unit_test_setup:
