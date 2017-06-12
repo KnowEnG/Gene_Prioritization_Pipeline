@@ -1,7 +1,6 @@
 """
 @author: The KnowEnG dev team
 """
-import gc
 import os
 import numpy as np
 import pandas as pd
@@ -179,31 +178,10 @@ def run_net_correlation(run_parameters):
         run_parameters: parameter set dictionary.
     """
     run_parameters["results_tmp_directory"] = kn.create_dir(run_parameters["results_directory"], 'tmp')
+    gg_network_name_full_path = run_parameters['gg_network_name_full_path']
+    network_mat, unique_gene_names = kn.get_sparse_network_matrix(gg_network_name_full_path)
 
-    network_df = kn.get_network_df(run_parameters['gg_network_name_full_path'])
-
-    node_1_names, node_2_names = kn.extract_network_node_names(network_df)
-    unique_gene_names = kn.find_unique_node_names(node_1_names, node_2_names)
-
-    unique_gene_names = sorted(unique_gene_names)
-
-    genes_lookup_table = kn.create_node_names_dict(unique_gene_names)
-
-    network_df = kn.map_node_names_to_index(network_df, genes_lookup_table, 'node_1')
-    network_df = kn.map_node_names_to_index(network_df, genes_lookup_table, 'node_2')
-
-    network_df = kn.symmetrize_df(network_df)
-    network_mat_sparse = kn.convert_network_df_to_sparse(
-        network_df, len(unique_gene_names), len(unique_gene_names))
-
-    network_mat = normalize(network_mat_sparse, norm="l1", axis=0)
-
-    del network_df
-    del network_mat_sparse
-    del node_1_names
-    del node_2_names
-    del genes_lookup_table
-    gc.collect()
+    network_mat = normalize(network_mat, norm="l1", axis=0)
 
     phenotype_df = kn.get_spreadsheet_df(run_parameters["phenotype_name_full_path"])
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
@@ -279,27 +257,10 @@ def run_bootstrap_net_correlation(run_parameters):
         run_parameters: parameter set dictionary.
     """
     run_parameters["results_tmp_directory"] = kn.create_dir(run_parameters["results_directory"], 'tmp')
+    gg_network_name_full_path = run_parameters['gg_network_name_full_path']
+    network_mat, unique_gene_names = kn.get_sparse_network_matrix(gg_network_name_full_path)
 
-    network_df = kn.get_network_df(run_parameters['gg_network_name_full_path'])
-    node_1_names, node_2_names = kn.extract_network_node_names(network_df)
-    unique_gene_names = kn.find_unique_node_names(node_1_names, node_2_names)
-    unique_gene_names = sorted(unique_gene_names)
-    genes_lookup_table = kn.create_node_names_dict(unique_gene_names)
-
-    network_df = kn.map_node_names_to_index(network_df, genes_lookup_table, 'node_1')
-    network_df = kn.map_node_names_to_index(network_df, genes_lookup_table, 'node_2')
-    network_df = kn.symmetrize_df(network_df)
-    network_mat_sparse = kn.convert_network_df_to_sparse(
-        network_df, len(unique_gene_names), len(unique_gene_names))
-
-    network_mat = normalize(network_mat_sparse, norm="l1", axis=0)
-
-    del network_df
-    del network_mat_sparse
-    del node_1_names
-    del node_2_names
-    del genes_lookup_table
-    gc.collect()
+    network_mat = normalize(network_mat, norm="l1", axis=0)
 
     phenotype_df = kn.get_spreadsheet_df(run_parameters["phenotype_name_full_path"])
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
