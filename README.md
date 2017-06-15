@@ -19,7 +19,13 @@ Note: all of the correlation methods mentioned above use the Pearson or t-test c
 * * * 
 ## How to run this pipeline with Our data
 * * * 
-### 1. Install the following (Ubuntu or Linux)
+
+### 1. Clone the Gene_Prioritization_Pipeline Repo
+```
+ git clone https://github.com/KnowEnG/Gene_Prioritization_Pipeline.git
+```
+
+### 2. Install the following (Ubuntu or Linux)
   ```
  apt-get install -y python3-pip
  apt-get install -y libblas-dev liblapack-dev libatlas-base-dev gfortran
@@ -33,24 +39,24 @@ Note: all of the correlation methods mentioned above use the Pearson or t-test c
  pip3 install knpackage
 ```
 
-### 2. Change directory to Gene_Prioritization_Pipeline
+### 3. Change directory to Gene_Prioritization_Pipeline
 
 ```
 cd Gene_Prioritization_Pipeline
 ```
 
-### 3. Change directory to test
+### 4. Change directory to test
 
 ```
 cd test
 ```
  
-### 4. Create a local directory "run_dir" and place all the run files in it
+### 5. Create a local directory "run_dir" and place all the run files in it
 ```
 make env_setup
 ```
 
-### 5. Use one of the following "make" commands to select and run a clustering option:
+### 6. Use one of the following "make" commands to select and run a clustering option:
 
 
 | **Command**                        | **Option**                                        | 
