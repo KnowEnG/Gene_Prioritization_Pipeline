@@ -15,10 +15,7 @@ GP_options_dict = {
                 'run_net_t_test'              : 'BENCHMARK_7_GP_net_t_test',
                 'run_bootstrap_t_test'        : 'BENCHMARK_6_GP_bootstrap_t_test',
                 'run_bootstrap_net_t_test'    : 'BENCHMARK_8_GP_bootstrap_net_t_test'}
-                # 'run_single_drug_pearson'     : 'TEST_1_GP_single_drug_pearson',
-                # 'run_multidrug_pearson'       : 'TEST_2_GP_many_drugs_pearson',
-                # 'run_single_drug_t_test'      : 'TEST_3_GP_single_drug_t_test',
-                # 'run_multidrug_t_test'        : 'TEST_4_GP_many_drugs_t_test' }
+
 
 verify_root_dir = '../data/verification'
 results_dir = './run_dir/results'
@@ -62,7 +59,9 @@ def run_all_BENCHMARKs_and_TESTs():
         else:
             print('\n\t\t', tt, 'sec\t', n_eq, 'of', n_tot, 'equal\t', test_directory, '<-- FAIL')
         print('clear results and run_files')
-        os.system("make clean_dir_recursively create_run_dir copy_run_files")
+        for tmp_file_name in os.listdir(results_dir):
+            if os.path.isfile(os.path.join(results_dir, tmp_file_name)):
+                os.remove(os.path.join(results_dir, tmp_file_name))
 
 
 def main():
