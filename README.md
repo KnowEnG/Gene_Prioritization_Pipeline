@@ -19,7 +19,13 @@ Note: all of the correlation methods mentioned above use the Pearson or t-test c
 * * * 
 ## How to run this pipeline with Our data
 * * * 
-### 1. Install the following (Ubuntu or Linux)
+
+### 1. Clone the Gene_Prioritization_Pipeline Repo
+```
+ git clone https://github.com/KnowEnG/Gene_Prioritization_Pipeline.git
+```
+
+### 2. Install the following (Ubuntu or Linux)
   ```
  apt-get install -y python3-pip
  apt-get install -y libblas-dev liblapack-dev libatlas-base-dev gfortran
@@ -33,24 +39,24 @@ Note: all of the correlation methods mentioned above use the Pearson or t-test c
  pip3 install knpackage
 ```
 
-### 2. Change directory to Gene_Prioritization_Pipeline
+### 3. Change directory to Gene_Prioritization_Pipeline
 
 ```
 cd Gene_Prioritization_Pipeline
 ```
 
-### 3. Change directory to test
+### 4. Change directory to test
 
 ```
 cd test
 ```
  
-### 4. Create a local directory "run_dir" and place all the run files in it
+### 5. Create a local directory "run_dir" and place all the run files in it
 ```
 make env_setup
 ```
 
-### 5. Use one of the following "make" commands to select and run a clustering option:
+### 6. Use one of the following "make" commands to select and run a clustering option:
 
 
 | **Command**                        | **Option**                                        | 
@@ -131,13 +137,13 @@ set the spreadsheet, network and phenotype data file names to point to your data
 
 gg_network_name = STRING_experimental_gene_gene.edge</br>
 spreadsheet_name = CCLE_Expression_ensembl.df</br>
-phenotype_name = CCLE_drug_ec50_cleaned_NAremoved.txt
+phenotype_name = CCLE_drug_ec50_cleaned_NAremoved_pearson.txt
 
 * * * 
 ## Description of Output files saved in results directory
 * * * 
 
-* Any method saves separate files per phenotype with name {phenotype}\_{method}\_{correlation_measure}\_{timestamp}\_viz.tsv. Genes are sorted in descending order based on `quantitative_sorting_score`. </br>  
+* Any method saves separate files per phenotype with name {phenotype}\_{method}\_{correlation_measure}\_{timestamp}\_viz.tsv. Genes are sorted in descending order based on `visualization_score`. </br>  
 
  | **Response** | **Gene_ENSEMBL_ID** | **quantitative_sorting_score** | **visualization_score** | **baseline_score** |
  |:-------------:|:------------:|:---------:|:--------------:|:--------------:|

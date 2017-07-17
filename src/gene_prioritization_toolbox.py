@@ -1,14 +1,10 @@
 """
 @author: The KnowEnG dev team
 """
-import gc
 import os
 import numpy as np
 import pandas as pd
 
-from scipy.stats import ttest_ind
-from scipy.stats import pearsonr as pcc
-from scipy.stats.mstats import zscore
 from sklearn.preprocessing import normalize
 
 import knpackage.toolbox as kn
@@ -54,12 +50,11 @@ def run_correlation_worker(run_parameters, spreadsheet_df, phenotype_df, job_id)
 
     phenotype_df = phenotype_df.iloc[[job_id], :]
 
-    spreadsheet_df_trimmed, phenotype_df_trimmed, err_msg = datacln.check_input_value_for_gene_prioritazion(
-        spreadsheet_df, phenotype_df)
+    spreadsheet_df, phenotype_df, msg = datacln.check_input_value_for_gene_prioritazion(spreadsheet_df, phenotype_df)
 
-    pc_array = get_correlation(spreadsheet_df_trimmed.as_matrix(), phenotype_df_trimmed.values[0], run_parameters)
+    pc_array = get_correlation(spreadsheet_df.as_matrix(), phenotype_df.values[0], run_parameters)
 
-    gene_name_list = spreadsheet_df_trimmed.index
+    gene_name_list = spreadsheet_df.index
     phenotype_name = phenotype_df.index.values[0]
     generate_correlation_output(pc_array, phenotype_name, gene_name_list, run_parameters)
 
@@ -99,14 +94,14 @@ def run_bootstrap_correlation(run_parameters):
     """
     run_parameters["results_tmp_directory"] = kn.create_dir(run_parameters["results_directory"], 'tmp')
 
-    phenotype_response_df = kn.get_spreadsheet_df(run_parameters["phenotype_name_full_path"])
+    phenotype_df = kn.get_spreadsheet_df(run_parameters["phenotype_name_full_path"])
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
-    phenotype_response_df = phenotype_response_df.T
+    phenotype_df = phenotype_df.T
     n_bootstraps = run_parameters["number_of_bootstraps"]
 
-    number_of_jobs = len(phenotype_response_df.index)
+    number_of_jobs = len(phenotype_df.index)
     jobs_id = range(0, number_of_jobs)
-    zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, phenotype_response_df, n_bootstraps, jobs_id)
+    zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, phenotype_df, n_bootstraps, jobs_id)
     dstutil.parallelize_processes_locally(run_bootstrap_correlation_worker, zipped_arguments, number_of_jobs)
 
     write_phenotype_data_all(run_parameters)
@@ -127,16 +122,15 @@ def run_bootstrap_correlation_worker(run_parameters, spreadsheet_df, phenotype_d
     np.random.seed(job_id)
 
     phenotype_df = phenotype_df.iloc[[job_id], :]
-    spreadsheet_df_trimmed, phenotype_df_trimmed, ret_msg = datacln.check_input_value_for_gene_prioritazion(
-        spreadsheet_df, phenotype_df)
+    spreadsheet_df, phenotype_df, msg = datacln.check_input_value_for_gene_prioritazion(spreadsheet_df, phenotype_df)
 
-    pearson_array = get_correlation(spreadsheet_df_trimmed.as_matrix(), phenotype_df_trimmed.values[0], run_parameters)
+    pearson_array = get_correlation(spreadsheet_df.as_matrix(), phenotype_df.values[0], run_parameters)
     borda_count = np.zeros(spreadsheet_df.shape[0])
     gm_accumulator = np.ones(spreadsheet_df.shape[0])
     for bootstrap_number in range(0, n_bootstraps):
         sample_random, sample_permutation = sample_a_matrix_pearson(
-            spreadsheet_df_trimmed.as_matrix(), 1.0, run_parameters["cols_sampling_fraction"])
-        phenotype_response = phenotype_df_trimmed.values[0, None]
+            spreadsheet_df.as_matrix(), 1.0, run_parameters["cols_sampling_fraction"])
+        phenotype_response = phenotype_df.values[0, None]
         phenotype_response = phenotype_response[0, sample_permutation]
         pc_array = get_correlation(sample_random, phenotype_response, run_parameters)
         borda_count = sum_array_ranking_to_borda_count(borda_count, np.abs(pc_array))
@@ -144,8 +138,8 @@ def run_bootstrap_correlation_worker(run_parameters, spreadsheet_df, phenotype_d
     pcc_gm_array = gm_accumulator ** (1 / n_bootstraps)
     borda_count = borda_count / n_bootstraps
 
-    phenotype_name = phenotype_df_trimmed.index.values[0]
-    gene_name_list = spreadsheet_df_trimmed.index
+    phenotype_name = phenotype_df.index.values[0]
+    gene_name_list = spreadsheet_df.index
     viz_score = (borda_count - min(borda_count)) / (max(borda_count) - min(borda_count))
 
     generate_bootstrap_correlation_output(borda_count, viz_score, pearson_array,
@@ -184,36 +178,15 @@ def run_net_correlation(run_parameters):
         run_parameters: parameter set dictionary.
     """
     run_parameters["results_tmp_directory"] = kn.create_dir(run_parameters["results_directory"], 'tmp')
+    gg_network_name_full_path = run_parameters['gg_network_name_full_path']
+    network_mat, unique_gene_names = kn.get_sparse_network_matrix(gg_network_name_full_path)
 
-    network_df = kn.get_network_df(run_parameters['gg_network_name_full_path'])
+    network_mat = normalize(network_mat, norm="l1", axis=0)
 
-    node_1_names, node_2_names = kn.extract_network_node_names(network_df)
-    unique_gene_names = kn.find_unique_node_names(node_1_names, node_2_names)
-
-    unique_gene_names = sorted(unique_gene_names)
-
-    genes_lookup_table = kn.create_node_names_dict(unique_gene_names)
-
-    network_df = kn.map_node_names_to_index(network_df, genes_lookup_table, 'node_1')
-    network_df = kn.map_node_names_to_index(network_df, genes_lookup_table, 'node_2')
-
-    network_df = kn.symmetrize_df(network_df)
-    network_mat_sparse = kn.convert_network_df_to_sparse(
-        network_df, len(unique_gene_names), len(unique_gene_names))
-
-    network_mat = normalize(network_mat_sparse, norm="l1", axis=0)
-
-    del network_df
-    del network_mat_sparse
-    del node_1_names
-    del node_2_names
-    del genes_lookup_table
-    gc.collect()
-
-    phenotype_response_df = kn.get_spreadsheet_df(run_parameters["phenotype_name_full_path"])
+    phenotype_df = kn.get_spreadsheet_df(run_parameters["phenotype_name_full_path"])
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
     spreadsheet_genes_as_input = spreadsheet_df.index.values
-    phenotype_response_df = phenotype_response_df.T
+    phenotype_df = phenotype_df.T
 
     spreadsheet_df = kn.update_spreadsheet_df(spreadsheet_df, unique_gene_names)
     spreadsheet_df = zscore_dataframe(spreadsheet_df)
@@ -224,9 +197,9 @@ def run_net_correlation(run_parameters):
     baseline_array = np.ones(network_mat.shape[0]) / network_mat.shape[0]
     baseline_array = kn.smooth_matrix_with_rwr(baseline_array, network_mat, run_parameters)[0]
 
-    number_of_jobs = len(phenotype_response_df.index)
+    number_of_jobs = len(phenotype_df.index)
     jobs_id = range(0, number_of_jobs)
-    zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, phenotype_response_df, network_mat,
+    zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, phenotype_df, network_mat,
                                               spreadsheet_genes_as_input, baseline_array, jobs_id)
     dstutil.parallelize_processes_locally(run_net_correlation_worker, zipped_arguments, number_of_jobs)
 
@@ -251,14 +224,13 @@ def run_net_correlation_worker(run_parameters, spreadsheet_df, phenotype_df, net
     np.random.seed(job_id)
 
     phenotype_df = phenotype_df.iloc[[job_id], :]
-    spreadsheet_df_trimmed, phenotype_df_trimmed, ret_msg = datacln.check_input_value_for_gene_prioritazion(
-        spreadsheet_df, phenotype_df)
+    spreadsheet_df, phenotype_df, msg = datacln.check_input_value_for_gene_prioritazion(spreadsheet_df, phenotype_df)
 
-    sample_smooth = spreadsheet_df_trimmed.as_matrix()
+    sample_smooth = spreadsheet_df.as_matrix()
 
-    pc_array = get_correlation(sample_smooth, phenotype_df_trimmed.values[0], run_parameters)
+    pc_array = get_correlation(sample_smooth, phenotype_df.values[0], run_parameters)
     pearson_array = pc_array.copy()
-    pc_array[~np.in1d(spreadsheet_df_trimmed.index, spreadsheet_genes_as_input)] = 0.0
+    pc_array[~np.in1d(spreadsheet_df.index, spreadsheet_genes_as_input)] = 0.0
     pc_array = np.abs(trim_to_top_beta(pc_array, run_parameters["top_beta_of_sort"]))
     restart_accumulator = pc_array.copy()
     restart_accumulator[restart_accumulator != 0] = 1
@@ -270,8 +242,8 @@ def run_net_correlation_worker(run_parameters, spreadsheet_df, phenotype_df, net
     quantitative_score = pc_array
     viz_score = (pc_array - min(pc_array)) / (max(pc_array) - min(pc_array))
 
-    phenotype_name = phenotype_df_trimmed.index.values[0]
-    gene_name_list = spreadsheet_df_trimmed.index
+    phenotype_name = phenotype_df.index.values[0]
+    gene_name_list = spreadsheet_df.index
     gene_orig_list = spreadsheet_genes_as_input
 
     generate_net_correlation_output(pearson_array, quantitative_score, viz_score, restart_accumulator,
@@ -285,32 +257,15 @@ def run_bootstrap_net_correlation(run_parameters):
         run_parameters: parameter set dictionary.
     """
     run_parameters["results_tmp_directory"] = kn.create_dir(run_parameters["results_directory"], 'tmp')
+    gg_network_name_full_path = run_parameters['gg_network_name_full_path']
+    network_mat, unique_gene_names = kn.get_sparse_network_matrix(gg_network_name_full_path)
 
-    network_df = kn.get_network_df(run_parameters['gg_network_name_full_path'])
-    node_1_names, node_2_names = kn.extract_network_node_names(network_df)
-    unique_gene_names = kn.find_unique_node_names(node_1_names, node_2_names)
-    unique_gene_names = sorted(unique_gene_names)
-    genes_lookup_table = kn.create_node_names_dict(unique_gene_names)
+    network_mat = normalize(network_mat, norm="l1", axis=0)
 
-    network_df = kn.map_node_names_to_index(network_df, genes_lookup_table, 'node_1')
-    network_df = kn.map_node_names_to_index(network_df, genes_lookup_table, 'node_2')
-    network_df = kn.symmetrize_df(network_df)
-    network_mat_sparse = kn.convert_network_df_to_sparse(
-        network_df, len(unique_gene_names), len(unique_gene_names))
-
-    network_mat = normalize(network_mat_sparse, norm="l1", axis=0)
-
-    del network_df
-    del network_mat_sparse
-    del node_1_names
-    del node_2_names
-    del genes_lookup_table
-    gc.collect()
-
-    phenotype_response_df = kn.get_spreadsheet_df(run_parameters["phenotype_name_full_path"])
+    phenotype_df = kn.get_spreadsheet_df(run_parameters["phenotype_name_full_path"])
     spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
     spreadsheet_genes_as_input = spreadsheet_df.index.values
-    phenotype_response_df = phenotype_response_df.T
+    phenotype_df = phenotype_df.T
 
     spreadsheet_df = kn.update_spreadsheet_df(spreadsheet_df, unique_gene_names)
     spreadsheet_df = zscore_dataframe(spreadsheet_df)
@@ -320,9 +275,9 @@ def run_bootstrap_net_correlation(run_parameters):
     baseline_array = np.ones(network_mat.shape[0]) / network_mat.shape[0]
     baseline_array = kn.smooth_matrix_with_rwr(baseline_array, network_mat, run_parameters)[0]
 
-    number_of_jobs = len(phenotype_response_df.index)
+    number_of_jobs = len(phenotype_df.index)
     jobs_id = range(0, number_of_jobs)
-    zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, phenotype_response_df, network_mat,
+    zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, phenotype_df, network_mat,
                                               spreadsheet_genes_as_input, baseline_array, jobs_id)
     dstutil.parallelize_processes_locally(run_bootstrap_net_correlation_worker, zipped_arguments, number_of_jobs)
 
@@ -351,22 +306,21 @@ def run_bootstrap_net_correlation_worker(run_parameters, spreadsheet_df, phenoty
     borda_count = np.zeros(network_mat.shape[0])
 
     phenotype_df = phenotype_df.iloc[[job_id], :]
-    spreadsheet_df_trimmed, phenotype_df_trimmed, ret_msg = datacln.check_input_value_for_gene_prioritazion(
-        spreadsheet_df, phenotype_df)
+    spreadsheet_df, phenotype_df, msg = datacln.check_input_value_for_gene_prioritazion(spreadsheet_df, phenotype_df)
 
-    sample_smooth = spreadsheet_df_trimmed.as_matrix()
+    sample_smooth = spreadsheet_df.as_matrix()
 
-    pearson_array = get_correlation(sample_smooth, phenotype_df_trimmed.values[0], run_parameters)
+    pearson_array = get_correlation(sample_smooth, phenotype_df.values[0], run_parameters)
     n_bootstraps = run_parameters["number_of_bootstraps"]
     for bootstrap_number in range(0, n_bootstraps):
         sample_random, sample_permutation = sample_a_matrix_pearson(
             sample_smooth, 1.0, run_parameters["cols_sampling_fraction"])
 
-        phenotype_response = phenotype_df_trimmed.values[0, None]
+        phenotype_response = phenotype_df.values[0, None]
         phenotype_response = phenotype_response[0, sample_permutation]
         pc_array = get_correlation(sample_random, phenotype_response, run_parameters)
 
-        pc_array[~np.in1d(spreadsheet_df_trimmed.index, spreadsheet_genes_as_input)] = 0.0
+        pc_array[~np.in1d(spreadsheet_df.index, spreadsheet_genes_as_input)] = 0.0
         pc_array = np.abs(trim_to_top_beta(pc_array, run_parameters["top_beta_of_sort"]))
         restart_accumulator[pc_array != 0] += 1.0
 
@@ -382,8 +336,8 @@ def run_bootstrap_net_correlation_worker(run_parameters, spreadsheet_df, phenoty
     # pcc_gm_array = gm_accumulator ** (1 / n_bootstraps)
     viz_score = (borda_count - min(borda_count)) / (max(borda_count) - min(borda_count))
 
-    phenotype_name = phenotype_df_trimmed.index.values[0]
-    gene_name_list = spreadsheet_df_trimmed.index
+    phenotype_name = phenotype_df.index.values[0]
+    gene_name_list = spreadsheet_df.index
     gene_orig_list = spreadsheet_genes_as_input
     quantitative_score = borda_count
     generate_net_correlation_output(pearson_array, quantitative_score, viz_score, restart_accumulator,

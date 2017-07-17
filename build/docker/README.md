@@ -23,7 +23,7 @@ The Dockefile in this directory contains all the commands, in order, needed to b
 
 ### 1. Run the following command with the specified docker image:
 ```
-docker run -v `pwd`:/home/test/run_dir/ -it knowengdev/gene_prioritization_pipeline:01_31_2017 
+docker run -v `pwd`:/home/test/run_dir/ -it knowengdev/gene_prioritization_pipeline:04_26_2017 
 ```
 
 ### 2. Change directory to the "test" directory
@@ -38,5 +38,5 @@ make env_setup
 
 ### 4. Run the Gene Prioritization Pipeline
 ```
-make correlation
+make run_pearson
 ```
