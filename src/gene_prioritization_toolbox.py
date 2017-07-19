@@ -415,7 +415,6 @@ def get_correlation(spreadsheet_mat, phenotype_response, run_parameters):
             with np.errstate(divide='ignore', invalid='ignore'):
                 correlation_array = np.divide(d, denom)
                 correlation_array[np.isnan(denom)] = 0
-            correlation_array = np.abs(correlation_array)
 
             return correlation_array
 
