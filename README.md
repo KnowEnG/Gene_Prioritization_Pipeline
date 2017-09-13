@@ -111,9 +111,9 @@ set the spreadsheet, network and phenotype data file names to point to your data
    export PYTHONPATH='../src':$PYTHONPATH    
    ```
    
-  * Run
+  * Run (in test directory with env_setup as described above)
    ```
-  python3 ../src/gene_prioritization.py -run_directory ./ -run_file zTEMPLATE_GP_BENCHMARKS.yml
+  python3 ../src/gene_prioritization.py -run_directory ./run_dir -run_file zTEMPLATE_GP_BENCHMARKS.yml
    ```
 
 * * * 
