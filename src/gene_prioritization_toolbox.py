@@ -71,27 +71,30 @@ def run_correlation_worker(run_parameters, spreadsheet_df, phenotype_df, job_id)
 
 def generate_correlation_output(pc_array, phenotype_name, gene_name_list, run_parameters):
     """ Save final output of correlation
-    
+
     Args:
         pc_array: pearson correlation coefficient array
         phenotype_name: name of the phenotype
         gene_name_list: list of the genes correlated (size of pc_array
         run_parameters: dictionary of run parameters with key 'results_directory'
     """
-    phenotype_name_list = np.repeat(phenotype_name, len(gene_name_list))
-    baseline_score = pc_array
-    pc_array = abs(pc_array)
-    viz_score = (pc_array - min(pc_array)) / (max(pc_array) - min(pc_array))
-    pc_array = np.round(pc_array, 8)
-    viz_score = np.round(viz_score, 8)
-    baseline_score = np.round(baseline_score, 8)
-    
-    output_val = np.column_stack(
-        (phenotype_name_list, gene_name_list, pc_array, viz_score, baseline_score))
 
-    df_header = ['Response', 'Gene_ENSEMBL_ID', 'quantitative_sorting_score', 'visualization_score', 'baseline_score']
-    result_df = pd.DataFrame(output_val, columns=df_header).sort_values("visualization_score", ascending=0)
-    result_df.index = range(result_df.shape[0])
+    phenotype_name_list = np.repeat(phenotype_name, len(gene_name_list))
+
+    baseline_score      =     pc_array
+    pc_array            = abs(pc_array)
+    viz_score           =    (pc_array - min(pc_array)) / (max(pc_array) - min(pc_array))
+
+    baseline_score      = np.round( baseline_score, 8)
+    pc_array            = np.round( pc_array,       8)
+    viz_score           = np.round( viz_score,      8)
+
+    output_val          = np.column_stack( (phenotype_name_list, gene_name_list, pc_array, viz_score, baseline_score))
+    df_header           = ['Response', 'Gene_ENSEMBL_ID', 'quantitative_sorting_score', 'visualization_score', 'baseline_score']
+    result_df           = pd.DataFrame( output_val , columns=df_header)
+
+    result_df           =       result_df.sort_values("visualization_score", ascending=0)
+    result_df.index     = range(result_df.shape[0])
 
     write_one_phenotype(result_df, phenotype_name, gene_name_list, run_parameters)
 
