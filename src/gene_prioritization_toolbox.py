@@ -144,26 +144,28 @@ def run_bootstrap_correlation_worker(run_parameters, spreadsheet_df, phenotype_d
 
     np.random.seed(job_id)
 
-    phenotype_df = phenotype_df.iloc[[job_id], :]
-    spreadsheet_df, phenotype_df, msg = datacln.check_input_value_for_gene_prioritazion(spreadsheet_df, phenotype_df)
+    phenotype_df   = phenotype_df.iloc[[job_id], :]
+    spreadsheet_df,phenotype_df,msg= datacln.check_input_value_for_gene_prioritazion(spreadsheet_df, phenotype_df)
+    pearson_array  = get_correlation(spreadsheet_df.as_matrix(), phenotype_df.values[0], run_parameters)
+    borda_count    = np.zeros(spreadsheet_df.shape[0])
+    gm_accumulator = np.ones (spreadsheet_df.shape[0])
 
-    pearson_array = get_correlation(spreadsheet_df.as_matrix(), phenotype_df.values[0], run_parameters)
-    borda_count = np.zeros(spreadsheet_df.shape[0])
-    gm_accumulator = np.ones(spreadsheet_df.shape[0])
     for bootstrap_number in range(0, n_bootstraps):
-        sample_random, sample_permutation = sample_a_matrix_pearson(
-            spreadsheet_df.as_matrix(), 1.0, run_parameters["cols_sampling_fraction"])
+        sample_random      , sample_permutation = sample_a_matrix_pearson( spreadsheet_df.as_matrix()
+                                                    , 1.0
+                                                    , run_parameters["cols_sampling_fraction"]
+                                                    )
         phenotype_response = phenotype_df.values[0, None]
         phenotype_response = phenotype_response[0, sample_permutation]
-        pc_array = get_correlation(sample_random, phenotype_response, run_parameters)
-        borda_count = sum_array_ranking_to_borda_count(borda_count, np.abs(pc_array))
-        gm_accumulator = (np.abs(pc_array) + EPSILON_0) * gm_accumulator
-    pcc_gm_array = gm_accumulator ** (1 / n_bootstraps)
-    borda_count = borda_count / n_bootstraps
+        pc_array           = get_correlation(sample_random, phenotype_response, run_parameters)
+        borda_count        = sum_array_ranking_to_borda_count(borda_count, np.abs(pc_array))
+        gm_accumulator     = (np.abs(pc_array) + EPSILON_0) * gm_accumulator
 
+    pcc_gm_array   = gm_accumulator ** (1 / n_bootstraps)
+    borda_count    = borda_count / n_bootstraps
     phenotype_name = phenotype_df.index.values[0]
     gene_name_list = spreadsheet_df.index
-    viz_score = (borda_count - min(borda_count)) / (max(borda_count) - min(borda_count))
+    viz_score      = (borda_count - min(borda_count)) / (max(borda_count) - min(borda_count))
 
     generate_bootstrap_correlation_output(borda_count, viz_score, pearson_array,
                                           phenotype_name, gene_name_list, run_parameters)
