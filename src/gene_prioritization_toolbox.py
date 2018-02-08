@@ -171,7 +171,7 @@ def run_bootstrap_correlation_worker(run_parameters, spreadsheet_df, phenotype_d
                                           phenotype_name, gene_name_list, run_parameters)
 
 
-def generate_bootstrap_correlation_output(borda_count, viz_score, pearson_array, 
+def generate_bootstrap_correlation_output(borda_count, viz_score, pearson_array,
                                           phenotype_name, gene_name_list, run_parameters):
     """ Save final output of correlation
 
@@ -182,16 +182,16 @@ def generate_bootstrap_correlation_output(borda_count, viz_score, pearson_array,
         run_parameters: dictionary of run parameters with key 'results_directory'
     """
     phenotype_name_list = np.repeat(phenotype_name, len(gene_name_list))
-    viz_score = np.round(viz_score, 8)
-    borda_count = np.round(borda_count, 8)
-    pearson_array = np.round(pearson_array, 8)
 
-    output_val = np.column_stack(
-        (phenotype_name_list, gene_name_list, borda_count, viz_score, pearson_array))
+    viz_score           = np.round(viz_score,     8)
+    borda_count         = np.round(borda_count,   8)
+    pearson_array       = np.round(pearson_array, 8)
 
-    df_header = ['Response', 'Gene_ENSEMBL_ID', 'quantitative_sorting_score', 'visualization_score', 'baseline_score']
-    result_df = pd.DataFrame(output_val, columns=df_header).sort_values("visualization_score", ascending=0)
-    result_df.index = range(result_df.shape[0])
+    output_val          = np.column_stack((phenotype_name_list, gene_name_list, borda_count, viz_score, pearson_array))
+    df_header           = ['Response', 'Gene_ENSEMBL_ID', 'quantitative_sorting_score', 'visualization_score', 'baseline_score']
+    result_df           = pd.DataFrame(output_val, columns=df_header)
+    result_df           = result_df.sort_values("visualization_score", ascending=0)
+    result_df.index     = range(result_df.shape[0])
 
     write_one_phenotype(result_df, phenotype_name, gene_name_list, run_parameters)
 
