@@ -20,19 +20,32 @@ def run_correlation(run_parameters):
     Args:
         run_parameters: parameter set dictionary.
     """
+
     run_parameters["results_tmp_directory"] = kn.create_dir(run_parameters["results_directory"], 'tmp')
 
-    phenotype_df = kn.get_spreadsheet_df(run_parameters["phenotype_name_full_path"])
-    spreadsheet_df = kn.get_spreadsheet_df(run_parameters["spreadsheet_name_full_path"])
-    phenotype_df = phenotype_df.T
-    
-    number_of_jobs = len(phenotype_df.index)
-    jobs_id = range(0, number_of_jobs)
-    zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, phenotype_df, jobs_id)
-    dstutil.parallelize_processes_locally(run_correlation_worker, zipped_arguments, number_of_jobs)
+    results_tmp_directory      = run_parameters["results_tmp_directory"     ]
+    phenotype_name_full_path   = run_parameters["phenotype_name_full_path"  ]
+    spreadsheet_name_full_path = run_parameters["spreadsheet_name_full_path"]
 
-    write_phenotype_data_all(run_parameters)
-    kn.remove_dir(run_parameters["results_tmp_directory"])
+    spreadsheet_df             = kn.get_spreadsheet_df(spreadsheet_name_full_path)
+    phenotype_df               = kn.get_spreadsheet_df(phenotype_name_full_path  )
+    phenotype_df               = phenotype_df.T
+
+    number_of_jobs             = len(phenotype_df.index)
+    jobs_id                    = range(0, number_of_jobs)
+    zipped_arguments           = dstutil.zip_parameters( run_parameters
+                                                       , spreadsheet_df
+                                                       , phenotype_df
+                                                       , jobs_id
+                                                       )
+
+    dstutil.parallelize_processes_locally( run_correlation_worker
+                                         , zipped_arguments
+                                         , number_of_jobs
+                                         )
+
+    write_phenotype_data_all(run_parameters       )
+    kn.remove_dir           (results_tmp_directory)
 
 
 def run_correlation_worker(run_parameters, spreadsheet_df, phenotype_df, job_id):
