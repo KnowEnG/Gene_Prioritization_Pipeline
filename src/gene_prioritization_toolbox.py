@@ -241,35 +241,35 @@ def run_net_correlation_worker(run_parameters, spreadsheet_df, phenotype_df, net
         spreadsheet_df:  spreadsheet data frame
         phenotype_df:    phenotype data frame
         network_mat:     adjacency matrix
-        spreadsheet_genes_as_input: list of genes 
+        spreadsheet_genes_as_input: list of genes
         baseline_array:  network smooted baseline array
         job_id:          parallel iteration number
     """
 
     np.random.seed(job_id)
 
-    phenotype_df = phenotype_df.iloc[[job_id], :]
-    spreadsheet_df, phenotype_df, msg = datacln.check_input_value_for_gene_prioritazion(spreadsheet_df, phenotype_df)
+    phenotype_df        = phenotype_df.iloc[[job_id], :]
+    spreadsheet_df,phenotype_df,msg= datacln.check_input_value_for_gene_prioritazion(spreadsheet_df, phenotype_df)
+    sample_smooth       = spreadsheet_df.as_matrix()
+    pc_array            = get_correlation(sample_smooth, phenotype_df.values[0], run_parameters)
+    pearson_array       = pc_array.copy()
+    mask                = np.in1d(spreadsheet_df.index, spreadsheet_genes_as_input)
+    pc_array[~mask]     = 0.0
+    pc_array            = np.abs(trim_to_top_beta(pc_array, run_parameters["top_beta_of_sort"]))
 
-    sample_smooth = spreadsheet_df.as_matrix()
-
-    pc_array = get_correlation(sample_smooth, phenotype_df.values[0], run_parameters)
-    pearson_array = pc_array.copy()
-    pc_array[~np.in1d(spreadsheet_df.index, spreadsheet_genes_as_input)] = 0.0
-    pc_array = np.abs(trim_to_top_beta(pc_array, run_parameters["top_beta_of_sort"]))
     restart_accumulator = pc_array.copy()
     restart_accumulator[restart_accumulator != 0] = 1
 
-    pc_array = pc_array / max(sum(pc_array), EPSILON_0)
-    pc_array = kn.smooth_matrix_with_rwr(pc_array, network_mat, run_parameters)[0]
+    pc_array            = pc_array / max(sum(pc_array), EPSILON_0)
+    pc_array            = kn.smooth_matrix_with_rwr(pc_array, network_mat, run_parameters)[0]
 
-    pc_array = pc_array - baseline_array
-    quantitative_score = pc_array
-    viz_score = (pc_array - min(pc_array)) / (max(pc_array) - min(pc_array))
+    pc_array            =  pc_array - baseline_array
+    quantitative_score  =  pc_array
+    viz_score           = (pc_array - min(pc_array)) / (max(pc_array) - min(pc_array))
 
-    phenotype_name = phenotype_df.index.values[0]
-    gene_name_list = spreadsheet_df.index
-    gene_orig_list = spreadsheet_genes_as_input
+    phenotype_name      = phenotype_df.index.values[0]
+    gene_name_list      = spreadsheet_df.index
+    gene_orig_list      = spreadsheet_genes_as_input
 
     generate_net_correlation_output(pearson_array, quantitative_score, viz_score, restart_accumulator,
                                     phenotype_name, gene_name_list, gene_orig_list, run_parameters)
