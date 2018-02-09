@@ -411,33 +411,33 @@ def get_correlation(spreadsheet_mat, phenotype_response, run_parameters):
     Returns:
         correlation_array: genes x one
     """
-    correlation_array = np.zeros(spreadsheet_mat.shape[0])
-    if 'correlation_measure' in run_parameters:
-        if run_parameters['correlation_measure'] == 'pearson':
 
-            spreadsheet_mat = spreadsheet_mat - spreadsheet_mat.mean(axis=1).reshape((-1, 1))
-            phenotype_response = phenotype_response - phenotype_response.mean()
-            spreadsheet_mat_var = np.std(spreadsheet_mat, axis=1)
-            phenotype_response_var = np.std(phenotype_response)
-            numerator = spreadsheet_mat.dot(phenotype_response)
-            denominator = spreadsheet_mat_var * phenotype_response_var * spreadsheet_mat.shape[1]
-            with np.errstate(divide='ignore', invalid='ignore'):
-                correlation_array = np.true_divide(numerator, denominator)
-                correlation_array[denominator==0] = 0
+    correlation_measure = run_parameters['correlation_measure']
+    correlation_array   = np.zeros(spreadsheet_mat.shape[0])
 
-            return correlation_array
+    if correlation_measure == 'pearson':
+       spreadsheet_mat        = spreadsheet_mat - spreadsheet_mat.mean(axis=1).reshape((-1, 1))
+       phenotype_response     = phenotype_response - phenotype_response.mean()
+       spreadsheet_mat_var    = np.std(spreadsheet_mat, axis=1)
+       phenotype_response_var = np.std(phenotype_response)
+       numerator              = spreadsheet_mat.dot(phenotype_response)
+       denominator            = spreadsheet_mat_var * phenotype_response_var * spreadsheet_mat.shape[1]
 
-        if run_parameters['correlation_measure'] == 't_test':
-        
-            a = spreadsheet_mat[:, phenotype_response!=0]
-            b = spreadsheet_mat[:, phenotype_response==0]
-            d = np.mean(a, axis=1) - np.mean(b, axis=1)
-            denom = np.sqrt(np.var(a, axis=1, ddof=1)/a.shape[1] + np.var(b, axis=1, ddof=1)/b.shape[1])
-            with np.errstate(divide='ignore', invalid='ignore'):
-                correlation_array = np.divide(d, denom)
-                correlation_array[np.isnan(denom)] = 0
+       with np.errstate(divide='ignore', invalid='ignore'):
+            correlation_array = np.true_divide(numerator, denominator)
+            correlation_array[denominator==0] = 0
+       return correlation_array
 
-            return correlation_array
+    if correlation_measure == 't_test':
+       a           = spreadsheet_mat[:, phenotype_response !=0 ]
+       b           = spreadsheet_mat[:, phenotype_response ==0 ]
+       d           = np.mean(a, axis=1) - np.mean(b, axis=1)
+       denominator = np.sqrt( np.var(a, axis=1, ddof=1) / a.shape[1] + np.var(b, axis=1, ddof=1) / b.shape[1] )
+
+       with np.errstate(divide='ignore', invalid='ignore'):
+            correlation_array                           = np.divide(d, denominator)
+            correlation_array [ np.isnan(denominator) ] = 0
+       return correlation_array
 
     return correlation_array
 
