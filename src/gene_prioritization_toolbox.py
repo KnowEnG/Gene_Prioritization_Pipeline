@@ -450,25 +450,31 @@ def sum_array_ranking_to_borda_count(borda_count, corr_array):
     Returns:
         borda_count: the ranking of the correlation array added to the input borda count
     """
-    num_elem = borda_count.size
 
+    num_elem = borda_count.size
+    # --------------------------------------------------------------------
     # either assign (no duplicate case) or enumerate the correlation array
+    # --------------------------------------------------------------------
     if num_elem == (np.unique(corr_array)).size:
         borda_count[np.argsort(corr_array)] += np.int_(sorted(np.arange(0, corr_array.size) + 1))
         return borda_count
-
+    # --------------------------------------------------------------------
     # enumerate the borda vote
-    borda_add = np.zeros(num_elem)
-    enum_value = 1
-    sort_order = np.argsort(corr_array)
+    # --------------------------------------------------------------------
+    borda_add     = np.zeros(num_elem)
+    enum_value    = 1
+    sort_order    = np.argsort(corr_array)
     current_value = corr_array[sort_order[0]]
+
     for k in range(0, num_elem):
         if corr_array[sort_order[k]] != current_value:
-            enum_value += 1
-            current_value = corr_array[sort_order[k]]
+            enum_value    += 1
+            current_value  = corr_array[sort_order[k]]
         borda_add[sort_order[k]] = enum_value
 
+    # ---------------------------------------------------------------------------
     # scale to the number of elements in the array -- philosopical choice here --
+    # ---------------------------------------------------------------------------
     borda_add = borda_add + (num_elem - enum_value)
 
     return borda_count + borda_add
@@ -485,15 +491,19 @@ def sample_a_matrix_pearson(spreadsheet_mat, rows_fraction, cols_fraction):
         sample_random: A specified precentage sample of the spread sheet.
         sample_permutation: the array that correponds to columns sample.
     """
-    features_size = int(np.round(spreadsheet_mat.shape[0] * (1 - rows_fraction)))
-    features_permutation = np.random.permutation(spreadsheet_mat.shape[0])
+
+    features_size        = int( np.round        ( spreadsheet_mat.shape[0] * (1 - rows_fraction)) )
+
+    features_permutation = np.random.permutation( spreadsheet_mat.shape[0]                        )
     features_permutation = features_permutation[0:features_size].T
 
-    patients_size = int(np.round(spreadsheet_mat.shape[1] * cols_fraction))
-    sample_permutation = np.random.permutation(spreadsheet_mat.shape[1])
-    sample_permutation = sample_permutation[0:patients_size]
+    patients_size        = int( np.round        ( spreadsheet_mat.shape[1] *      cols_fraction ) )
 
-    sample_random = spreadsheet_mat[:, sample_permutation]
+    sample_permutation   = np.random.permutation( spreadsheet_mat.shape[1]                        )
+    sample_permutation   = sample_permutation[0:patients_size]
+
+    sample_random        = spreadsheet_mat[:, sample_permutation]
+
     sample_random[features_permutation[:, None], :] = 0
 
     return sample_random, sample_permutation
