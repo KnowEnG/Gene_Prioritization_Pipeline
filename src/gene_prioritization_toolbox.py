@@ -319,52 +319,49 @@ def run_bootstrap_net_correlation_worker(run_parameters, spreadsheet_df, phenoty
         spreadsheet_df:  spreadsheet data frame
         phenotype_df:    phenotype data frame
         network_mat:     adjacency matrix
-        spreadsheet_genes_as_input: list of genes 
+        spreadsheet_genes_as_input: list of genes
         baseline_array:  network smooted baseline array
         job_id:          parallel iteration number
     """
 
     np.random.seed(job_id)
 
-    restart_accumulator = np.zeros(network_mat.shape[0])
-    gm_accumulator = np.ones(network_mat.shape[0])
-    borda_count = np.zeros(network_mat.shape[0])
+    n_bootstraps           = run_parameters["number_of_bootstraps"  ]
+    cols_sampling_fraction = run_parameters["cols_sampling_fraction"]
+    top_beta_of_sort       = run_parameters["top_beta_of_sort"      ]
 
-    phenotype_df = phenotype_df.iloc[[job_id], :]
-    spreadsheet_df, phenotype_df, msg = datacln.check_input_value_for_gene_prioritazion(spreadsheet_df, phenotype_df)
+    restart_accumulator    = np.zeros(network_mat.shape[0])
+    gm_accumulator         = np.ones(network_mat.shape[0])
+    borda_count            = np.zeros(network_mat.shape[0])
 
-    sample_smooth = spreadsheet_df.as_matrix()
+    phenotype_df           = phenotype_df.iloc[[job_id], :]
+    spreadsheet_df,phenotype_df,msg= datacln.check_input_value_for_gene_prioritazion(spreadsheet_df, phenotype_df)
+    sample_smooth          = spreadsheet_df.as_matrix()
+    pearson_array          = get_correlation(sample_smooth, phenotype_df.values[0], run_parameters)
 
-    pearson_array = get_correlation(sample_smooth, phenotype_df.values[0], run_parameters)
-    n_bootstraps = run_parameters["number_of_bootstraps"]
     for bootstrap_number in range(0, n_bootstraps):
-        sample_random, sample_permutation = sample_a_matrix_pearson(
-            sample_smooth, 1.0, run_parameters["cols_sampling_fraction"])
-
+        sample_random      , sample_permutation = sample_a_matrix_pearson(sample_smooth, 1.0, cols_sampling_fraction)
         phenotype_response = phenotype_df.values[0, None]
         phenotype_response = phenotype_response[0, sample_permutation]
-        pc_array = get_correlation(sample_random, phenotype_response, run_parameters)
-
-        pc_array[~np.in1d(spreadsheet_df.index, spreadsheet_genes_as_input)] = 0.0
-        pc_array = np.abs(trim_to_top_beta(pc_array, run_parameters["top_beta_of_sort"]))
+        pc_array           = get_correlation(sample_random, phenotype_response, run_parameters)
+        mask               = np.in1d(spreadsheet_df.index, spreadsheet_genes_as_input)
+        pc_array[~mask]    = 0.0
+        pc_array           = np.abs(trim_to_top_beta(pc_array, top_beta_of_sort))
         restart_accumulator[pc_array != 0] += 1.0
+        pc_array           = pc_array / max( sum(pc_array), EPSILON_0 )
+        pc_array           = kn.smooth_matrix_with_rwr(pc_array, network_mat, run_parameters)[0]
+        pc_array           = pc_array - baseline_array
+        borda_count        = sum_array_ranking_to_borda_count(borda_count, pc_array)
+        gm_accumulator     = (np.abs(pc_array) + EPSILON_0) * gm_accumulator
 
-        pc_array = pc_array / max(sum(pc_array), EPSILON_0)
-        pc_array = kn.smooth_matrix_with_rwr(pc_array, network_mat, run_parameters)[0]
-        pc_array = pc_array - baseline_array
+    restart_accumulator    = restart_accumulator / n_bootstraps
+    borda_count            = borda_count         / n_bootstraps
+    viz_score              = (borda_count - min(borda_count)) / (max(borda_count) - min(borda_count))
+    phenotype_name         = phenotype_df.index.values[0]
+    gene_name_list         = spreadsheet_df.index
+    gene_orig_list         = spreadsheet_genes_as_input
+    quantitative_score     = borda_count
 
-        borda_count = sum_array_ranking_to_borda_count(borda_count, pc_array)
-        gm_accumulator = (np.abs(pc_array) + EPSILON_0) * gm_accumulator
-
-    restart_accumulator = restart_accumulator / n_bootstraps
-    borda_count = borda_count / n_bootstraps
-    # pcc_gm_array = gm_accumulator ** (1 / n_bootstraps)
-    viz_score = (borda_count - min(borda_count)) / (max(borda_count) - min(borda_count))
-
-    phenotype_name = phenotype_df.index.values[0]
-    gene_name_list = spreadsheet_df.index
-    gene_orig_list = spreadsheet_genes_as_input
-    quantitative_score = borda_count
     generate_net_correlation_output(pearson_array, quantitative_score, viz_score, restart_accumulator,
                                     phenotype_name, gene_name_list, gene_orig_list, run_parameters)
 
@@ -381,27 +378,26 @@ def generate_net_correlation_output(pearson_array, quantitative_score, viz_score
         gene_orig_list: original list of genes - size of quantitative_score
         run_parameters: with key 'results_directory'
     """
-    mask = np.in1d(gene_name_list, gene_orig_list)
-    quantitative_score = quantitative_score[mask]
-    pearson_array = pearson_array[mask]
-    viz_score = viz_score[mask]
-    gene_name_list = gene_name_list[mask]
+
+    mask                = np.in1d(gene_name_list, gene_orig_list)
+    quantitative_score  = quantitative_score [mask]
+    pearson_array       = pearson_array      [mask]
+    viz_score           = viz_score          [mask]
+    gene_name_list      = gene_name_list     [mask]
     restart_accumulator = restart_accumulator[mask]
+
     phenotype_name_list = np.repeat(phenotype_name, len(gene_name_list))
 
-    quantitative_score = np.round(quantitative_score, 8)
-    viz_score = np.round(viz_score, 8)
-    pearson_array = np.round(pearson_array, 8)
+    quantitative_score  = np.round(quantitative_score, 8)
+    viz_score           = np.round(viz_score, 8)
+    pearson_array       = np.round(pearson_array, 8)
 
-    output_val = np.column_stack(
-        (phenotype_name_list, gene_name_list, quantitative_score, viz_score, pearson_array, restart_accumulator))
-    
-    df_header = ['Response', 'Gene_ENSEMBL_ID', 'quantitative_sorting_score', 'visualization_score',
-                 'baseline_score', 'Percent_appearing_in_restart_set']
-    result_df = pd.DataFrame(output_val, columns=df_header).sort_values('visualization_score', ascending=0)
+    output_val          = np.column_stack( (phenotype_name_list, gene_name_list, quantitative_score, viz_score, pearson_array, restart_accumulator))
+    df_header           = ['Response', 'Gene_ENSEMBL_ID', 'quantitative_sorting_score', 'visualization_score', 'baseline_score', 'Percent_appearing_in_restart_set']
+
+    result_df           = pd.DataFrame(output_val, columns=df_header).sort_values('visualization_score', ascending=0)
 
     write_one_phenotype(result_df, phenotype_name, gene_orig_list, run_parameters)
-
 
 
 def get_correlation(spreadsheet_mat, phenotype_response, run_parameters):
