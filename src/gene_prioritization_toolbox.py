@@ -519,10 +519,14 @@ def trim_to_top_beta(corr_arr, Beta):
     Returns:
         corr_arr: the correlation array as binary with ones int the top Beta percent
     """
-    Beta = max(min(corr_arr.size, Beta) - 1, 0)
-    abs_corr_arr = np.abs(corr_arr)
+
+    Beta                      = max( min  (corr_arr.size, Beta) - 1, 0)
+
+    abs_corr_arr              = np.abs    (corr_arr)
     abs_corr_arr_cutoff_value = sorted(abs_corr_arr)[::-1][Beta]
-    corr_arr[abs_corr_arr < abs_corr_arr_cutoff_value] = 0
+
+    corr_arr[  abs_corr_arr   < abs_corr_arr_cutoff_value ] = 0
+
     return corr_arr
 
 
@@ -540,6 +544,7 @@ def zscore_dataframe(genes_by_sample_df):
     return zscore_df
 
 
+
 def write_one_phenotype(result_df, phenotype_name, gene_name_list, run_parameters):
     """ write the phenotype output file to the results directory and the temporary directory files
 
@@ -548,21 +553,28 @@ def write_one_phenotype(result_df, phenotype_name, gene_name_list, run_parameter
         phenotype_name:
         gene_name_list:
         run_parameters:
-        
+
     Output:
         {phenotype}_{method}_{correlation_measure}_{timestamp}_viz.tsv
     """
-    result_df.to_csv(get_output_file_name(run_parameters, 'results_directory', phenotype_name, 'viz'), header=True, index=False, sep='\t')
 
-    download_result_df = pd.DataFrame(data=None, index=None, columns=[phenotype_name])
+    top_beta_of_sort   = run_parameters['top_beta_of_sort']
+
+    viz_file_name      = get_output_file_name(run_parameters, 'results_directory'    , phenotype_name, 'viz'     )
+    download_file_name = get_output_file_name(run_parameters, 'results_tmp_directory', phenotype_name, 'download')
+    original_file_name = get_output_file_name(run_parameters, 'results_tmp_directory', phenotype_name, 'original')
+
+    download_result_df                 = pd.DataFrame(data=None, index=None         , columns=[phenotype_name])
+
     download_result_df[phenotype_name] = result_df['Gene_ENSEMBL_ID']
-    download_result_df.to_csv(
-        get_output_file_name(run_parameters, 'results_tmp_directory', phenotype_name, 'download'), header=True, index=False, sep='\t')
+    top_genes                          = download_result_df.values[: top_beta_of_sort]
+    mask                               = np.in1d(gene_name_list, top_genes).astype(int)
 
-    top_genes = download_result_df.values[: run_parameters['top_beta_of_sort']]
-    update_orig_result_df = pd.DataFrame(np.in1d(gene_name_list, top_genes).astype(int), index=gene_name_list, columns=[phenotype_name])
-    update_orig_result_df.to_csv(
-        get_output_file_name(run_parameters, 'results_tmp_directory', phenotype_name, 'original'), header=True, index=True, sep='\t')
+    update_orig_result_df              = pd.DataFrame(mask     , index=gene_name_list, columns=[phenotype_name])
+
+    result_df.to_csv                   (viz_file_name     , header=True, index=False, sep='\t')
+    download_result_df.to_csv          (download_file_name, header=True, index=False, sep='\t')
+    update_orig_result_df.to_csv       (original_file_name, header=True, index=True,  sep='\t')
 
 
 def write_phenotype_data_all(run_parameters):
@@ -570,49 +582,49 @@ def write_phenotype_data_all(run_parameters):
 
     Args:
         run_parameters: with field: 'results_directory'
-        
+
     Output:
         ranked_genes_per_phenotype_{method}_{correlation_measure}_{timestamp}_download.tsv
         top_genes_per_phenotype_{method}_{correlation_measure}_{timestamp}_download.tsv
-    """  
-    tmp_dir = run_parameters["results_tmp_directory"]
-    dirList = sorted(os.listdir(tmp_dir))
-    download_list = []
-    original_list = []
+    """
+
+    results_tmp_directory = run_parameters["results_tmp_directory"]
+    download_file_name    = get_output_file_name(run_parameters, 'results_directory', 'ranked_genes_per_phenotype', 'download')
+    original_file_name    = get_output_file_name(run_parameters, 'results_directory', 'top_genes_per_phenotype'   , 'download')
+
+    dirList               = sorted(os.listdir(results_tmp_directory))
+    download_list         = []
+    original_list         = []
+
     for fileName in dirList:
-        if (fileName[-12:] == 'download.tsv'):
-            download_list.append(fileName)
-        if (fileName[-12:] == 'original.tsv'):
-            original_list.append(fileName)
+        if (fileName[-12:] == 'download.tsv'): download_list.append(fileName)
+        if (fileName[-12:] == 'original.tsv'): original_list.append(fileName)
 
-    if (len(download_list) == 0 or len(original_list) == 0):
-        return
+    if (len(download_list) == 0 or len(original_list) == 0): return
 
-    StartFileName = os.path.join(tmp_dir, original_list[0])
-    src_df = pd.read_csv(StartFileName, sep='\t', header=0, index_col=0)
-    index_list = src_df.index.values
+    StartFileName = os.path.join(results_tmp_directory, original_list[0])
+    src_df        = pd.read_csv(StartFileName, sep='\t', header=0, index_col=0)
+    index_list    = src_df.index.values
 
     all_phenotypes_download_df = pd.DataFrame(data=None, index=None)
     all_phenotypes_original_df = pd.DataFrame(data=None, index=index_list)
 
-
     for fileName in download_list:
-        tFileName = os.path.join(tmp_dir, fileName)
-        src_df = pd.read_csv(tFileName, sep='\t', header=0, index_col=None)
-        phenotype_name = src_df.columns.values[0]
+        tFileName                                  = os.path.join(results_tmp_directory, fileName)
+        src_df                                     = pd.read_csv(tFileName, sep='\t', header=0, index_col=None)
+        phenotype_name                             = src_df.columns.values[0]
         all_phenotypes_download_df[phenotype_name] = src_df[phenotype_name]
 
     for fileName in original_list:
-        tFileName = os.path.join(tmp_dir, fileName)
-        src_df = pd.read_csv(tFileName, sep='\t', header=0, index_col=0)          
-        phenotype_name = src_df.columns.values[0]
+        tFileName                                  = os.path.join(results_tmp_directory, fileName)
+        src_df                                     = pd.read_csv(tFileName, sep='\t', header=0, index_col=0)
+        phenotype_name                             = src_df.columns.values[0]
         all_phenotypes_original_df[phenotype_name] = src_df[phenotype_name]
 
     all_phenotypes_download_df.index = range(1, all_phenotypes_download_df.shape[0]+1)
-    all_phenotypes_download_df.to_csv(
-        get_output_file_name(run_parameters, 'results_directory', 'ranked_genes_per_phenotype', 'download'), header=True, index=True, sep='\t')
-    all_phenotypes_original_df.to_csv(
-        get_output_file_name(run_parameters, 'results_directory', 'top_genes_per_phenotype', 'download'), header=True, index=True, sep='\t')
+
+    all_phenotypes_download_df.to_csv(download_file_name, header=True, index=True, sep='\t')
+    all_phenotypes_original_df.to_csv(original_file_name, header=True, index=True, sep='\t')
 
 
 def get_output_file_name(run_parameters, dir_name_key, prefix_string, suffix_string='', type_suffix='tsv'):
@@ -627,8 +639,10 @@ def get_output_file_name(run_parameters, dir_name_key, prefix_string, suffix_str
     Returns:
         output_file_name:   full file and directory name suitable for file writing
     """
-    output_file_name = os.path.join(run_parameters[dir_name_key], prefix_string + '_' +
-                                    run_parameters['method'] + '_' + run_parameters["correlation_measure"])
+    string_1         = prefix_string + '_' + run_parameters['method'] + '_' + run_parameters["correlation_measure"]
+    string_2         =  '_' + suffix_string + '.' + type_suffix
 
-    output_file_name = kn.create_timestamped_filename(output_file_name) + '_' + suffix_string + '.' + type_suffix
+    output_file_name = os.path.join( run_parameters[dir_name_key], string_1 )
+    output_file_name = kn.create_timestamped_filename(output_file_name) + string_2
+
     return output_file_name
