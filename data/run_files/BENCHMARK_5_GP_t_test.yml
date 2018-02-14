@@ -10,4 +10,6 @@ spreadsheet_name_full_path: ../data/spreadsheets/CCLE_Expression_ensembl.df
 phenotype_name_full_path:    ../data/spreadsheets/CCLE_drug_ec50_cleaned_NAremoved_t_test.txt
 
 results_directory:          ./run_dir/results
+
 top_beta_of_sort:           100
+top_gamma_of_sort:          100
