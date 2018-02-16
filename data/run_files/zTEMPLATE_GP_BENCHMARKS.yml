@@ -47,4 +47,4 @@ top_beta_of_sort:           3
 # --------------------------------------------------------------------
 # - fraction to retain after  completing the bootstraps              -
 # --------------------------------------------------------------------
-top_gamma_of_sort:          3
+top_gamma_of_sort:          2
