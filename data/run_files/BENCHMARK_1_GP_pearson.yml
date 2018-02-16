@@ -12,4 +12,4 @@ phenotype_name_full_path:    ../data/spreadsheets/CCLE_drug_ec50_cleaned_NAremov
 results_directory:          ./run_dir/results
 
 top_beta_of_sort:           100
-top_gamma_of_sort:          100
+top_gamma_of_sort:           50
