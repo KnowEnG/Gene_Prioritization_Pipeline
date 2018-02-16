@@ -61,7 +61,9 @@ def run_correlation_worker(run_parameters, spreadsheet_df, phenotype_df, job_id)
     np.random.seed(job_id) # selects a row from the phenotype_df spreadsheet
 
     phenotype_df           = phenotype_df.iloc[[job_id], :]
-    spreadsheet_df,phenotype_df,msg= datacln.check_input_value_for_gene_prioritazion(spreadsheet_df, phenotype_df)
+    spreadsheet_df         ,\
+    phenotype_df           ,\
+    msg                    = datacln.check_input_value_for_gene_prioritazion(spreadsheet_df, phenotype_df)
     pc_array               = get_correlation(spreadsheet_df.as_matrix(), phenotype_df.values[0], run_parameters)
     gene_name_list         = spreadsheet_df.index
     phenotype_name         = phenotype_df.index.values[0]
@@ -145,7 +147,9 @@ def run_bootstrap_correlation_worker(run_parameters, spreadsheet_df, phenotype_d
     np.random.seed(job_id)
 
     phenotype_df   = phenotype_df.iloc[[job_id], :]
-    spreadsheet_df,phenotype_df,msg= datacln.check_input_value_for_gene_prioritazion(spreadsheet_df, phenotype_df)
+    spreadsheet_df ,\
+    phenotype_df   ,\
+    msg            = datacln.check_input_value_for_gene_prioritazion(spreadsheet_df, phenotype_df)
     pearson_array  = get_correlation(spreadsheet_df.as_matrix(), phenotype_df.values[0], run_parameters)
     borda_count    = np.zeros(spreadsheet_df.shape[0])
     gm_accumulator = np.ones (spreadsheet_df.shape[0])
@@ -249,7 +253,9 @@ def run_net_correlation_worker(run_parameters, spreadsheet_df, phenotype_df, net
     np.random.seed(job_id)
 
     phenotype_df        = phenotype_df.iloc[[job_id], :]
-    spreadsheet_df,phenotype_df,msg= datacln.check_input_value_for_gene_prioritazion(spreadsheet_df, phenotype_df)
+    spreadsheet_df      ,\
+    phenotype_df        ,\
+    msg                 = datacln.check_input_value_for_gene_prioritazion(spreadsheet_df, phenotype_df)
     sample_smooth       = spreadsheet_df.as_matrix()
     pc_array            = get_correlation(sample_smooth, phenotype_df.values[0], run_parameters)
     pearson_array       = pc_array.copy()
@@ -335,7 +341,9 @@ def run_bootstrap_net_correlation_worker(run_parameters, spreadsheet_df, phenoty
     borda_count            = np.zeros(network_mat.shape[0])
 
     phenotype_df           = phenotype_df.iloc[[job_id], :]
-    spreadsheet_df,phenotype_df,msg= datacln.check_input_value_for_gene_prioritazion(spreadsheet_df, phenotype_df)
+    spreadsheet_df         ,\
+    phenotype_df           ,\
+    msg                    = datacln.check_input_value_for_gene_prioritazion(spreadsheet_df, phenotype_df)
     sample_smooth          = spreadsheet_df.as_matrix()
     pearson_array          = get_correlation(sample_smooth, phenotype_df.values[0], run_parameters)
 
@@ -558,7 +566,7 @@ def write_one_phenotype(result_df, phenotype_name, gene_name_list, run_parameter
         {phenotype}_{method}_{correlation_measure}_{timestamp}_viz.tsv
     """
 
-    top_beta_of_sort   = run_parameters['top_beta_of_sort']
+    top_gamma_of_sort   = run_parameters['top_gamma_of_sort']
 
     viz_file_name      = get_output_file_name(run_parameters, 'results_directory'    , phenotype_name, 'viz'     )
     download_file_name = get_output_file_name(run_parameters, 'results_tmp_directory', phenotype_name, 'download')
@@ -567,7 +575,7 @@ def write_one_phenotype(result_df, phenotype_name, gene_name_list, run_parameter
     download_result_df                 = pd.DataFrame(data=None, index=None         , columns=[phenotype_name])
 
     download_result_df[phenotype_name] = result_df['Gene_ENSEMBL_ID']
-    top_genes                          = download_result_df.values[: top_beta_of_sort]
+    top_genes                          = download_result_df.values[: top_gamma_of_sort]
     mask                               = np.in1d(gene_name_list, top_genes).astype(int)
 
     update_orig_result_df              = pd.DataFrame(mask     , index=gene_name_list, columns=[phenotype_name])

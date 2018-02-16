@@ -43,3 +43,8 @@ rwr_restart_probability:    0.5 # same as alpha in the above formula
 # - fraction to retain after first random walk smoothing             -
 # --------------------------------------------------------------------
 top_beta_of_sort:           3
+
+# --------------------------------------------------------------------
+# - fraction to retain after  completing the bootstraps              -
+# --------------------------------------------------------------------
+top_gamma_of_sort:          2

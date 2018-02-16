@@ -134,6 +134,7 @@ set the spreadsheet, network and phenotype data file names to point to your data
 | rwr_convergence_tolerence | 1.0e-2 | Frobenius norm tolerence of spreadsheet vector in random walk|
 | rwr_restart_probability | 0.5 | alpha in `V_(n+1) = alpha * N * Vn + (1-alpha) * Vo` |
 | top_beta_of_sort| 100| Number of top genes selected |
+| top_gamma_of_sort| 50| Number of top genes reported |
 
 gg_network_name = STRING_experimental_gene_gene.edge</br>
 spreadsheet_name = CCLE_Expression_ensembl.df</br>
