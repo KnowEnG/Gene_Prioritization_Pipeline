@@ -170,3 +170,8 @@ phenotype_name = CCLE_drug_ec50_cleaned_NAremoved_pearson.txt
  | gene 1 |1/0 |...|1/0|
  | ... |...|...|...|
  | gene n | 1/0|...|1/0|
+
+
+References:
+- The Cancer Cell Line Encyclopedia enables predictive modelling of anticancer drug sensitivity https://www.nature.com/articles/nature11003
+
