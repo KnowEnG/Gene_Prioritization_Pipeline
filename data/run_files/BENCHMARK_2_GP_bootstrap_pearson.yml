@@ -17,3 +17,4 @@ cols_sampling_fraction:     0.9       # 1.0 means 100% of columns (i.e., no samp
 
 top_beta_of_sort:           100
 top_gamma_of_sort:           50
+max_cpu:                      4

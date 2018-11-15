@@ -13,3 +13,4 @@ results_directory:          ./run_dir/results
 
 top_beta_of_sort:           100
 top_gamma_of_sort:           50
+max_cpu:                      4

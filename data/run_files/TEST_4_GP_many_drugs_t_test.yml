@@ -22,3 +22,4 @@ rwr_restart_probability:    0.5       # Vn+1 = alpha * N * Vn + (1-alpha) * Vo
 
 top_beta_of_sort:           2
 top_gamma_of_sort:          1
+max_cpu:                      4

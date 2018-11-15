@@ -1,20 +1,21 @@
 # ------------------------------------------------------------------------------------------------------
 # - Analysis Method: correlation, net_correlation, bootstrap_correlation, or bootstrap_net_correlation -                
 # ------------------------------------------------------------------------------------------------------
-method: net_correlation
+method:                       net_correlation
 
 # pearson, t_test
-correlation_measure: pearson
+correlation_measure:          pearson
 
-gg_network_name_full_path:  ../data/networks/TEST_1_gene_gene.edge
-spreadsheet_name_full_path: ../data/spreadsheets/TEST_1_gene_sample.tsv
-phenotype_name_full_path:    ../data/spreadsheets/TEST_1_response_pearson.tsv
+gg_network_name_full_path:    ../data/networks/TEST_1_gene_gene.edge
+spreadsheet_name_full_path:   ../data/spreadsheets/TEST_1_gene_sample.tsv
+phenotype_name_full_path:     ../data/spreadsheets/TEST_1_response_pearson.tsv
 
-results_directory:          ../test/run_dir/results
+results_directory:            ../test/run_dir/results
 
-rwr_max_iterations:         100
-rwr_convergence_tolerence:  1.0e-2
-rwr_restart_probability:    0.5       # Vn+1 = alpha * N * Vn + (1-alpha) * Vo
+rwr_max_iterations:           100
+rwr_convergence_tolerence:    1.0e-2
+rwr_restart_probability:      0.5       # Vn+1 = alpha * N * Vn + (1-alpha) * Vo
 
-top_beta_of_sort:           2
-top_gamma_of_sort:          1
+top_beta_of_sort:             2
+top_gamma_of_sort:            1
+max_cpu:                      4
