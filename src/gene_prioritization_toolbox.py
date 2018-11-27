@@ -33,17 +33,13 @@ def run_correlation(run_parameters):
 
 
     #-----------------------------------------------------------------------------------------
-    #   Need to build a loop that partition the phenotype dataframe (partition size = MaxCPU)
-    #   and
-    #   set the range for jobs_id
-    number_of_jobs             = len(phenotype_df.index)
-    jobs_id                    = range(0, number_of_jobs)
-
+    #   Partition the phenotype dataframe (partition size = MaxCPU)
+    #-----------------------------------------------------------------------------------------
     len_phenotype = len(phenotype_df.index)
     array_of_jobs = range(0, len_phenotype)
 
     if (len_phenotype <= max_cpu):
-        jobs_id = range(0, number_of_jobs)
+        jobs_id = array_of_jobs
         number_of_jobs = len(jobs_id)
         # -----------------------------------------------------------------------------------------
         zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, phenotype_df, jobs_id)
@@ -55,10 +51,10 @@ def run_correlation(run_parameters):
             jobs_id = array_of_jobs[i:i + max_cpu]
             number_of_jobs = len(jobs_id)
             #-----------------------------------------------------------------------------------------
-            zipped_arguments           = dstutil.zip_parameters( run_parameters, spreadsheet_df, phenotype_df, jobs_id)
+            zipped_arguments = dstutil.zip_parameters( run_parameters, spreadsheet_df, phenotype_df, jobs_id)
             dstutil.parallelize_processes_locally( run_correlation_worker, zipped_arguments, number_of_jobs)
-            write_phenotype_data_all(run_parameters)
             #-----------------------------------------------------------------------------------------
+    write_phenotype_data_all(run_parameters)
 
     kn.remove_dir           (results_tmp_directory)
 
@@ -123,6 +119,7 @@ def run_bootstrap_correlation(run_parameters):
         run_parameters: parameter set dictionary.
     """
 
+    max_cpu               = run_parameters["max_cpu"]
     run_parameters["results_tmp_directory"] = kn.create_dir(run_parameters["results_directory"], 'tmp')
 
     results_tmp_directory =                       run_parameters["results_tmp_directory"     ]
@@ -134,23 +131,44 @@ def run_bootstrap_correlation(run_parameters):
     phenotype_df          = phenotype_df.T
 
     #-----------------------------------------------------------------------------------------
-    #   Need to build a loop that partition the phenotype dataframe (partition size = MaxCPU)
-    #   and
-    #   set the range for jobs_id
-    number_of_jobs        = len(phenotype_df.index)
-    jobs_id               = range(0, number_of_jobs)
+    #   Partition the phenotype dataframe (partition size = MaxCPU)
     #-----------------------------------------------------------------------------------------
-    zipped_arguments      = dstutil.zip_parameters( run_parameters
-                                                  , spreadsheet_df
-                                                  , phenotype_df
-                                                  , n_bootstraps
-                                                  , jobs_id
-                                                  )
+    len_phenotype = len(phenotype_df.index)
+    array_of_jobs = range(0, len_phenotype)
 
-    dstutil.parallelize_processes_locally(run_bootstrap_correlation_worker, zipped_arguments, number_of_jobs)
+    if (len_phenotype <= max_cpu):
+        jobs_id = array_of_jobs
+        number_of_jobs = len(jobs_id)
+        #-----------------------------------------------------------------------------------------
+        zipped_arguments      = dstutil.zip_parameters( run_parameters
+                                                      , spreadsheet_df
+                                                      , phenotype_df
+                                                      , n_bootstraps
+                                                      , jobs_id
+                                                      )
 
-    write_phenotype_data_all(run_parameters       )
-    #-----------------------------------------------------------------------------------------
+        dstutil.parallelize_processes_locally(run_bootstrap_correlation_worker, zipped_arguments, number_of_jobs)
+    
+        write_phenotype_data_all(run_parameters       )
+        #-----------------------------------------------------------------------------------------
+
+    else:
+        for i in range(0, len_phenotype, max_cpu):
+            jobs_id = array_of_jobs[i:i + max_cpu]
+            number_of_jobs = len(jobs_id)
+            #-----------------------------------------------------------------------------------------
+        zipped_arguments      = dstutil.zip_parameters( run_parameters
+                                                      , spreadsheet_df
+                                                      , phenotype_df
+                                                      , n_bootstraps
+                                                      , jobs_id
+                                                      )
+
+        dstutil.parallelize_processes_locally(run_bootstrap_correlation_worker, zipped_arguments, number_of_jobs)
+    write_phenotype_data_all(run_parameters)
+            #-----------------------------------------------------------------------------------------
+
+
 
     kn.remove_dir           (results_tmp_directory)
 
@@ -228,6 +246,7 @@ def run_net_correlation(run_parameters):
     Args:
         run_parameters: parameter set dictionary.
     """
+    max_cpu = run_parameters["max_cpu"]
     run_parameters["results_tmp_directory"] = kn.create_dir(run_parameters["results_directory"], 'tmp')
     gg_network_name_full_path = run_parameters['gg_network_name_full_path']
     network_mat, unique_gene_names = kn.get_sparse_network_matrix(gg_network_name_full_path)
@@ -249,19 +268,37 @@ def run_net_correlation(run_parameters):
     baseline_array = kn.smooth_matrix_with_rwr(baseline_array, network_mat, run_parameters)[0]
 
     #-----------------------------------------------------------------------------------------
-    #   Need to build a loop that partition the phenotype dataframe (partition size = MaxCPU)
-    #   and
-    #   set the range for jobs_id
-    number_of_jobs = len(phenotype_df.index)
-    jobs_id        = range(0, number_of_jobs)
+    #   Partition the phenotype dataframe (partition size = MaxCPU)
+    #-----------------------------------------------------------------------------------------
 
-    zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, phenotype_df, network_mat,
-                                              spreadsheet_genes_as_input, baseline_array, jobs_id)
-    dstutil.parallelize_processes_locally(run_net_correlation_worker, zipped_arguments, number_of_jobs)
+    len_phenotype = len(phenotype_df.index)
+    array_of_jobs = range(0, len_phenotype)
+
+    if (len_phenotype <= max_cpu):
+        jobs_id = array_of_jobs
+        number_of_jobs = len(jobs_id)
+
+        zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, phenotype_df, network_mat,
+                                                  spreadsheet_genes_as_input, baseline_array, jobs_id)
+        dstutil.parallelize_processes_locally(run_net_correlation_worker, zipped_arguments, number_of_jobs)
+
+        write_phenotype_data_all(run_parameters)
+
+        #-----------------------------------------------------------------------------------------
+    else:
+        for i in range(0, len_phenotype, max_cpu):
+            jobs_id = array_of_jobs[i:i + max_cpu]
+            number_of_jobs = len(jobs_id)
+            #-----------------------------------------------------------------------------------------
+        zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, phenotype_df, network_mat,
+                                                  spreadsheet_genes_as_input, baseline_array, jobs_id)
+        dstutil.parallelize_processes_locally(run_net_correlation_worker, zipped_arguments, number_of_jobs)
+
 
     write_phenotype_data_all(run_parameters)
+            #-----------------------------------------------------------------------------------------
 
-    #-----------------------------------------------------------------------------------------
+
 
     kn.remove_dir(run_parameters["results_tmp_directory"])
 
@@ -339,15 +376,14 @@ def run_bootstrap_net_correlation(run_parameters):
     baseline_array = kn.smooth_matrix_with_rwr(baseline_array, network_mat, run_parameters)[0]
 
     #-----------------------------------------------------------------------------------------
-    #   Need to build a loop that partition the phenotype dataframe (partition size = MaxCPU)
-    #   and
-    #   set the range for jobs_id
+    #   Partition the phenotype dataframe (partition size = MaxCPU)
+    #-----------------------------------------------------------------------------------------
 
     len_phenotype = len(phenotype_df.index)
     array_of_jobs = range(0, len_phenotype)
 
     if (len_phenotype <= max_cpu):
-        jobs_id = range(0, number_of_jobs)
+        jobs_id = array_of_jobs
         number_of_jobs = len(jobs_id)
         # -----------------------------------------------------------------------------------------
         zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, phenotype_df, network_mat,
@@ -364,7 +400,7 @@ def run_bootstrap_net_correlation(run_parameters):
                                                       spreadsheet_genes_as_input, baseline_array, jobs_id)
             dstutil.parallelize_processes_locally(run_bootstrap_net_correlation_worker, zipped_arguments,
                                                   number_of_jobs)
-            write_phenotype_data_all(run_parameters)
+    write_phenotype_data_all(run_parameters)
             #-----------------------------------------------------------------------------------------
 
 
