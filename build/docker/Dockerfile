@@ -8,6 +8,8 @@ ENV SRC_LOC /home
 
 # Install the latest knpackage
 RUN pip3 install -I knpackage redis
+RUN pip3 install -I numpy==1.15.4 pandas==0.23.4
+
 
 # Clone from github
 RUN git clone https://github.com/KnowEnG/Gene_Prioritization_Pipeline.git ${SRC_LOC} 
