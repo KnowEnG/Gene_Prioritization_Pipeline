@@ -38,22 +38,13 @@ def run_correlation(run_parameters):
     len_phenotype = len(phenotype_df.index)
     array_of_jobs = range(0, len_phenotype)
 
-    if (len_phenotype <= max_cpu):
-        jobs_id = array_of_jobs
+    for i in range(0, len_phenotype, max_cpu):
+        jobs_id = array_of_jobs[i:i + max_cpu]
         number_of_jobs = len(jobs_id)
-        # -----------------------------------------------------------------------------------------
-        zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, phenotype_df, jobs_id)
-        dstutil.parallelize_processes_locally(run_correlation_worker, zipped_arguments, number_of_jobs)
-        write_phenotype_data_all(run_parameters)
-        # -----------------------------------------------------------------------------------------
-    else:
-        for i in range(0, len_phenotype, max_cpu):
-            jobs_id = array_of_jobs[i:i + max_cpu]
-            number_of_jobs = len(jobs_id)
-            #-----------------------------------------------------------------------------------------
-            zipped_arguments = dstutil.zip_parameters( run_parameters, spreadsheet_df, phenotype_df, jobs_id)
-            dstutil.parallelize_processes_locally( run_correlation_worker, zipped_arguments, number_of_jobs)
-            #-----------------------------------------------------------------------------------------
+        #-----------------------------------------------------------------------------------------
+        zipped_arguments = dstutil.zip_parameters( run_parameters, spreadsheet_df, phenotype_df, jobs_id)
+        dstutil.parallelize_processes_locally( run_correlation_worker, zipped_arguments, number_of_jobs)
+        #-----------------------------------------------------------------------------------------
     write_phenotype_data_all(run_parameters)
 
     kn.remove_dir           (results_tmp_directory)
@@ -136,8 +127,8 @@ def run_bootstrap_correlation(run_parameters):
     len_phenotype = len(phenotype_df.index)
     array_of_jobs = range(0, len_phenotype)
 
-    if (len_phenotype <= max_cpu):
-        jobs_id = array_of_jobs
+    for i in range(0, len_phenotype, max_cpu):
+        jobs_id = array_of_jobs[i:i + max_cpu]
         number_of_jobs = len(jobs_id)
         #-----------------------------------------------------------------------------------------
         zipped_arguments      = dstutil.zip_parameters( run_parameters
@@ -148,25 +139,8 @@ def run_bootstrap_correlation(run_parameters):
                                                       )
 
         dstutil.parallelize_processes_locally(run_bootstrap_correlation_worker, zipped_arguments, number_of_jobs)
-    
-        write_phenotype_data_all(run_parameters       )
         #-----------------------------------------------------------------------------------------
-
-    else:
-        for i in range(0, len_phenotype, max_cpu):
-            jobs_id = array_of_jobs[i:i + max_cpu]
-            number_of_jobs = len(jobs_id)
-            #-----------------------------------------------------------------------------------------
-        zipped_arguments      = dstutil.zip_parameters( run_parameters
-                                                      , spreadsheet_df
-                                                      , phenotype_df
-                                                      , n_bootstraps
-                                                      , jobs_id
-                                                      )
-
-        dstutil.parallelize_processes_locally(run_bootstrap_correlation_worker, zipped_arguments, number_of_jobs)
     write_phenotype_data_all(run_parameters)
-            #-----------------------------------------------------------------------------------------
 
 
 
@@ -274,29 +248,16 @@ def run_net_correlation(run_parameters):
     len_phenotype = len(phenotype_df.index)
     array_of_jobs = range(0, len_phenotype)
 
-    if (len_phenotype <= max_cpu):
-        jobs_id = array_of_jobs
+    for i in range(0, len_phenotype, max_cpu):
+        jobs_id = array_of_jobs[i:i + max_cpu]
         number_of_jobs = len(jobs_id)
-
+        #-----------------------------------------------------------------------------------------
         zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, phenotype_df, network_mat,
                                                   spreadsheet_genes_as_input, baseline_array, jobs_id)
         dstutil.parallelize_processes_locally(run_net_correlation_worker, zipped_arguments, number_of_jobs)
-
-        write_phenotype_data_all(run_parameters)
 
         #-----------------------------------------------------------------------------------------
-    else:
-        for i in range(0, len_phenotype, max_cpu):
-            jobs_id = array_of_jobs[i:i + max_cpu]
-            number_of_jobs = len(jobs_id)
-            #-----------------------------------------------------------------------------------------
-        zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, phenotype_df, network_mat,
-                                                  spreadsheet_genes_as_input, baseline_array, jobs_id)
-        dstutil.parallelize_processes_locally(run_net_correlation_worker, zipped_arguments, number_of_jobs)
-
-
     write_phenotype_data_all(run_parameters)
-            #-----------------------------------------------------------------------------------------
 
 
 
@@ -382,26 +343,16 @@ def run_bootstrap_net_correlation(run_parameters):
     len_phenotype = len(phenotype_df.index)
     array_of_jobs = range(0, len_phenotype)
 
-    if (len_phenotype <= max_cpu):
-        jobs_id = array_of_jobs
+    for i in range(0, len_phenotype, max_cpu):
+        jobs_id = array_of_jobs[i:i + max_cpu]
         number_of_jobs = len(jobs_id)
-        # -----------------------------------------------------------------------------------------
+        #-----------------------------------------------------------------------------------------
         zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, phenotype_df, network_mat,
                                                   spreadsheet_genes_as_input, baseline_array, jobs_id)
-        dstutil.parallelize_processes_locally(run_bootstrap_net_correlation_worker, zipped_arguments, number_of_jobs)
-        write_phenotype_data_all(run_parameters)
-        # -----------------------------------------------------------------------------------------
-    else:
-        for i in range(0, len_phenotype, max_cpu):
-            jobs_id = array_of_jobs[i:i + max_cpu]
-            number_of_jobs = len(jobs_id)
-            #-----------------------------------------------------------------------------------------
-            zipped_arguments = dstutil.zip_parameters(run_parameters, spreadsheet_df, phenotype_df, network_mat,
-                                                      spreadsheet_genes_as_input, baseline_array, jobs_id)
-            dstutil.parallelize_processes_locally(run_bootstrap_net_correlation_worker, zipped_arguments,
-                                                  number_of_jobs)
+        dstutil.parallelize_processes_locally(run_bootstrap_net_correlation_worker, zipped_arguments,
+                                              number_of_jobs)
+        #-----------------------------------------------------------------------------------------
     write_phenotype_data_all(run_parameters)
-            #-----------------------------------------------------------------------------------------
 
 
     kn.remove_dir(run_parameters["results_tmp_directory"])
