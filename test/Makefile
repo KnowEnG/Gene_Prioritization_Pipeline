@@ -1,7 +1,7 @@
 # ----------------------------------------------------------------
 # Variables setup Section                                        -
 # ----------------------------------------------------------------
-SCRIPT =             ../src/gene_prioritization.py
+SCRIPT =             -m kngeneprioritization.gene_prioritization
 RUN_DIR =            ./run_dir
 RUN_FILES =          ../data/run_files
 RESULTS_DIR =        $(RUN_DIR)/results
@@ -10,6 +10,7 @@ UNIT_TEST_TEMP_DIR = ./unit/tmp
 DATA_DIR =           ../data/networks ../data/spreadsheets
 INPUT_DATA =         $(foreach dir,$(DATA_DIR),$(wildcard $(dir)/*.gz))
 INPUT_DATA_SUFFIX =  $(suffix $(INPUT_DATA))
+PYTHONPATH =         ../
 
 RMR =                rm -rf
 GZIP =               gzip
@@ -38,31 +39,31 @@ run_all_methods: run_all_small run_all_pearson run_all_t_test
 run_all_pearson: run_pearson run_bootstrap_pearson run_net_pearson run_bootstrap_net_pearson
 
 run_pearson:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_1_GP_pearson.yml
+	PYTHONPATH=${PYTHONPATH} python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_1_GP_pearson.yml
 
 run_net_pearson:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_3_GP_net_pearson.yml
+	PYTHONPATH=${PYTHONPATH} python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_3_GP_net_pearson.yml
 
 run_bootstrap_pearson:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_2_GP_bootstrap_pearson.yml
+	PYTHONPATH=${PYTHONPATH} python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_2_GP_bootstrap_pearson.yml
 
 run_bootstrap_net_pearson:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_4_GP_bootstrap_net_pearson.yml
+	PYTHONPATH=${PYTHONPATH} python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_4_GP_bootstrap_net_pearson.yml
 
 # ----------------------------------------------------------------
 run_all_t_test: run_t_test run_bootstrap_t_test run_net_t_test run_bootstrap_net_t_test
 
 run_t_test:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_5_GP_t_test.yml
+	PYTHONPATH=${PYTHONPATH} python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_5_GP_t_test.yml
 
 run_net_t_test:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_7_GP_net_t_test.yml
+	PYTHONPATH=${PYTHONPATH} python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_7_GP_net_t_test.yml
 
 run_bootstrap_t_test:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_6_GP_bootstrap_t_test.yml
+	PYTHONPATH=${PYTHONPATH} python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_6_GP_bootstrap_t_test.yml
 
 run_bootstrap_net_t_test:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_8_GP_bootstrap_net_t_test.yml
+	PYTHONPATH=${PYTHONPATH} python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file BENCHMARK_8_GP_bootstrap_net_t_test.yml
 
 # ----------------------------------------------------------------
 # Small Benchmarks RUN Section                                   -
@@ -70,16 +71,16 @@ run_bootstrap_net_t_test:
 run_all_small: run_single_drug_pearson run_multidrug_pearson run_single_drug_t_test run_multidrug_t_test
 
 run_single_drug_pearson:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file TEST_1_GP_single_drug_pearson.yml
+	PYTHONPATH=${PYTHONPATH} python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file TEST_1_GP_single_drug_pearson.yml
 
 run_multidrug_pearson:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file TEST_2_GP_many_drugs_pearson.yml
+	PYTHONPATH=${PYTHONPATH} python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file TEST_2_GP_many_drugs_pearson.yml
 
 run_single_drug_t_test:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file TEST_3_GP_single_drug_t_test.yml
+	PYTHONPATH=${PYTHONPATH} python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file TEST_3_GP_single_drug_t_test.yml
 
 run_multidrug_t_test:
-	python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file TEST_4_GP_many_drugs_t_test.yml
+	PYTHONPATH=${PYTHONPATH} python3 $(SCRIPT) -run_directory $(RUN_DIR) -run_file TEST_4_GP_many_drugs_t_test.yml
 
 # ----------------------------------------------------------------
 # - VERIFICATION TESTS RUN SECTION                               -

@@ -2,7 +2,7 @@ import unittest
 from unittest import TestCase
 import numpy as np
 
-import gene_prioritization_toolbox as gpt
+import kngeneprioritization.gene_prioritization_toolbox as gpt
 
 class TestGet_pearson_correlation(TestCase):
     """  predicted correlation vs gene_prioritization_toolbox.get_correlation for 'correlation_measure' = 'pearson'  """

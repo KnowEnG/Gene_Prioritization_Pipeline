@@ -4,7 +4,7 @@ from unittest import TestCase
 import numpy as np
 
 #import knpackage.toolbox as kn
-import gene_prioritization_toolbox as gptbx
+import kngeneprioritization.gene_prioritization_toolbox as gptbx
 
 class TestSum_vote_perm_to_borda_count(TestCase):
 

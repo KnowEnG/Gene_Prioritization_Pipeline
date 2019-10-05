@@ -5,22 +5,22 @@ Created on Fri Sep 23 16:39:35 2016
 
 def correlation(run_parameters):
     """ gene prioritization """
-    from gene_prioritization_toolbox import run_correlation
+    from .gene_prioritization_toolbox import run_correlation
     run_correlation(run_parameters)
 
 def net_correlation(run_parameters):
     """ gene prioritization """
-    from gene_prioritization_toolbox import run_net_correlation
+    from .gene_prioritization_toolbox import run_net_correlation
     run_net_correlation(run_parameters)
 
 def bootstrap_correlation(run_parameters):
     """ gene prioritization """
-    from gene_prioritization_toolbox import run_bootstrap_correlation
+    from .gene_prioritization_toolbox import run_bootstrap_correlation
     run_bootstrap_correlation(run_parameters)
 
 def bootstrap_net_correlation(run_parameters):
     """ gene prioritization """
-    from gene_prioritization_toolbox import run_bootstrap_net_correlation
+    from .gene_prioritization_toolbox import run_bootstrap_net_correlation
     run_bootstrap_net_correlation(run_parameters)
 
 SELECT = {

@@ -108,12 +108,12 @@ set the spreadsheet, network and phenotype data file names to point to your data
 
   * Update PYTHONPATH enviroment variable
    ``` 
-   export PYTHONPATH='../src':$PYTHONPATH    
+   export PYTHONPATH='../':$PYTHONPATH    
    ```
    
   * Run (in test directory with env_setup as described above)
    ```
-  python3 ../src/gene_prioritization.py -run_directory ./run_dir -run_file zTEMPLATE_GP_BENCHMARKS.yml
+  python3 -m kngeneprioritization.gene_prioritization -run_directory ./run_dir -run_file zTEMPLATE_GP_BENCHMARKS.yml
    ```
 
 * * * 

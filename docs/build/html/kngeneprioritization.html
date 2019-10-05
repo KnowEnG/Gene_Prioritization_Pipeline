@@ -1,0 +1,401 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>kngeneprioritization package &#8212; gene_prioritization_pipeline 0.0.1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="kngeneprioritization-package">
+<h1>kngeneprioritization package<a class="headerlink" href="#kngeneprioritization-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-kngeneprioritization.gene_prioritization">
+<span id="kngeneprioritization-gene-prioritization-module"></span><h2>kngeneprioritization.gene_prioritization module<a class="headerlink" href="#module-kngeneprioritization.gene_prioritization" title="Permalink to this headline">¶</a></h2>
+<p>Created on Fri Sep 23 16:39:35 2016
+&#64;author: The KnowEnG dev team</p>
+<dl class="function">
+<dt id="kngeneprioritization.gene_prioritization.bootstrap_correlation">
+<code class="descclassname">kngeneprioritization.gene_prioritization.</code><code class="descname">bootstrap_correlation</code><span class="sig-paren">(</span><em>run_parameters</em><span class="sig-paren">)</span><a class="headerlink" href="#kngeneprioritization.gene_prioritization.bootstrap_correlation" title="Permalink to this definition">¶</a></dt>
+<dd><p>gene prioritization</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kngeneprioritization.gene_prioritization.bootstrap_net_correlation">
+<code class="descclassname">kngeneprioritization.gene_prioritization.</code><code class="descname">bootstrap_net_correlation</code><span class="sig-paren">(</span><em>run_parameters</em><span class="sig-paren">)</span><a class="headerlink" href="#kngeneprioritization.gene_prioritization.bootstrap_net_correlation" title="Permalink to this definition">¶</a></dt>
+<dd><p>gene prioritization</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kngeneprioritization.gene_prioritization.correlation">
+<code class="descclassname">kngeneprioritization.gene_prioritization.</code><code class="descname">correlation</code><span class="sig-paren">(</span><em>run_parameters</em><span class="sig-paren">)</span><a class="headerlink" href="#kngeneprioritization.gene_prioritization.correlation" title="Permalink to this definition">¶</a></dt>
+<dd><p>gene prioritization</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kngeneprioritization.gene_prioritization.main">
+<code class="descclassname">kngeneprioritization.gene_prioritization.</code><code class="descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#kngeneprioritization.gene_prioritization.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is the main function to perform gene prioritization.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kngeneprioritization.gene_prioritization.net_correlation">
+<code class="descclassname">kngeneprioritization.gene_prioritization.</code><code class="descname">net_correlation</code><span class="sig-paren">(</span><em>run_parameters</em><span class="sig-paren">)</span><a class="headerlink" href="#kngeneprioritization.gene_prioritization.net_correlation" title="Permalink to this definition">¶</a></dt>
+<dd><p>gene prioritization</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-kngeneprioritization.gene_prioritization_toolbox">
+<span id="kngeneprioritization-gene-prioritization-toolbox-module"></span><h2>kngeneprioritization.gene_prioritization_toolbox module<a class="headerlink" href="#module-kngeneprioritization.gene_prioritization_toolbox" title="Permalink to this headline">¶</a></h2>
+<p>&#64;author: The KnowEnG dev team</p>
+<dl class="function">
+<dt id="kngeneprioritization.gene_prioritization_toolbox.generate_bootstrap_correlation_output">
+<code class="descclassname">kngeneprioritization.gene_prioritization_toolbox.</code><code class="descname">generate_bootstrap_correlation_output</code><span class="sig-paren">(</span><em>borda_count</em>, <em>viz_score</em>, <em>pearson_array</em>, <em>phenotype_name</em>, <em>gene_name_list</em>, <em>run_parameters</em><span class="sig-paren">)</span><a class="headerlink" href="#kngeneprioritization.gene_prioritization_toolbox.generate_bootstrap_correlation_output" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save final output of correlation</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>pearson_array: pearson correlation coefficient array
+phenotype_name: name of the phenotype
+gene_name_list: list of the genes correlated (size of pearson_array
+run_parameters: dictionary of run parameters with key ‘results_directory’</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="kngeneprioritization.gene_prioritization_toolbox.generate_correlation_output">
+<code class="descclassname">kngeneprioritization.gene_prioritization_toolbox.</code><code class="descname">generate_correlation_output</code><span class="sig-paren">(</span><em>pc_array</em>, <em>phenotype_name</em>, <em>gene_name_list</em>, <em>run_parameters</em><span class="sig-paren">)</span><a class="headerlink" href="#kngeneprioritization.gene_prioritization_toolbox.generate_correlation_output" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save final output of correlation</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>pc_array: pearson correlation coefficient array
+phenotype_name: name of the phenotype
+gene_name_list: list of the genes correlated (size of pc_array
+run_parameters: dictionary of run parameters with key ‘results_directory’</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="kngeneprioritization.gene_prioritization_toolbox.generate_net_correlation_output">
+<code class="descclassname">kngeneprioritization.gene_prioritization_toolbox.</code><code class="descname">generate_net_correlation_output</code><span class="sig-paren">(</span><em>pearson_array</em>, <em>quantitative_score</em>, <em>viz_score</em>, <em>restart_accumulator</em>, <em>phenotype_name</em>, <em>gene_name_list</em>, <em>gene_orig_list</em>, <em>run_parameters</em><span class="sig-paren">)</span><a class="headerlink" href="#kngeneprioritization.gene_prioritization_toolbox.generate_net_correlation_output" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save final output of correlation with network</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>pearson_array: pearson correlation coefficient array
+quantitative_score: correlation score used to sort genes
+phenotype_name: name of the phenotype correlated
+gene_name_list: list of genes correlated (quantitative_score &amp; all will be trimmed to these)
+gene_orig_list: original list of genes - size of quantitative_score
+run_parameters: with key ‘results_directory’</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="kngeneprioritization.gene_prioritization_toolbox.get_correlation">
+<code class="descclassname">kngeneprioritization.gene_prioritization_toolbox.</code><code class="descname">get_correlation</code><span class="sig-paren">(</span><em>spreadsheet_mat</em>, <em>phenotype_response</em>, <em>run_parameters</em><span class="sig-paren">)</span><a class="headerlink" href="#kngeneprioritization.gene_prioritization_toolbox.get_correlation" title="Permalink to this definition">¶</a></dt>
+<dd><p>correlation function definition for all run methods</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>spreadsheet_mat: genes x samples
+phenotype_response: one x samples
+run_parameters: with key ‘correlation_measure’</dd>
+<dt>Returns:</dt>
+<dd>correlation_array: genes x one</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="kngeneprioritization.gene_prioritization_toolbox.get_output_file_name">
+<code class="descclassname">kngeneprioritization.gene_prioritization_toolbox.</code><code class="descname">get_output_file_name</code><span class="sig-paren">(</span><em>run_parameters</em>, <em>dir_name_key</em>, <em>prefix_string</em>, <em>suffix_string=''</em>, <em>type_suffix='tsv'</em><span class="sig-paren">)</span><a class="headerlink" href="#kngeneprioritization.gene_prioritization_toolbox.get_output_file_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>get the full directory / filename for writing
+Args:</p>
+<blockquote>
+<div>run_parameters: dictionary with keys: dir_name_key, “method” and “correlation_measure”
+dir_name_key:   run_parameters dictionary key for the output directory
+prefix_string:  the first letters of the ouput file name
+suffix_string:  the last letters of the output file name before type_suffix
+type_suffix:    the file type extenstion (default ‘tsv’) without period character</div></blockquote>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>output_file_name:   full file and directory name suitable for file writing</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="kngeneprioritization.gene_prioritization_toolbox.run_bootstrap_correlation">
+<code class="descclassname">kngeneprioritization.gene_prioritization_toolbox.</code><code class="descname">run_bootstrap_correlation</code><span class="sig-paren">(</span><em>run_parameters</em><span class="sig-paren">)</span><a class="headerlink" href="#kngeneprioritization.gene_prioritization_toolbox.run_bootstrap_correlation" title="Permalink to this definition">¶</a></dt>
+<dd><p>perform gene prioritization using bootstrap sampling</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>run_parameters: parameter set dictionary.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="kngeneprioritization.gene_prioritization_toolbox.run_bootstrap_correlation_worker">
+<code class="descclassname">kngeneprioritization.gene_prioritization_toolbox.</code><code class="descname">run_bootstrap_correlation_worker</code><span class="sig-paren">(</span><em>run_parameters</em>, <em>spreadsheet_df</em>, <em>phenotype_df</em>, <em>n_bootstraps</em>, <em>job_id</em><span class="sig-paren">)</span><a class="headerlink" href="#kngeneprioritization.gene_prioritization_toolbox.run_bootstrap_correlation_worker" title="Permalink to this definition">¶</a></dt>
+<dd><p>core function for parallel run_bootstrap_correlation</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>run_parameters:  dict of parameters
+spreadsheet_df:  spreadsheet data frame
+phenotype_df:    phenotype data frame
+n_bootstraps:    number of bootstrap samples to use
+job_id:          parallel iteration number</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="kngeneprioritization.gene_prioritization_toolbox.run_bootstrap_net_correlation">
+<code class="descclassname">kngeneprioritization.gene_prioritization_toolbox.</code><code class="descname">run_bootstrap_net_correlation</code><span class="sig-paren">(</span><em>run_parameters</em><span class="sig-paren">)</span><a class="headerlink" href="#kngeneprioritization.gene_prioritization_toolbox.run_bootstrap_net_correlation" title="Permalink to this definition">¶</a></dt>
+<dd><p>perform gene prioritization using bootstrap sampling and network smoothing</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>run_parameters: parameter set dictionary.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="kngeneprioritization.gene_prioritization_toolbox.run_bootstrap_net_correlation_worker">
+<code class="descclassname">kngeneprioritization.gene_prioritization_toolbox.</code><code class="descname">run_bootstrap_net_correlation_worker</code><span class="sig-paren">(</span><em>run_parameters</em>, <em>spreadsheet_df</em>, <em>phenotype_df</em>, <em>network_mat</em>, <em>spreadsheet_genes_as_input</em>, <em>baseline_array</em>, <em>job_id</em><span class="sig-paren">)</span><a class="headerlink" href="#kngeneprioritization.gene_prioritization_toolbox.run_bootstrap_net_correlation_worker" title="Permalink to this definition">¶</a></dt>
+<dd><p>worker for bootstrap network parallelization.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>run_parameters:  dict of parameters
+spreadsheet_df:  spreadsheet data frame
+phenotype_df:    phenotype data frame
+network_mat:     adjacency matrix
+spreadsheet_genes_as_input: list of genes
+baseline_array:  network smooted baseline array
+job_id:          parallel iteration number</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="kngeneprioritization.gene_prioritization_toolbox.run_correlation">
+<code class="descclassname">kngeneprioritization.gene_prioritization_toolbox.</code><code class="descname">run_correlation</code><span class="sig-paren">(</span><em>run_parameters</em><span class="sig-paren">)</span><a class="headerlink" href="#kngeneprioritization.gene_prioritization_toolbox.run_correlation" title="Permalink to this definition">¶</a></dt>
+<dd><p>perform gene prioritization</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>run_parameters: parameter set dictionary.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="kngeneprioritization.gene_prioritization_toolbox.run_correlation_worker">
+<code class="descclassname">kngeneprioritization.gene_prioritization_toolbox.</code><code class="descname">run_correlation_worker</code><span class="sig-paren">(</span><em>run_parameters</em>, <em>spreadsheet_df</em>, <em>phenotype_df</em>, <em>job_id</em><span class="sig-paren">)</span><a class="headerlink" href="#kngeneprioritization.gene_prioritization_toolbox.run_correlation_worker" title="Permalink to this definition">¶</a></dt>
+<dd><p>core function for parallel run_correlation</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>run_parameters:  dict of parameters
+spreadsheet_df:  spreadsheet data frame
+phenotype_df:    phenotype data frame
+job_id:          parallel iteration number</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="kngeneprioritization.gene_prioritization_toolbox.run_net_correlation">
+<code class="descclassname">kngeneprioritization.gene_prioritization_toolbox.</code><code class="descname">run_net_correlation</code><span class="sig-paren">(</span><em>run_parameters</em><span class="sig-paren">)</span><a class="headerlink" href="#kngeneprioritization.gene_prioritization_toolbox.run_net_correlation" title="Permalink to this definition">¶</a></dt>
+<dd><p>perform gene prioritization with network smoothing</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>run_parameters: parameter set dictionary.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="kngeneprioritization.gene_prioritization_toolbox.run_net_correlation_worker">
+<code class="descclassname">kngeneprioritization.gene_prioritization_toolbox.</code><code class="descname">run_net_correlation_worker</code><span class="sig-paren">(</span><em>run_parameters</em>, <em>spreadsheet_df</em>, <em>phenotype_df</em>, <em>network_mat</em>, <em>spreadsheet_genes_as_input</em>, <em>baseline_array</em>, <em>job_id</em><span class="sig-paren">)</span><a class="headerlink" href="#kngeneprioritization.gene_prioritization_toolbox.run_net_correlation_worker" title="Permalink to this definition">¶</a></dt>
+<dd><p>core function for parallel run_net_correlation</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>run_parameters:  dict of parameters
+spreadsheet_df:  spreadsheet data frame
+phenotype_df:    phenotype data frame
+network_mat:     adjacency matrix
+spreadsheet_genes_as_input: list of genes
+baseline_array:  network smooted baseline array
+job_id:          parallel iteration number</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="kngeneprioritization.gene_prioritization_toolbox.sample_a_matrix_pearson">
+<code class="descclassname">kngeneprioritization.gene_prioritization_toolbox.</code><code class="descname">sample_a_matrix_pearson</code><span class="sig-paren">(</span><em>spreadsheet_mat</em>, <em>rows_fraction</em>, <em>cols_fraction</em><span class="sig-paren">)</span><a class="headerlink" href="#kngeneprioritization.gene_prioritization_toolbox.sample_a_matrix_pearson" title="Permalink to this definition">¶</a></dt>
+<dd><p>percent_sample x percent_sample random sample, from spreadsheet_mat.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>spreadsheet_mat: gene x sample spread sheet as matrix.
+percent_sample: decimal fraction (slang-percent) - [0 : 1].</dd>
+<dt>Returns:</dt>
+<dd>sample_random: A specified precentage sample of the spread sheet.
+sample_permutation: the array that correponds to columns sample.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="kngeneprioritization.gene_prioritization_toolbox.sum_array_ranking_to_borda_count">
+<code class="descclassname">kngeneprioritization.gene_prioritization_toolbox.</code><code class="descname">sum_array_ranking_to_borda_count</code><span class="sig-paren">(</span><em>borda_count</em>, <em>corr_array</em><span class="sig-paren">)</span><a class="headerlink" href="#kngeneprioritization.gene_prioritization_toolbox.sum_array_ranking_to_borda_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>sum to borda count with a contigous array added to borda count
+Args:</p>
+<blockquote>
+<div>borda_count: the current borda count - same size as correlation array
+corr_array:  the correlation array to rank and add to the count</div></blockquote>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>borda_count: the ranking of the correlation array added to the input borda count</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="kngeneprioritization.gene_prioritization_toolbox.trim_to_top_beta">
+<code class="descclassname">kngeneprioritization.gene_prioritization_toolbox.</code><code class="descname">trim_to_top_beta</code><span class="sig-paren">(</span><em>corr_arr</em>, <em>Beta</em><span class="sig-paren">)</span><a class="headerlink" href="#kngeneprioritization.gene_prioritization_toolbox.trim_to_top_beta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Preserve corr_arr order: set the top Beta members of the correlation array to one and set the rest to zero</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>corr_arr: an array of sortable values
+Beta:     a fraction between 0 and 1 to designate the top percentage of corr_arr to select</dd>
+<dt>Returns:</dt>
+<dd>corr_arr: the correlation array as binary with ones int the top Beta percent</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="kngeneprioritization.gene_prioritization_toolbox.write_one_phenotype">
+<code class="descclassname">kngeneprioritization.gene_prioritization_toolbox.</code><code class="descname">write_one_phenotype</code><span class="sig-paren">(</span><em>result_df</em>, <em>phenotype_name</em>, <em>gene_name_list</em>, <em>run_parameters</em><span class="sig-paren">)</span><a class="headerlink" href="#kngeneprioritization.gene_prioritization_toolbox.write_one_phenotype" title="Permalink to this definition">¶</a></dt>
+<dd><p>write the phenotype output file to the results directory and the temporary directory files</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>result_df:
+phenotype_name:
+gene_name_list:
+run_parameters:</dd>
+<dt>Output:</dt>
+<dd>{phenotype}_{method}_{correlation_measure}_{timestamp}_viz.tsv</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="kngeneprioritization.gene_prioritization_toolbox.write_phenotype_data_all">
+<code class="descclassname">kngeneprioritization.gene_prioritization_toolbox.</code><code class="descname">write_phenotype_data_all</code><span class="sig-paren">(</span><em>run_parameters</em><span class="sig-paren">)</span><a class="headerlink" href="#kngeneprioritization.gene_prioritization_toolbox.write_phenotype_data_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Post Processing: writes rows as genes, cols as phenotypes, data is gene in top n for the phenotype T or F.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>run_parameters: with field: ‘results_directory’</dd>
+<dt>Output:</dt>
+<dd>ranked_genes_per_phenotype_{method}_{correlation_measure}_{timestamp}_download.tsv
+top_genes_per_phenotype_{method}_{correlation_measure}_{timestamp}_download.tsv</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="kngeneprioritization.gene_prioritization_toolbox.zscore_dataframe">
+<code class="descclassname">kngeneprioritization.gene_prioritization_toolbox.</code><code class="descname">zscore_dataframe</code><span class="sig-paren">(</span><em>genes_by_sample_df</em><span class="sig-paren">)</span><a class="headerlink" href="#kngeneprioritization.gene_prioritization_toolbox.zscore_dataframe" title="Permalink to this definition">¶</a></dt>
+<dd><p>zscore by rows for genes x samples dataframe</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>genes_by_sample_df: zscore along rows for genes x phenotypes dataframe</dd>
+<dt>Returns:</dt>
+<dd>spreadsheet_df: rows add up to zero, normalized to the mean and std deveiation</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-kngeneprioritization">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-kngeneprioritization" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">gene_prioritization_pipeline</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, knoweng_team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/kngeneprioritization.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
